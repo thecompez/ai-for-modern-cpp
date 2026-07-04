@@ -28,3 +28,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Local MCP configuration
+.mcp.json

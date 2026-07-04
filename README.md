@@ -122,3 +122,18 @@ When used, they must be isolated behind a small RAII-safe abstraction and explai
 The showcase avoids `std::views::enumerate` because some current Clang/libc++ combinations may not ship it yet, even under `-std=gnu++26`.
 
 For public templates, prefer modern features that are actually available in the target toolchain instead of demonstrating syntax that does not compile.
+
+
+## MCP
+
+This template includes `.mcp.example.json` as a safe starting point for Model Context Protocol configuration.
+
+Copy it locally when needed:
+
+```bash
+cp .mcp.example.json .mcp.json
+```
+
+`.mcp.json` is ignored by git because local MCP configuration may contain machine-specific paths, private endpoints, or environment-variable references.
+
+See `docs/MCP.md`.

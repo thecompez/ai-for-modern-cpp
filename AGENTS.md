@@ -687,6 +687,45 @@ Do not make broad unrelated rewrites.
 
 ---
 
+
+---
+
+## MCP Tooling Policy
+
+MCP configuration is allowed, but it must be safe by default.
+
+Repository-level examples should use:
+
+```text
+.mcp.example.json
+docs/MCP.md
+```
+
+Local active configuration should use:
+
+```text
+.mcp.json
+```
+
+`.mcp.json` must be ignored by git when it may contain local paths, private endpoints, tokens, or machine-specific settings.
+
+Agents must not add secrets to MCP configuration files.
+
+Agents must not enable write-capable, deployment, payment, production database, or destructive tools unless the user explicitly requests them.
+
+Preferred MCP permission order:
+
+```text
+1. Read-only filesystem context
+2. Local git inspection
+3. GitHub read access
+4. Build/test helper tools
+5. Write-capable tools only with explicit user intent
+```
+
+When MCP tools are used, the final report should mention which tool category was used and why.
+
+
 ## 18. Claude, Codex, And Copilot Compatibility
 
 This repository should work well with multiple AI coding agents.
