@@ -1,0 +1,30 @@
+# Build outputs
+/build/
+/out/
+/cmake-build-*/
+
+# C++ artifacts
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.pcm
+*.ifc
+
+# Tooling
+compile_commands.json
+.cache/
+.ccls-cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
