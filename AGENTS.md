@@ -175,6 +175,24 @@ If a `.h` file is unavoidable, explain why in the final report.
 
 ---
 
+# Module Naming Rule
+- Module names must be dotted, lowercase, stable, domain-oriented, and without `_`.
+- Good: `app.userid`, `project.search`, `project.localization`, `company.core`, `engine.plugin`, `core.memory`.
+- Bad: `app.user_id`, `project.search_engine`, `core.memory_utils`.
+- Avoid vague module names like `utils`, `helpers`, `common`, and `misc` unless the project already requires them.
+
+# Naming
+- Types/classes/concepts: PascalCase.
+- Functions, parameters, and local variables: lowerCamelCase.
+- Private/protected non-static data members: `m_` prefix.
+- Good members: `m_data`, `m_size`, `m_value`, `m_name`.
+- Bad members: `data_`, `size_`, `value_`, `name_`.
+- `enum class` enumerators must be PascalCase.
+- Good: `enum class HttpMethod { Unknown, Get, Post, Put, Patch, Delete };`
+- Bad: `enum class HttpMethod { get, post, delete_, unknown };`
+- Avoid workaround names like `delete_`, `class_`, `concept_`, `template_`, or `del`.
+- Avoid reserved or project-forbidden identifiers like `__name`, `_Name`, global `_name`, `name_`, and `Name_`.
+- 
 ## 5. Naming Policy
 
 Use dot-separated C++ module names.
