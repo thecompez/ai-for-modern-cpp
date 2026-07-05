@@ -1,8 +1,8 @@
 # AI for Modern C++
-
 A template repository for AI-assisted modern C++ development.
-
 This repository demonstrates how to guide coding agents such as Claude Code, Codex, GitHub Copilot, and other AI development tools when working on modern C++ projects.
+
+<p align="center"><img src="./ai-config-cpp.jpg" alt="AI for Modern C++" width="100%"></p>
 
 The preferred primary compiler path is Clang 22+ with Ninja and modern CMake. The focus is not only on writing C++ code. The focus is on making AI agents follow a strict engineering process:
 
