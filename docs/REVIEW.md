@@ -36,6 +36,17 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `NAM-002`: Namespaces mirror module identities.
 - [ ] `NAM-003`: Types, concepts, and enum enumerators use PascalCase.
 - [ ] `NAM-005`: Private/protected data members use `m_`.
+- [ ] `NAM-006`: Project-owned data members do not use a trailing underscore.
+- [ ] `NAM-009`: Multiword names preserve lowerCamelCase/PascalCase boundaries.
+- [ ] `SYN-001`: Project functions use trailing return types.
+- [ ] `SYN-002`: Variables and members have deliberate initial state.
+- [ ] `SYN-004`: Enumerations are scoped and every enumerator is PascalCase.
+- [ ] `SYN-005`: Null pointers use `nullptr`.
+- [ ] `SYN-006`: No C-style cast was introduced.
+- [ ] `SYN-015`: Control-flow bodies use braces.
+- [ ] `SYN-016`: Class layout presents its contract before private state.
+- [ ] `SYN-018`: Constructor initialization follows member declaration order.
+- [ ] `SYN-019`: Stored/asynchronous lambda captures have valid lifetimes.
 - [ ] `API-001`: Exported APIs have English Doxygen contracts.
 - [ ] `API-002`: Ownership, lifetime, optionality, and failure are explicit.
 - [ ] `API-005`: Public templates use meaningful constraints where required.
@@ -49,12 +60,30 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `PLT-001`: Platform macros remain at platform boundaries.
 - [ ] `PLT-004`: Native resources are isolated behind safe adapters.
 
+## Qt Quick UI
+
+- [ ] `GUI-001`: New Qt UI uses Qt Quick, QML, and Qt Quick Controls.
+- [ ] `GUI-002`: Qt Widgets appears only behind an explicit documented exception.
+- [ ] `GUI-003`: Domain and application behavior remains in C++ modules.
+- [ ] `GUI-004`: QML contains presentation behavior, not authoritative business logic.
+- [ ] `GUI-005`: The QML/C++ presentation contract is small and typed.
+- [ ] `GUI-007`: Flows, states, components, and design tokens were defined before implementation.
+- [ ] `GUI-008`: Layout works beyond one hard-coded window size.
+- [ ] `GUI-009`: Keyboard focus and accessibility were considered and verified.
+- [ ] `GUI-011`: Work on the GUI thread cannot block interaction.
+- [ ] `GUI-012`: QML is registered with `qt_add_qml_module` and target-local Qt dependencies.
+- [ ] `GUI-013`: C++ presentation behavior and relevant QML interaction have coverage.
+- [ ] `GUI-014`: QObject/QML/RAII ownership is explicit.
+
 ## Build And Tests
 
 - [ ] `BLD-002`: Module interfaces are registered in `CXX_MODULES` file sets.
 - [ ] `BLD-003`: CMake changes are target-local.
 - [ ] `BLD-005`: `import std` support uses observed toolchain capability.
 - [ ] `BLD-008`: No silent downgrade was added.
+- [ ] `BLD-010`: GCC is not accepted with a pre-4.0 CMake release.
+- [ ] `BLD-011`: Every GNU metadata source resolves or is repaired only in the build tree.
+- [ ] `BLD-012`: Compiler-major support is backed by a full CI build, not version assumptions.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
@@ -69,6 +98,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `KNO-003`: Incorrect examples are documentation-only and clearly labeled.
 - [ ] `KNO-005`: Rules, task guides, review checks, patterns, and evals agree.
 - [ ] `DOC-005`: Architecture diagrams match current dependencies.
+- [ ] `DOC-008`: Canonical guides use domain-neutral examples unless the domain
+  itself is the subject being taught.
 - [ ] `VER-007`: The knowledge contract test passed.
 
 ## Final Report

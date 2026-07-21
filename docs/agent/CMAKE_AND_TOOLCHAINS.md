@@ -54,6 +54,12 @@ target_sources(project_core
 Avoid global `CMAKE_CXX_FLAGS`, directory-wide include paths, or broad compile
 definitions unless they are truly toolchain-wide and documented.
 
+For Qt Quick targets, use `find_package` with only the required Qt components,
+register QML through `qt_add_qml_module`, and link target-local `Qt6::Quick`,
+`Qt6::Qml`, and Qt Quick Controls dependencies. Do not introduce `Qt6::Widgets`
+for a new UI without the explicit exception required by `GUI-002`. See
+`QT_QUICK_UI.md`.
+
 ## Configure Failure Workflow
 
 Collect evidence before editing:
@@ -97,3 +103,40 @@ on the machine.
 GCC 15 support also requires a CMake release that implements GCC `import std`
 and a valid `libstdc++.modules.json`. A file's existence does not prove that its
 source paths or package integration are correct.
+
+Supported GNU baseline:
+
+```text
+GCC 15.x
+CMake 4.0+
+Ninja 1.11+
+matching libstdc++ development package
+```
+
+CMake 3.30 and 3.31 can expose `CMAKE_CXX_COMPILER_IMPORT_STD`, but those
+releases do not implement GCC/libstdc++ `import std`. They must not be treated
+as supported merely because GCC 15 and the JSON file exist.
+
+Some Linux packages install a `libstdc++.modules.json` whose relative
+`source-path` entries do not resolve. `cmake/AimcppImportStd.cmake` validates
+each entry before `project()` and writes corrected absolute paths to generated
+metadata in the build tree. It never edits `/usr` or the compiler installation.
+
+Do not infer support for a new GCC major from version ordering. For example,
+GCC 16.1 with CMake 4.3.4 advertises import capability during configure but the
+CMake scanner does not recognize its standard module during the build. Keep a
+new major version out of the supported matrix until the full build passes.
+
+### Ubuntu 25.10
+
+Ubuntu 25.10 provides GCC 15 but its CMake 3.31 is too old for GNU `import std`.
+Use the repository-local bootstrap, then the Linux verification script:
+
+```bash
+bash scripts/bootstrap-linux-cmake.sh
+.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
+bash scripts/verify-linux.sh
+```
+
+The bootstrap installs pinned CMake 4.3.4 into the ignored `.tools/` directory;
+it does not replace the system CMake.

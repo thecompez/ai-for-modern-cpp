@@ -28,6 +28,7 @@ Thumbs.db
 .idea/
 .vscode/
 .qtcreator/
+.tools/
 *.swp
 
 # Local MCP configuration

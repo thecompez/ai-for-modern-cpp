@@ -13,6 +13,8 @@ Do not start by choosing a filename. Start by naming the responsibility.
 | Application orchestration | Application module |
 | Filesystem, network, process, or OS integration | Platform/adapter module |
 | Dependency construction and process startup | Executable composition root |
+| Qt Quick layout, animation, and interaction | QML presentation layer |
+| QML-facing properties, signals, and commands | C++ presentation adapter |
 | Verification-only utilities | Test source, never exported production API |
 
 If no owner is clear, the architecture is not understood well enough to edit.
@@ -74,6 +76,8 @@ or reusable business rules.
 - A module named after a technical grab bag rather than owned behavior.
 - Tests requiring unrelated subsystems to validate one invariant.
 - Exported APIs added only to make tests reach private implementation.
+
+For Qt UI dependency direction and ownership, also read `QT_QUICK_UI.md`.
 
 When a smell is observed, explain the dependency problem before proposing a
 new abstraction.

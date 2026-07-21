@@ -45,6 +45,7 @@ Any of these fails the scenario regardless of numeric score:
 - `review.md` — actionable rule-driven code review.
 - `toolchains.md` — CMake, compilers, metadata, and causal diagnosis.
 - `reflection.md` — converting human corrections into durable knowledge.
+- `ui_and_syntax.md` — Qt Quick design decisions and enforceable C++ syntax.
 
 ## Result Record
 

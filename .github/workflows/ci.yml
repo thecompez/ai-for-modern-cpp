@@ -29,8 +29,8 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure --no-tests=error
 
-  linux:
-    name: Linux import std
+  linux-fedora:
+    name: Fedora 43 GCC 15 import std
     runs-on: ubuntu-latest
     container: fedora:43
 
@@ -41,14 +41,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure
+      - name: Configure, build, and test
+        run: bash scripts/verify-linux.sh
+
+  linux-ubuntu:
+    name: Ubuntu 25.10 GCC 15 repaired metadata
+    runs-on: ubuntu-latest
+    container: ubuntu:25.10
+
+    steps:
+      - name: Install base toolchain
         run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_COMPILER=g++
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+            g++ \
+            git \
+            ninja-build \
+            python3-venv
 
-      - name: Build
-        run: cmake --build build --parallel
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure --no-tests=error
+      - name: Install supported CMake
+        run: bash scripts/bootstrap-linux-cmake.sh
+
+      - name: Configure, build, and test
+        run: bash scripts/verify-linux.sh

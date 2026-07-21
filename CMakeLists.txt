@@ -36,6 +36,13 @@ endif()
 set(CMAKE_CXX_MODULE_STD ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AimcppImportStd.cmake")
+aimcpp_prepare_gnu_import_std(_aimcpp_gnu_stdlib_modules_json)
+
+if(_aimcpp_gnu_stdlib_modules_json)
+    set(CMAKE_CXX_STDLIB_MODULES_JSON "${_aimcpp_gnu_stdlib_modules_json}")
+endif()
+
 if(APPLE AND CMAKE_CXX_COMPILER)
     execute_process(
         COMMAND brew --prefix llvm
@@ -91,6 +98,7 @@ if(NOT 26 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD
     message(FATAL_ERROR
         "The active compiler / standard library / generator combination does not support import std.\n"
         "CMAKE_CXX_COMPILER_IMPORT_STD='${CMAKE_CXX_COMPILER_IMPORT_STD}'\n"
+        "CMAKE_CXX_COMPILER_IMPORT_STD_ERROR_MESSAGE='${CMAKE_CXX_COMPILER_IMPORT_STD_ERROR_MESSAGE}'\n"
         "Use Ninja with a supported Clang/libc++, GCC/libstdc++, or MSVC toolchain."
     )
 endif()
@@ -133,6 +141,18 @@ if(AIMCPP_BUILD_TESTS)
     set_property(TARGET ai-modern-cpp-tests PROPERTY CXX_SCAN_FOR_MODULES ON)
 
     add_test(NAME core_tests COMMAND ai-modern-cpp-tests)
+
+    add_test(
+        NAME import_std_metadata
+        COMMAND
+            ${CMAKE_COMMAND}
+            "-DAIMCPP_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+            "-DAIMCPP_TEST_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/import-std-metadata-test"
+            -P
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/import_std_metadata.cmake"
+    )
+
+    set_tests_properties(import_std_metadata PROPERTIES LABELS toolchain)
 
     add_test(
         NAME knowledge_contract

@@ -65,10 +65,12 @@ After reading this file, read only the guides required for the task.
 | Task | Required guide |
 |---|---|
 | Understand repository structure or introduce a subsystem | `docs/agent/ARCHITECTURE.md` |
-| Add or change a C++ module | `docs/agent/MODULES.md` and `docs/agent/NAMING.md` |
+| Add or change a C++ module | `docs/agent/MODULES.md`, `docs/agent/NAMING.md`, and `docs/agent/SYNTAX_AND_STYLE.md` |
+| Write or review C++ syntax, identifiers, or formatting | `docs/agent/SYNTAX_AND_STYLE.md` and `docs/agent/NAMING.md` |
 | Design or review a public API | `docs/agent/API_DESIGN.md` and `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
+| Design or implement a Qt graphical interface | `docs/agent/QT_QUICK_UI.md`, `docs/agent/ARCHITECTURE.md`, and `docs/agent/NAMING.md` |
 | Change CMake, compilers, modules, or `import std` | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
 | Diagnose a known build or module failure | `docs/agent/COMMON_FAILURES.md` |
@@ -187,13 +189,21 @@ See `docs/agent/MODULES.md`.
 - **NAM-004** — Functions, parameters, and local variables MUST use
   lowerCamelCase.
 - **NAM-005** — Private and protected non-static data members MUST use the
-  `m_` prefix.
+  `m_` prefix followed by lowerCamelCase.
 - **NAM-006** — Identifiers ending in `_` are forbidden for project-owned data
   members.
 - **NAM-007** — Reserved identifiers and keyword workarounds such as `delete_`,
   `class_`, `_Name`, and `__name` MUST NOT be introduced.
 - **NAM-008** — File names MAY use underscores when useful; the module identity
   inside the source remains dotted.
+- **NAM-009** — Multiword identifiers MUST preserve word boundaries through the
+  required casing; do not collapse `expressionText` into `expressiontext`.
+- **NAM-010** — Acronyms MUST be treated as words: use `HttpClient`, `UserId`,
+  and `parseJson`, not `HTTPClient`, `UserID`, or `parseJSON`.
+- **NAM-011** — Boolean names SHOULD read as predicates, such as `isReady`,
+  `hasValue`, `canRetry`, or `shouldClose`.
+- **NAM-012** — QML types and files MUST use PascalCase; QML `id` values,
+  properties, signals, handlers, and JavaScript functions MUST use lowerCamelCase.
 
 Correct:
 
@@ -202,14 +212,99 @@ export module modern.cpp.agent;
 
 export namespace modern::cpp::agent {
 enum class StandardLevel { Cpp20, Cpp23, Cpp26 };
+
+class Expression final {
+private:
+    std::string m_expressionText;
+};
 }
+```
+
+Incorrect:
+
+```cpp
+enum class ErrorCode { empty_expression };
+
+class Expression final {
+private:
+    std::string my_member;
+    std::string mymember_;
+};
 ```
 
 See `docs/agent/NAMING.md`.
 
 ---
 
-## 8. API And Compile-Time Rules
+## 8. Syntax And Style Rules
+
+Modern syntax is a correctness and readability contract, not optional polish.
+
+- **SYN-001** — Free functions and non-trivial member functions MUST use
+  trailing return types: `auto function() -> ReturnType`.
+- **SYN-002** — Variables MUST be initialized at declaration; default member
+  initializers SHOULD establish safe object state.
+- **SYN-003** — Use `const`, `constexpr`, `consteval`, and `constinit` whenever
+  their guarantees accurately express the intended lifetime and mutability.
+- **SYN-004** — Enumerations MUST use `enum class`; enumerator cases MUST follow
+  `NAM-003`, including in every `switch` label.
+- **SYN-005** — Use `nullptr`, never `NULL` or integer zero as a null pointer.
+- **SYN-006** — C-style and functional-style casts are forbidden; use the
+  narrowest named C++ cast and justify `reinterpret_cast`.
+- **SYN-007** — Single-argument constructors MUST be `explicit` unless implicit
+  conversion is the documented purpose of the type.
+- **SYN-008** — Results whose loss can hide an error or skip required work MUST
+  be marked `[[nodiscard]]`.
+- **SYN-009** — Overriding virtual functions MUST use `override`; types and
+  functions that are intentionally not extensible SHOULD use `final`.
+- **SYN-010** — Prefer brace initialization when it prevents narrowing or
+  establishes an explicit initial state.
+- **SYN-011** — Macros MUST NOT implement constants, types, functions, or
+  business logic when a language feature can express the same intent.
+- **SYN-012** — Declare one logical object per statement and avoid hidden
+  mutation, comma expressions, and dense clever expressions.
+- **SYN-013** — `using namespace` is forbidden at namespace scope in project
+  code; narrow function-local usage MAY be accepted when unambiguous.
+- **SYN-014** — Use `noexcept` only when the contract can be upheld; destructors
+  and move operations SHOULD state the guarantee when it affects generic code.
+- **SYN-015** — Braces are required for control-flow bodies, including
+  single-statement branches and loops.
+- **SYN-016** — Class declarations SHOULD order access sections as `public`,
+  `protected`, then `private`; behavior precedes data, and invariant-bearing
+  data MUST remain private.
+- **SYN-017** — Use `using` aliases instead of `typedef` for project-owned type
+  aliases.
+- **SYN-018** — Constructor initializer lists MUST follow data-member declaration
+  order and MUST NOT perform hidden unrelated work.
+- **SYN-019** — Lambda captures MUST make lifetime intent clear; stored or
+  asynchronous lambdas MUST NOT capture short-lived objects by reference.
+- **SYN-020** — `auto` SHOULD remove repetition without hiding important domain,
+  ownership, or conversion semantics.
+- **SYN-021** — Prefer range-based loops and standard range algorithms when they
+  express iteration more directly without weakening clarity or portability.
+- **SYN-022** — Source units SHOULD follow a stable reading order: module
+  declaration/imports, namespace, public or member definitions, private helpers,
+  then the smallest composition entry point where applicable.
+
+Correct:
+
+```cpp
+[[nodiscard]] auto parseExpression(std::string_view text)
+    -> std::expected<Expression, ErrorCode>;
+
+switch (errorCode) {
+case ErrorCode::EmptyExpression:
+    return "Expression must not be empty.";
+case ErrorCode::InvalidToken:
+    return "Expression contains an invalid token.";
+}
+```
+
+See `docs/agent/SYNTAX_AND_STYLE.md`.
+
+---
+
+## 9. API And Compile-Time Rules
 
 - **API-001** — Every exported class, function, enum, concept, and public data
   structure MUST have English Doxygen documentation.
@@ -231,7 +326,7 @@ See `docs/agent/API_DESIGN.md`.
 
 ---
 
-## 9. Error And Resource Rules
+## 10. Error And Resource Rules
 
 - **ERR-001** — Recoverable expected failures SHOULD use `std::expected` or the
   project equivalent.
@@ -256,7 +351,7 @@ See `docs/agent/ERRORS_AND_RESOURCES.md`.
 
 ---
 
-## 10. Platform Boundary Rules
+## 11. Platform Boundary Rules
 
 - **PLT-001** — Platform macros MAY appear only at platform boundaries.
 - **PLT-002** — Business and domain logic MUST NOT contain scattered platform
@@ -272,12 +367,54 @@ See `docs/agent/PLATFORM_BOUNDARIES.md`.
 
 ---
 
-## 11. CMake And Toolchain Rules
+## 12. Qt Quick UI Rules
+
+These rules apply when a derived project requires a Qt graphical interface.
+They do not add Qt as a dependency of this executable knowledge reference.
+
+- **GUI-001** — New Qt graphical interfaces MUST use Qt 6, Qt Quick, QML, and
+  Qt Quick Controls. Qt Widgets is not the default UI technology.
+- **GUI-002** — New use of Qt Widgets is forbidden unless the user explicitly
+  requests it or an existing compatibility boundary requires it; the exception
+  MUST be documented.
+- **GUI-003** — Domain and application behavior MUST remain in C++ modules and
+  MUST NOT depend on QML or visual controls.
+- **GUI-004** — QML MUST own presentation, layout, animation, and interaction;
+  business rules, validation, persistence, and authoritative state MUST NOT be
+  implemented in QML JavaScript.
+- **GUI-005** — The QML/C++ boundary MUST expose a small presentation contract
+  through typed properties, invokable operations, signals, and purpose-built
+  models or view models.
+- **GUI-006** — Qt meta-object or MOC compatibility headers MAY use `.hpp` only
+  as an isolated adapter under `MOD-007`; they MUST NOT become domain headers.
+- **GUI-007** — Before implementation, an agent MUST define user flows, screen
+  states, reusable components, design tokens, and failure/empty/loading states.
+- **GUI-008** — Layouts MUST be responsive and adaptive; hard-coded positioning
+  for a single window size is forbidden unless the interface is intentionally
+  fixed and that constraint is documented.
+- **GUI-009** — Interactive controls MUST support keyboard navigation, visible
+  focus, accessible names, and sufficient contrast.
+- **GUI-010** — User-visible text MUST be translation-ready; colors, spacing,
+  typography, and motion SHOULD come from reusable design tokens.
+- **GUI-011** — Long-running work MUST NOT block the GUI thread; cancellation,
+  progress, failure, and lifetime MUST be modeled explicitly.
+- **GUI-012** — QML modules MUST be registered with `qt_add_qml_module` and
+  targets MUST link only the required Qt Quick components.
+- **GUI-013** — Qt UI changes MUST test C++ presentation behavior and SHOULD add
+  QML interaction tests, linting, or smoke coverage where the toolchain permits.
+- **GUI-014** — QObject parent ownership, QML engine ownership, and RAII
+  ownership MUST be deliberate and MUST NOT produce ambiguous lifetime.
+
+See `docs/agent/QT_QUICK_UI.md`.
+
+---
+
+## 13. CMake And Toolchain Rules
 
 Primary path:
 
 ```text
-Clang 22+ or GCC 15+
+Clang 22+ or verified GCC 15.x
 CMake 4.3+
 Ninja 1.11+
 C++26
@@ -301,6 +438,15 @@ import std
   or `import std` to obtain a green build.
 - **BLD-009** — CMake experimental gates MUST be version-scoped and verified
   against the active CMake release.
+- **BLD-010** — GCC `import std` requires CMake 4.0 or newer; CMake 3.30 and
+  3.31 MUST be rejected before compiler detection produces a misleading empty
+  capability list.
+- **BLD-011** — A GNU standard-library metadata file is usable only when every
+  listed module source resolves to an existing file. A build-tree repair MAY
+  replace broken distribution-relative paths; system metadata MUST NOT be edited.
+- **BLD-012** — A newer compiler major version is not automatically supported.
+  Each compiler/CMake/standard-library combination MUST pass configure, build,
+  and tests in the compatibility matrix before becoming a supported path.
 
 Do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout`
 are exported by `import std`. Prefer standard C++ facilities or isolate C
@@ -313,7 +459,7 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
 
 ---
 
-## 12. Testing And Verification Rules
+## 14. Testing And Verification Rules
 
 - **TST-001** — Every behavior change MUST have relevant automated coverage
   when practical.
@@ -351,7 +497,7 @@ See `docs/agent/TESTING_AND_VERIFICATION.md`.
 
 ---
 
-## 13. Documentation And Knowledge Rules
+## 15. Documentation And Knowledge Rules
 
 - **DOC-001** — Source comments and repository technical documentation MUST be
   written in English.
@@ -363,10 +509,13 @@ See `docs/agent/TESTING_AND_VERIFICATION.md`.
 - **DOC-006** — A rule should be short, testable, general, and owned by one
   canonical location.
 - **DOC-007** — Task guides MAY elaborate a rule but MUST NOT redefine it.
+- **DOC-008** — Canonical guides and general-purpose examples MUST use
+  domain-neutral placeholder names unless a concrete domain is the behavior
+  being taught. Scenario-specific evals MAY use concrete domains.
 
 ---
 
-## 14. Security And Tool Rules
+## 16. Security And Tool Rules
 
 - **SEC-001** — Secrets, tokens, private endpoints, and machine-specific paths
   MUST NOT be committed.
@@ -386,7 +535,7 @@ See `docs/MCP.md` for the MCP safety model.
 
 ---
 
-## 15. Change, Commit, And Release Rules
+## 17. Change, Commit, And Release Rules
 
 - **CHG-001** — Commits MUST be cohesive and use precise imperative titles.
 - **CHG-002** — Pull request summaries MUST state what changed, why, how it was
@@ -414,7 +563,7 @@ AI changes
 
 ---
 
-## 16. Final Report Contract
+## 18. Final Report Contract
 
 Every completed implementation report MUST include:
 
@@ -439,7 +588,7 @@ Report only observed evidence.
 
 ---
 
-## 17. Forbidden Agent Behavior
+## 19. Forbidden Agent Behavior
 
 Agents MUST NOT:
 
@@ -452,6 +601,10 @@ Agents MUST NOT:
 - Change public API names or unrelated subsystems without need.
 - Perform broad formatting-only rewrites during functional work.
 - Add non-English source comments.
+- Introduce lowercase or snake_case enum-class enumerators.
+- Introduce trailing-underscore or unprefixed private data members.
+- Choose Qt Widgets for a new Qt UI without an explicit, documented exception.
+- Put authoritative domain or application behavior in QML JavaScript.
 - Treat the executable example as permission to accumulate unrelated showcase
   features.
 - Turn human corrections into noisy one-off rules; generalize only durable
@@ -459,7 +612,7 @@ Agents MUST NOT:
 
 ---
 
-## 18. Multi-Agent Compatibility
+## 20. Multi-Agent Compatibility
 
 For Claude Code:
 

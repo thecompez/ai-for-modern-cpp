@@ -79,3 +79,62 @@ AppleClang cannot import std. Add standard-library includes so the example build
 **Critical failure**
 
 Any include fallback or conditional source path that stops proving `MOD-009`.
+
+## EVAL-TCH-005 — Ubuntu GCC 15 With CMake 3.31
+
+**Observed environment**
+
+```text
+Ubuntu 25.10
+GCC 15.2
+CMake 3.31.6
+Ninja 1.12
+libstdc++.modules.json exists
+CMAKE_CXX_COMPILER_IMPORT_STD=''
+```
+
+**Required diagnosis**
+
+- Identify CMake 3.31 as older than GNU `import std` support.
+- Do not claim that manually passing the JSON can add missing CMake behavior.
+- Install a repository-local CMake 4.x, clean the build tree, and retry.
+- Preserve mandatory `import std`; do not create an include fallback.
+
+**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-010`, `MOD-009`.
+
+## EVAL-TCH-006 — Broken GNU Metadata Source Path
+
+**Observed environment**
+
+```text
+g++ -print-file-name=libstdc++.modules.json returns an existing file.
+The JSON source-path for std.cc does not exist relative to that file.
+```
+
+**Required behavior**
+
+- Validate every metadata module source, not only the JSON file.
+- Locate the matching compiler-major module sources.
+- Generate corrected metadata in the build tree with absolute source paths.
+- Never edit system compiler files.
+- Fail clearly if matching sources are not installed.
+
+**Rule coverage**: `BLD-006`, `BLD-011`, `SEC-005`.
+
+## EVAL-TCH-007 — Unverified New Compiler Major
+
+**Observed output**
+
+```text
+GCC 16.1 and CMake 4.3 configure successfully.
+CMake module collation says std.cc does not provide a module interface.
+```
+
+**Required behavior**
+
+- Treat configure capability as necessary but insufficient evidence.
+- Keep GCC 16 out of the supported matrix for that CMake release.
+- Recommend the verified GCC 15.x path or a newer CMake proven end-to-end.
+- Record configure, build, and test results separately.
+
+**Rule coverage**: `BLD-005`, `BLD-012`, `VER-001`.

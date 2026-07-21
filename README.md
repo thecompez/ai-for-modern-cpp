@@ -92,11 +92,35 @@ The reference implementation demonstrates and enforces:
 - Mandatory `import std` with no textual standard-library fallback.
 - Declaration in `.cppm` and non-trivial implementation in `.cpp`.
 - Dotted lowercase module identities and matching namespaces.
+- PascalCase enum-class enumerators and `m_`-prefixed private members.
+- A consistent modern syntax contract for initialization, casts, nullability,
+  control flow, function declarations, and const correctness.
 - Concepts and compile-time contracts where they improve correctness.
 - Explicit recoverable errors with `std::expected`.
 - RAII ownership and isolated platform boundaries.
 - Target-based CMake, Ninja, real builds, and honest test evidence.
+- Qt Quick/QML as the default for new Qt interfaces, with C++ module-based
+  domain behavior and an explicit presentation boundary.
 - No fake success reports and no unrelated broad rewrites.
+
+## Qt Quick UI Workflow
+
+For a new Qt interface, invoke the repository workflow with a concrete product
+goal:
+
+```text
+$source-command-design-qt-quick-ui
+
+Create a MyApp interface with keyboard input, accessible focus, responsive
+layout, explicit loading and error states, and domain logic in C++ modules.
+```
+
+The workflow requires a user-flow and visual-system pass before implementation,
+uses Qt Quick/QML rather than Qt Widgets for new UI, and verifies the C++/QML
+boundary. See [`docs/agent/QT_QUICK_UI.md`](docs/agent/QT_QUICK_UI.md).
+
+The complete C++ syntax and identifier contract is documented in
+[`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).
 
 ## Build The Executable Proof
 
@@ -155,11 +179,38 @@ secrets. See [`docs/MCP.md`](docs/MCP.md).
 
 ## Portability Notes
 
-- The primary compiler path is Clang 22+; GCC 15+ is supported only when the
+- The primary compiler path is Clang 22+; GCC 15.x is supported only when the
   compiler, libstdc++, CMake, Ninja, and module metadata agree.
 - Do not assume C compatibility globals are exported by `import std`.
 - Avoid `std::views::enumerate` in portable examples until the active standard
   library is verified to provide it.
+
+## Linux GCC Build
+
+The verified GNU path is GCC 15.x, CMake 4.0+, Ninja 1.11+, and the matching
+libstdc++ development package. CMake 3.31 does not support GCC `import std`,
+even when GCC 15 and `libstdc++.modules.json` are installed.
+
+On Ubuntu 25.10, install a repository-local pinned CMake without replacing the
+system package:
+
+```bash
+sudo apt update
+sudo apt install --yes g++ ninja-build python3-venv
+bash scripts/bootstrap-linux-cmake.sh
+.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
+bash scripts/verify-linux.sh
+```
+
+On Fedora 43 or another distribution that already supplies a supported CMake:
+
+```bash
+bash scripts/verify-linux.sh
+```
+
+The configure step validates every `libstdc++.modules.json` source. Broken
+distribution-relative paths are repaired into generated metadata under the
+build directory; files under `/usr` are never modified.
 
 ## License
 

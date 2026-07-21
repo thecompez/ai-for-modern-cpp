@@ -9,7 +9,8 @@ Use this skill when introducing a new project-owned C++ module.
 
 ## Required Process
 
-1. Read `AGENTS.md`, `docs/agent/ARCHITECTURE.md`, `MODULES.md`, and `NAMING.md`.
+1. Read `AGENTS.md`, `docs/agent/ARCHITECTURE.md`, `MODULES.md`, `NAMING.md`,
+   and `SYNTAX_AND_STYLE.md`.
 2. Identify the module's single owned responsibility.
 3. Choose a dotted lowercase domain-oriented module name.
 4. Put exported declarations and Doxygen contracts in `.cppm`.
