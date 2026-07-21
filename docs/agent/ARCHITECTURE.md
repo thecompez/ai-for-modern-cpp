@@ -54,6 +54,44 @@ Explicit CLI tools, services, libraries, daemons, and headless processes do not
 gain a graphical dependency merely because Qt Quick is the interactive-product
 default. Classify the product surface before choosing composition roots.
 
+## Cohesive Repository Layout
+
+Directory names should reveal ownership, not merely file technology. A
+user-facing application may grow toward this shape when every listed
+responsibility is present:
+
+```text
+src/
+  domain/          Pure rules, values, and invariants
+  application/     Use cases and authoritative state transitions
+  presentation/    Typed adapters for UI-facing state and commands
+  adapters/        Persistence, network, platform, and third-party boundaries
+  bootstrap/       Composition roots and process startup
+  cli/             Optional secondary command adapter
+ui/
+  Main.qml
+  pages/
+  components/
+  theme/
+  assets/
+tests/
+  domain/
+  application/
+  presentation/
+  ui/
+```
+
+This is a responsibility map, not a request to create empty directories. A
+small product may combine adjacent responsibilities until a real dependency,
+contract, or testing pressure justifies separation. It must not collapse
+unrelated behavior into `common/`, `helpers/`, a top-level `qml/` bucket, or a
+large composition entry point merely to avoid naming the owner.
+
+For Qt Quick projects, `ui/` is the visual boundary. QML remains the language
+inside that boundary, while the directory name describes its architectural
+role and leaves room for design tokens, fonts, images, and other presentation
+assets.
+
 ## Module Boundary Test
 
 A module boundary is justified when at least one is true:

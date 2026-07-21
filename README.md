@@ -31,7 +31,7 @@ flowchart TB
     Workflows --> Agent["AI plans, edits, reviews, and reports"]
 
     Contract --> Proof["Executable C++26 reference"]
-    Proof --> Build["CMake + Ninja + import std"]
+    Proof --> Build["CMake + Ninja + C++ modules"]
     Build --> Tests["Behavior tests + knowledge contract"]
 
     Contract --> Evals["Agent behavior scenarios"]
@@ -76,7 +76,7 @@ evals/                     Agent behavior scenarios and scoring rubric
 src/                       Executable module-based proof of the rules
 tests/                     Behavior tests and knowledge-contract checks
 .github/workflows/ci.yml   macOS and Linux verification
-CMakeLists.txt             Strict CMake and mandatory import std integration
+CMakeLists.txt             CMake module and standard-library mode integration
 ```
 
 Start with [`AGENTS.md`](AGENTS.md), then use the routing table in that file.
@@ -89,12 +89,16 @@ The reference implementation demonstrates and enforces:
 
 - C++26 as the primary path, with modern C++20+ policy for derived work.
 - C++ modules by default.
-- Mandatory `import std` with no textual standard-library fallback.
+- `import std` when the effective toolchain supports it, with a
+  global-module-fragment standard-header fallback that preserves `.cppm`
+  project modules.
 - Declaration in `.cppm` and non-trivial implementation in `.cpp`.
 - Dotted lowercase module identities and matching namespaces.
 - PascalCase enum-class enumerators and `m_`-prefixed private members.
 - A consistent modern syntax contract for initialization, casts, nullability,
-  control flow, function declarations, and const correctness.
+  control flow, readable return declarations, and const correctness.
+- `std::print` and `std::println` for ordinary formatted console output rather
+  than legacy iostream insertion chains.
 - Concepts and compile-time contracts where they improve correctness.
 - Explicit recoverable errors with `std::expected`.
 - RAII ownership and isolated platform boundaries.
@@ -102,6 +106,9 @@ The reference implementation demonstrates and enforces:
 - Qt Quick/QML as the primary interface for new user-facing interactive
   applications when the surface is unspecified, with C++ module-based domain
   behavior and an explicit presentation boundary.
+- Product-specific UI/UX decisions instead of generic repetitive screen
+  recipes, with QML and presentation assets grouped under a top-level `ui/`
+  boundary.
 - Optional CLI adapters for automation, tests, or headless use share the same
   application and domain modules rather than duplicating behavior.
 - No fake success reports and no unrelated broad rewrites.
@@ -131,8 +138,11 @@ layout, explicit loading and error states, and domain logic in C++ modules.
 ```
 
 The workflow requires a user-flow and visual-system pass before implementation,
-uses Qt Quick/QML rather than Qt Widgets for new UI, and verifies the C++/QML
-boundary. See [`docs/agent/QT_QUICK_UI.md`](docs/agent/QT_QUICK_UI.md).
+including audience, information hierarchy, affordances, feedback, recovery,
+content density, and a product-specific visual direction. It uses Qt Quick/QML
+rather than Qt Widgets for new UI, keeps QML and visual assets under `ui/`, and
+verifies the C++/QML boundary. See
+[`docs/agent/QT_QUICK_UI.md`](docs/agent/QT_QUICK_UI.md).
 
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).
@@ -140,7 +150,9 @@ The complete C++ syntax and identifier contract is documented in
 ## Build The Executable Proof
 
 The active compiler, standard library, CMake version, generator, and standard
-library module metadata must support `import std` together.
+library module metadata determine whether `AUTO` selects `import std` or the
+standard-header compatibility path. Project-owned C++ modules are mandatory in
+both modes.
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -151,12 +163,30 @@ ctest --test-dir build --output-on-failure --no-tests=error
 Expected configure evidence includes:
 
 ```text
-AIMCPP_IMPORT_STD_REQUIRED=ON
-CMAKE_CXX_COMPILER_IMPORT_STD=23;26
+AIMCPP_STDLIB_MODE=AUTO
+AIMCPP_STDLIB_INTEGRATION=IMPORT_STD
+AIMCPP_USE_IMPORT_STD=ON
 ```
 
-Unsupported combinations fail during configuration. They are not silently
-downgraded to standard-library includes.
+On a toolchain without effective standard-library module support, expected
+evidence is:
+
+```text
+AIMCPP_STDLIB_MODE=AUTO
+AIMCPP_STDLIB_INTEGRATION=HEADERS
+AIMCPP_USE_IMPORT_STD=OFF
+```
+
+That result changes only standard-library delivery. The build still compiles
+the `.cppm` interface through `FILE_SET CXX_MODULES` and consumers still import
+the project module. No project-owned `.h` or `.hpp` fallback is created.
+
+The two source paths can be forced independently:
+
+```bash
+cmake -S . -B build/import-std -G Ninja -DAIMCPP_STDLIB_MODE=IMPORT_STD
+cmake -S . -B build/headers -G Ninja -DAIMCPP_STDLIB_MODE=HEADERS
+```
 
 ## Executable Reference Layout
 
@@ -170,8 +200,8 @@ tests/knowledge_contract.cmake               Knowledge architecture regression t
 
 The reference demonstrates `std::expected`, `std::optional`, `std::span`,
 concepts, ranges, `constexpr`, `consteval`, `std::chrono`, `std::format`, and
-`std::println` without turning the module interface into an implementation
-dumping ground.
+`std::println` in both standard-library modes without turning the module
+interface into an implementation dumping ground.
 
 ## Rule-Driven Review
 
@@ -194,17 +224,20 @@ secrets. See [`docs/MCP.md`](docs/MCP.md).
 
 ## Portability Notes
 
-- The primary compiler path is Clang 22+; GCC 15.x is supported only when the
+- The preferred `import std` path is Clang 22+; GCC 15.x uses it only when the
   compiler, libstdc++, CMake, Ninja, and module metadata agree.
+- Toolchains that support project C++ modules but not `import std` use minimal
+  standard headers in global module fragments.
 - Do not assume C compatibility globals are exported by `import std`.
 - Avoid `std::views::enumerate` in portable examples until the active standard
   library is verified to provide it.
 
 ## Linux GCC Build
 
-The verified GNU path is GCC 15.x, CMake 4.0+, Ninja 1.11+, and the matching
-libstdc++ development package. CMake 3.31 does not support GCC `import std`,
-even when GCC 15 and `libstdc++.modules.json` are installed.
+The verified GNU `import std` path is GCC 15.x, CMake 4.0+, Ninja 1.11+, and the
+matching libstdc++ development package. CMake 3.31 does not support GCC
+`import std`, but `AUTO` can retain project modules and select standard-library
+headers.
 
 On Ubuntu 25.10, install a repository-local pinned CMake without replacing the
 system package:
@@ -214,7 +247,7 @@ sudo apt update
 sudo apt install --yes g++ ninja-build python3-venv
 bash scripts/bootstrap-linux-cmake.sh
 .tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-bash scripts/verify-linux.sh
+AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
 ```
 
 Fedora 43 also packages CMake 3.31, so use the same repository-local bootstrap:
@@ -223,7 +256,7 @@ Fedora 43 also packages CMake 3.31, so use the same repository-local bootstrap:
 sudo dnf install --assumeyes gcc-c++ ninja-build python3 python3-pip
 bash scripts/bootstrap-linux-cmake.sh
 .tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-bash scripts/verify-linux.sh
+AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
 ```
 
 The configure step validates every `libstdc++.modules.json` source. Broken

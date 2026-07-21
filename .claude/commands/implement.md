@@ -18,10 +18,14 @@ Use this command when implementing a feature, bug fix, or refactor.
 5. Inspect existing module boundaries, tests, and the current diff.
 6. Make the smallest correct change.
 7. Preserve `.cppm` declaration and `.cpp` implementation separation.
-8. Build and run tests with zero tests treated as an error.
-9. Fix failures and repeat verification.
-10. Inspect the final diff and run `git diff --check`.
-11. Report exact build and test results.
+8. Preserve project modules in both standard-library modes and keep fallback
+   standard headers in global module fragments.
+9. Choose return syntax for readability and use `std::print` or `std::println`
+   for ordinary formatted console output.
+10. Build and run tests with zero tests treated as an error.
+11. Fix failures and repeat verification.
+12. Inspect the final diff and run `git diff --check`.
+13. Report exact build and test results.
 
 ## Rules
 

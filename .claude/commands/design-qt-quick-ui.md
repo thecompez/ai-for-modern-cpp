@@ -14,12 +14,15 @@ Inspect the existing UI, CMake targets, tests, and current diff. Before editing,
 classify the product surface: preserve explicit CLI, service, library, daemon,
 and headless scopes, but use Qt Quick as the primary interface for an
 unspecified user-facing interactive application under `GUI-015`. Then
-define user flows, all screen states, reusable components, design tokens,
-responsive behavior, keyboard/focus behavior, accessibility, localization, and
-the QML/C++ ownership boundary.
+define the audience, user flows, all screen states, product-specific visual
+direction, information hierarchy, content density, affordances, feedback,
+error prevention and recovery, reusable components, design tokens, responsive
+behavior, keyboard/focus behavior, accessibility, localization, and the
+QML/C++ ownership boundary. Reject generic repetitive screen recipes.
 
 Use Qt 6, Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`. Keep domain
-and application behavior in modern C++ modules. Do not introduce Qt Widgets
+and application behavior in modern C++ modules. Keep new QML, tokens, and
+visual assets under the top-level `ui/` boundary. Do not introduce Qt Widgets
 without an explicit user request or inspected compatibility requirement.
 Keep any secondary CLI thin, connected to the shared application/domain modules,
 and subordinate to the primary interface.

@@ -1,6 +1,21 @@
+module;
+
+#if !AIMCPP_USE_IMPORT_STD
+#include <concepts>
+#include <expected>
+#include <optional>
+#include <ostream>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
+#endif
+
 export module modern.cpp.agent;
 
+#if AIMCPP_USE_IMPORT_STD
 import std;
+#endif
 
 export namespace modern::cpp::agent {
 
@@ -63,7 +78,7 @@ struct AgentRule final {
 };
 
 /**
- * @brief Defines a compile-time contract for printable values.
+ * @brief Defines a compile-time contract for stream-insertable adapter values.
  */
 template <typename T>
 concept Printable =

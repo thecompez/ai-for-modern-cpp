@@ -1,16 +1,26 @@
+#if AIMCPP_USE_IMPORT_STD
 import std;
+#else
+#include <exception>
+#include <print>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <tuple>
+#endif
+
 import modern.cpp.agent;
 
 namespace {
 
-auto require(bool condition, std::string_view message) -> void
+void require(bool condition, std::string_view message)
 {
     if (!condition) {
         throw std::runtime_error{std::string{message}};
     }
 }
 
-auto testStandardToString() -> void
+void testStandardToString()
 {
     require(
         modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::Cpp20) == "C++20",
@@ -28,7 +38,7 @@ auto testStandardToString() -> void
     );
 }
 
-auto testRepositoryNameValidation() -> void
+void testRepositoryNameValidation()
 {
     const modern::cpp::agent::RepositoryName name{"sample"};
     require(name.value() == "sample", "RepositoryName value mismatch.");
@@ -45,7 +55,7 @@ auto testRepositoryNameValidation() -> void
     require(threw, "RepositoryName must reject empty names.");
 }
 
-auto testPolicySummary() -> void
+void testPolicySummary()
 {
     const modern::cpp::agent::RepositoryName name{"sample"};
 
@@ -60,7 +70,7 @@ auto testPolicySummary() -> void
     require(summary.contains("modules"), "Summary must mention modules.");
 }
 
-auto testRules() -> void
+void testRules()
 {
     const auto rules = modern::cpp::agent::makeDefaultRules();
 
@@ -76,7 +86,7 @@ auto testRules() -> void
     require(found.has_value(), "RAII rule must exist.");
 }
 
-auto testVerificationPipeline() -> void
+void testVerificationPipeline()
 {
     const auto pipeline = modern::cpp::agent::makeVerificationPipeline();
 
@@ -93,7 +103,7 @@ auto testVerificationPipeline() -> void
     );
 }
 
-auto testStandardValidation() -> void
+void testStandardValidation()
 {
     const auto validated = modern::cpp::agent::validateMinimumStandard(
         modern::cpp::agent::StandardLevel::Cpp26
@@ -104,7 +114,7 @@ auto testStandardValidation() -> void
 
 }
 
-auto main() -> int
+int main()
 {
     try {
         testStandardToString();

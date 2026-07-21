@@ -33,7 +33,7 @@ enum class ErrorCode {
     DivisionByZero
 };
 
-[[nodiscard]] auto describeError(ErrorCode errorCode) -> std::string_view
+[[nodiscard]] std::string_view describeError(ErrorCode errorCode)
 {
     switch (errorCode) {
     case ErrorCode::EmptyExpression:
@@ -98,24 +98,61 @@ not become acceptable because another framework or style guide uses it.
 
 ## Functions And Results
 
-Project functions use trailing return types. Mark important results
-`[[nodiscard]]`, preserve `const` correctness, and use explicit failure types.
+Return syntax is selected for readability, not enforced mechanically. Use a
+leading return type when it is short and immediately understandable. Use a
+trailing return type when the language requires it or when it makes a complex,
+dependent, or multiline declaration easier to scan.
 
 **Correct**
 
 ```cpp
+void inputDecimalPoint();
+
+[[nodiscard]] bool isReady() const noexcept;
+
 [[nodiscard]] auto loadExpression(std::filesystem::path path)
     -> std::expected<Expression, LoadError>;
 ```
 
-**Incorrect**
+The first two signatures are clearer without `auto ... -> void` or
+`auto ... -> bool`. The final signature benefits from aligning a longer result
+contract on its own line. Do not rewrite between the two forms without a
+readability or language reason.
+
+**Incorrect for naming and failure modeling**
 
 ```cpp
 Expression load_expression(std::filesystem::path path);
 ```
 
-The incorrect form hides the failure contract and violates naming and function
-syntax rules.
+The incorrect form hides the failure contract and violates the naming rules;
+its leading return type is not the problem.
+
+## Modern Formatted Output
+
+For new project-owned console output, use C++23 formatted output directly.
+`std::print` is appropriate when no newline is wanted, and `std::println` is the
+default for complete lines.
+
+**Correct**
+
+```cpp
+std::println("Processed {} records in {} ms", recordCount, elapsed.count());
+std::print("Progress: {}%\r", percentage);
+```
+
+**Incorrect for ordinary project output**
+
+```cpp
+std::cout << "Processed " << recordCount << " records\n";
+std::cerr << "Operation failed: " << error.message() << '\n';
+```
+
+Use `std::format` when formatted text must be stored or passed to another API.
+A third-party or legacy boundary that accepts only `std::ostream` may use
+stream insertion locally, but the boundary and reason must be explicit. Do not
+assume C globals such as `stdout` or `stderr` are available through
+`import std`.
 
 ## Initialization And Mutability
 
@@ -174,7 +211,7 @@ narrow alias close to its use.
 ```cpp
 namespace ranges = std::ranges;
 
-auto findRule(std::span<const Rule> rules) -> Iterator
+Iterator findRule(std::span<const Rule> rules)
 {
     return ranges::find_if(rules, predicate);
 }
@@ -259,4 +296,6 @@ Do not write:
 4. Check private/protected data member prefixes.
 5. Check initialization, constness, casts, nullability, and control-flow braces.
 6. Check result/error contracts and `[[nodiscard]]`.
-7. Reject unrelated formatting churn during functional changes.
+7. Check that return syntax is deliberate rather than mechanically uniform.
+8. Reject new iostream insertion for ordinary formatted console output.
+9. Reject unrelated formatting churn during functional changes.

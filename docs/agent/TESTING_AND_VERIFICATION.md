@@ -42,6 +42,22 @@ git diff --check
 Use a fresh build directory when changing compilers, standard libraries, CMake
 major versions, or module metadata.
 
+Changes to module or standard-library integration must verify both source
+paths explicitly:
+
+```bash
+cmake -S . -B build/import-std -G Ninja -DAIMCPP_STDLIB_MODE=IMPORT_STD
+cmake --build build/import-std --parallel
+ctest --test-dir build/import-std --output-on-failure --no-tests=error
+
+cmake -S . -B build/headers -G Ninja -DAIMCPP_STDLIB_MODE=HEADERS
+cmake --build build/headers --parallel
+ctest --test-dir build/headers --output-on-failure --no-tests=error
+```
+
+`AUTO` is the product default, but a single `AUTO` build proves only the path
+selected on that machine.
+
 ## Failure Classification
 
 Report the first causal failure. Later failures may be consequences.

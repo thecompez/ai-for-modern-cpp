@@ -24,12 +24,15 @@ Use this command when implementing a feature, bug fix, or refactor.
 5. Inspect existing module boundaries, tests, working tree, and current diff.
 6. Make the smallest correct change.
 7. Preserve `.cppm` declaration and `.cpp` implementation separation.
-8. Use C++20+ features appropriately.
-9. Build.
-10. Run tests with zero discovered tests treated as an error.
-11. Fix failures and repeat verification.
-12. Inspect the final diff and run `git diff --check`.
-13. Report exact build and test results.
+8. Preserve project modules in both standard-library modes; place fallback
+   standard headers only in global module fragments.
+9. Use C++20+ features appropriately, choose return syntax for readability,
+   and prefer `std::print` or `std::println` for ordinary formatted output.
+10. Build.
+11. Run tests with zero discovered tests treated as an error.
+12. Fix failures and repeat verification.
+13. Inspect the final diff and run `git diff --check`.
+14. Report exact build and test results.
 
 ## Rules
 

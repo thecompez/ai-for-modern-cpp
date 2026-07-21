@@ -131,6 +131,10 @@ Report exact evidence
   `misc` MUST NOT be introduced without an existing domain-specific reason.
 - **ARC-006** — New abstractions MUST solve a demonstrated design pressure; do
   not add speculative layers.
+- **ARC-007** — Repository layout MUST communicate responsibility. New
+  user-facing applications SHOULD separate domain, application, presentation,
+  adapter, composition, and UI assets when those responsibilities exist; empty
+  ceremonial layers and technology-named dumping grounds are forbidden.
 
 See `docs/agent/ARCHITECTURE.md`.
 
@@ -158,10 +162,20 @@ derived repositories.
   compatibility boundaries; it is not the default project architecture.
 - **MOD-008** — Any header boundary MUST be isolated, documented, and kept out
   of domain logic.
-- **MOD-009** — `import std;` is mandatory for this executable reference. There
-  is no textual standard-library fallback.
-- **MOD-010** — An unsupported `import std` toolchain MUST fail clearly during
-  configuration.
+- **MOD-009** — Project-owned production boundaries MUST remain C++ modules in
+  every standard-library integration mode. Lack of `import std` support MUST
+  NOT cause a fallback to project headers or classic header/source architecture.
+- **MOD-010** — `import std;` SHOULD be selected when the effective toolchain
+  advertises and successfully builds it. Otherwise, the standard library MAY be
+  provided by textual standard headers while project-owned `.cppm` modules,
+  module imports, and CMake module file sets remain intact.
+- **MOD-011** — In a module unit, standard-library fallback headers MUST appear
+  in the global module fragment after `module;` and before the named module
+  declaration. They MUST NOT be textually included inside the named module
+  purview.
+- **MOD-012** — Standard-library header fallback does not authorize new
+  project-owned `.h` or `.hpp` files. It is a toolchain compatibility mechanism,
+  not a second project architecture.
 
 Preferred layout:
 
@@ -241,8 +255,12 @@ See `docs/agent/NAMING.md`.
 
 Modern syntax is a correctness and readability contract, not optional polish.
 
-- **SYN-001** — Free functions and non-trivial member functions MUST use
-  trailing return types: `auto function() -> ReturnType`.
+- **SYN-001** — Function return syntax MUST optimize readability rather than
+  enforce one mechanical form. Leading return types SHOULD be used for simple,
+  immediately recognizable results such as `void`, `bool`, numeric types, and
+  short domain types. Trailing return types SHOULD be used when required by the
+  language or when they materially improve a dependent, complex, or multiline
+  declaration.
 - **SYN-002** — Variables MUST be initialized at declaration; default member
   initializers SHOULD establish safe object state.
 - **SYN-003** — Use `const`, `constexpr`, `consteval`, and `constinit` whenever
@@ -286,12 +304,20 @@ Modern syntax is a correctness and readability contract, not optional polish.
 - **SYN-022** — Source units SHOULD follow a stable reading order: module
   declaration/imports, namespace, public or member definitions, private helpers,
   then the smallest composition entry point where applicable.
+- **SYN-023** — New project-owned formatted console output MUST use
+  `std::print` or `std::println`. Stream insertion with `std::cout`,
+  `std::cerr`, or `std::clog` is forbidden for ordinary output; a stream-only
+  compatibility boundary requires an explicit local justification.
 
 Correct:
 
 ```cpp
+void inputDecimalPoint();
+
 [[nodiscard]] auto parseExpression(std::string_view text)
     -> std::expected<Expression, ErrorCode>;
+
+std::println("Result: {}", result);
 
 switch (errorCode) {
 case ErrorCode::EmptyExpression:
@@ -416,6 +442,15 @@ reference.
   testing, or headless use. It MUST depend on the same application and domain
   modules as the graphical interface and MUST NOT duplicate business logic or
   replace the required primary interface.
+- **GUI-017** — A new or redesigned interface MUST define a product-specific
+  visual and interaction direction grounded in the audience, primary tasks,
+  information hierarchy, affordances, feedback, error prevention, and recovery.
+  Agents MUST NOT reuse a generic repetitive screen recipe or copy reference
+  visuals without adapting them to the product.
+- **GUI-018** — New Qt Quick repositories MUST place QML and visual assets under
+  a top-level `ui/` boundary. Pages, reusable components, theme tokens, and
+  assets SHOULD use responsibility-based subdirectories when they exist; a
+  top-level `qml/` dumping directory is not the preferred project structure.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -430,7 +465,7 @@ Clang 22+ or verified GCC 15.x
 CMake 4.3+
 Ninja 1.11+
 C++26
-import std
+import std when supported; global-fragment standard headers otherwise
 ```
 
 - **BLD-001** — Use target-based modern CMake.
@@ -440,25 +475,36 @@ import std
   and options; do not mutate global compiler flags casually.
 - **BLD-004** — `CMAKE_CXX_MODULE_STD` and `CMAKE_CXX_SCAN_FOR_MODULES` MUST be
   enabled for targets that use `import std`.
-- **BLD-005** — `CMAKE_CXX_COMPILER_IMPORT_STD` is authoritative. Compiler
-  version claims alone are not proof of support.
+- **BLD-005** — `CMAKE_CXX_COMPILER_IMPORT_STD` is authoritative when selecting
+  the `import std` path. Compiler version claims alone are not proof of support;
+  an empty capability list selects the standard-header compatibility path in
+  automatic mode.
 - **BLD-006** — Toolchain, standard-library metadata, CMake, and generator form
   one compatibility unit and MUST be diagnosed together.
 - **BLD-007** — Unsupported toolchains MUST fail at configure time with the
   observed values and a useful remediation direction.
-- **BLD-008** — Agents MUST NOT silently downgrade language standard, modules,
-  or `import std` to obtain a green build.
+- **BLD-008** — Agents MUST NOT silently downgrade the language standard or
+  project-owned module architecture to obtain a green build. Selecting the
+  documented standard-header compatibility path for an unsupported
+  `import std` toolchain is not a module downgrade.
 - **BLD-009** — CMake experimental gates MUST be version-scoped and verified
-  against the active CMake release.
-- **BLD-010** — GCC `import std` requires CMake 4.0 or newer; CMake 3.30 and
-  3.31 MUST be rejected before compiler detection produces a misleading empty
-  capability list.
+  against the active CMake release. An unknown gate MUST select header
+  compatibility in automatic mode and fail only when strict `import std` was
+  explicitly requested.
+- **BLD-010** — GCC `import std` requires CMake 4.0 or newer. With CMake 3.30 or
+  3.31, automatic mode MUST retain project modules and select standard-library
+  headers; strict `import std` mode MUST reject the combination clearly.
 - **BLD-011** — A GNU standard-library metadata file is usable only when every
   listed module source resolves to an existing file. A build-tree repair MAY
-  replace broken distribution-relative paths; system metadata MUST NOT be edited.
+  replace broken distribution-relative paths; system metadata MUST NOT be
+  edited. Unusable metadata selects header compatibility in automatic mode.
 - **BLD-012** — A newer compiler major version is not automatically supported.
   Each compiler/CMake/standard-library combination MUST pass configure, build,
-  and tests in the compatibility matrix before becoming a supported path.
+  and tests before becoming a supported `import std` path; the independently
+  verified standard-header module path MAY remain supported.
+- **BLD-013** — Standard-library integration MUST expose `AUTO`, `IMPORT_STD`,
+  and `HEADERS` modes. CI MUST exercise both effective source paths, and
+  configure output MUST report the requested mode and selected result.
 
 Do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout`
 are exported by `import std`. Prefer standard C++ facilities or isolate C
@@ -607,6 +653,10 @@ Agents MUST NOT:
 - Invent build, test, review, or tool results.
 - Hide failures or present cascading errors as independent root causes.
 - Replace modules with classic include architecture.
+- Treat standard-library header compatibility as permission to replace `.cppm`
+  modules or create project-owned headers.
+- Place fallback standard-library includes inside a named module purview rather
+  than its global module fragment.
 - Add legacy project headers without a justified boundary.
 - Add raw ownership, manual cleanup, or global mutable state casually.
 - Scatter platform macros through domain logic.
@@ -615,10 +665,18 @@ Agents MUST NOT:
 - Add non-English source comments.
 - Introduce lowercase or snake_case enum-class enumerators.
 - Introduce trailing-underscore or unprefixed private data members.
+- Mechanically rewrite every function into trailing-return syntax when a
+  leading return type is clearer.
+- Use iostream insertion for ordinary formatted console output when
+  `std::print` or `std::println` expresses the operation.
 - Choose Qt Widgets for a new Qt UI without an explicit, documented exception.
 - Silently reduce an unspecified user-facing interactive application to a
   CLI-only deliverable.
 - Put authoritative domain or application behavior in QML JavaScript.
+- Produce a generic repetitive UI without a product-specific hierarchy,
+  interaction rationale, or verified UX states.
+- Create a top-level `qml/` dumping directory for a new Qt Quick repository
+  instead of an explicit `ui/` boundary.
 - Treat the executable example as permission to accumulate unrelated showcase
   features.
 - Turn human corrections into noisy one-off rules; generalize only durable

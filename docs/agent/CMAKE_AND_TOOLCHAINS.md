@@ -1,7 +1,8 @@
 # CMake And Toolchain Decisions
 
 Use this guide for build-system edits, compiler selection, C++ modules, and
-`import std` failures. Canonical rules: `BLD-*`, `MOD-009`, and `MOD-010`.
+standard-library integration failures. Canonical rules: `BLD-*` and
+`MOD-009` through `MOD-012`.
 
 ## Compatibility Unit
 
@@ -20,20 +21,48 @@ Compiler
 `CMAKE_CXX_COMPILER_IMPORT_STD` is the configure-time evidence. A version
 number alone is not proof.
 
-## Strict `import std` Policy
+## Standard-Library Integration Modes
 
-This executable reference always uses `import std;`. It must configure:
+Project-owned C++ modules are mandatory in every mode. Standard-library
+delivery is selected independently:
+
+| `AIMCPP_STDLIB_MODE` | Behavior |
+|---|---|
+| `AUTO` | Prefer `import std`; use standard headers when capability or metadata is unavailable |
+| `IMPORT_STD` | Require the experimental standard-library module path and fail clearly if unavailable |
+| `HEADERS` | Force standard headers for compatibility-path verification |
+
+When `import std` is selected, configure:
 
 ```cmake
 set(CMAKE_CXX_MODULE_STD ON)
 set(CMAKE_CXX_SCAN_FOR_MODULES ON)
 ```
 
-Targets also set `CXX_MODULE_STD` and `CXX_SCAN_FOR_MODULES`. If the effective
-toolchain does not advertise C++23 or C++26 support, configuration fails.
+When header compatibility is selected, keep module scanning enabled for
+project modules, set `CXX_MODULE_STD` to `OFF`, and provide one target-wide
+compile definition that selects global-module-fragment standard headers.
 
-Do not add conditional standard-library includes as a fallback. Doing so would
-make the executable proof stop proving the documented architecture.
+The source architecture remains:
+
+```cpp
+module;
+
+#if !APP_USE_IMPORT_STD
+#include <print>
+#include <string>
+#endif
+
+export module project.output;
+
+#if APP_USE_IMPORT_STD
+import std;
+#endif
+```
+
+Do not create a classic header/source implementation or a second source tree.
+The only fallback is how standard-library declarations enter otherwise
+unchanged project module units.
 
 ## Target-Based CMake
 
@@ -82,14 +111,23 @@ CMAKE_CXX_COMPILER_IMPORT_STD
 CMAKE_CXX_STDLIB_MODULES_JSON
 ```
 
-If configure fails, stop. Do not run build and tests and then report missing
-`build.ninja` or zero tests as additional root causes.
+Also inspect:
+
+```text
+AIMCPP_STDLIB_MODE
+AIMCPP_USE_IMPORT_STD
+```
+
+In `AUTO`, an empty import capability is a selection result rather than a
+configure failure. If configure does fail, stop. Do not run build and tests and
+then report missing `build.ninja` or zero tests as additional root causes.
 
 ## Experimental Gates
 
 Experimental UUIDs are CMake-version-specific capability gates. Keep them
-scoped to documented version ranges and fail on unknown future ranges until
-verified. Do not guess a UUID or reuse an older value silently.
+scoped to documented version ranges. Do not guess a UUID or reuse an older
+value silently. An unknown gate selects `HEADERS` behavior in `AUTO` and is a
+configuration error only in explicit `IMPORT_STD` mode.
 
 ## macOS Homebrew LLVM
 
@@ -104,7 +142,7 @@ GCC 15 support also requires a CMake release that implements GCC `import std`
 and a valid `libstdc++.modules.json`. A file's existence does not prove that its
 source paths or package integration are correct.
 
-Supported GNU baseline:
+Verified GNU `import std` baseline:
 
 ```text
 GCC 15.x
@@ -113,29 +151,31 @@ Ninja 1.11+
 matching libstdc++ development package
 ```
 
-CMake 3.30 and 3.31 can expose `CMAKE_CXX_COMPILER_IMPORT_STD`, but those
-releases do not implement GCC/libstdc++ `import std`. They must not be treated
-as supported merely because GCC 15 and the JSON file exist.
+CMake 3.30 and 3.31 do not implement GCC/libstdc++ `import std`. `AUTO` keeps
+project `.cppm` modules and selects standard-library headers; `IMPORT_STD`
+rejects the combination. A JSON file's existence does not change that result.
 
 Some Linux packages install a `libstdc++.modules.json` whose relative
 `source-path` entries do not resolve. `cmake/AimcppImportStd.cmake` validates
 each entry before `project()` and writes corrected absolute paths to generated
 metadata in the build tree. It never edits `/usr` or the compiler installation.
 
-Do not infer support for a new GCC major from version ordering. For example,
-GCC 16.1 with CMake 4.3.4 advertises import capability during configure but the
-CMake scanner does not recognize its standard module during the build. Keep a
-new major version out of the supported matrix until the full build passes.
+Do not infer `import std` support for a new GCC major from version ordering. For
+example, GCC 16.1 with CMake 4.3.4 advertises import capability during configure
+but the CMake scanner does not recognize its standard module during the build.
+`AUTO` may select the verified header path; do not label the compiler an
+`import std` toolchain until its full strict build passes.
 
 ### Ubuntu 25.10
 
-Ubuntu 25.10 provides GCC 15 but its CMake 3.31 is too old for GNU `import std`.
-Use the repository-local bootstrap, then the Linux verification script:
+Ubuntu 25.10 provides GCC 15 and CMake 3.31. The default `AUTO` mode can build
+project modules with standard-library headers. To verify the preferred
+`import std` path, use the repository-local bootstrap and strict mode:
 
 ```bash
 bash scripts/bootstrap-linux-cmake.sh
 .tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-bash scripts/verify-linux.sh
+AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
 ```
 
 The bootstrap installs pinned CMake 4.3.4 into the ignored `.tools/` directory;
@@ -143,14 +183,13 @@ it does not replace the system CMake.
 
 ### Fedora 43
 
-Fedora 43 provides GCC 15.2 but its CMake 3.31 package is also too old for GNU
-`import std`. Do not infer CMake compatibility from the distribution or compiler
-version. Install the Python tooling, run the same repository-local CMake 4.3.4
-bootstrap, and then verify the full configure/build/test path:
+Fedora 43 provides GCC 15.2 and CMake 3.31. Its system toolchain should verify
+the `AUTO` header path. For strict `import std`, install the Python tooling, run
+the repository-local CMake 4.3.4 bootstrap, and verify the full path:
 
 ```bash
 sudo dnf install --assumeyes gcc-c++ ninja-build python3 python3-pip
 bash scripts/bootstrap-linux-cmake.sh
 .tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-bash scripts/verify-linux.sh
+AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
 ```

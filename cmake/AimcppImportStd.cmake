@@ -47,13 +47,17 @@ function(
     compilerMajorVersion
     repairedMetadataPath
     outputVariable
+    failureVariable
 )
     if(NOT EXISTS "${metadataPath}")
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "GCC reported libstdc++ module metadata that does not exist:\n"
             "  ${metadataPath}\n"
             "Install the matching libstdc++ development package for GCC ${compilerMajorVersion}."
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     file(REAL_PATH "${metadataPath}" canonicalMetadataPath)
@@ -67,11 +71,14 @@ function(
     )
 
     if(NOT metadataError STREQUAL "NOTFOUND" OR moduleCount EQUAL 0)
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "Invalid libstdc++ module metadata:\n"
             "  ${canonicalMetadataPath}\n"
             "JSON error: ${metadataError}"
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     set(requiresRepair OFF)
@@ -85,11 +92,14 @@ function(
         )
 
         if(NOT sourcePathError STREQUAL "NOTFOUND")
-            message(FATAL_ERROR
+            string(CONCAT failureMessage
                 "libstdc++ module metadata entry ${moduleIndex} has no valid source-path:\n"
                 "  ${canonicalMetadataPath}\n"
                 "JSON error: ${sourcePathError}"
             )
+            set(${outputVariable} "" PARENT_SCOPE)
+            set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+            return()
         endif()
 
         if(IS_ABSOLUTE "${sourcePath}")
@@ -111,13 +121,16 @@ function(
         endif()
 
         if(NOT resolvedSourcePath)
-            message(FATAL_ERROR
+            string(CONCAT failureMessage
                 "libstdc++ module metadata points to a missing source:\n"
                 "  metadata: ${canonicalMetadataPath}\n"
                 "  source-path: ${sourcePath}\n"
                 "The active GCC/libstdc++ package is incomplete or incompatible. "
                 "Install matching GCC ${compilerMajorVersion} and libstdc++ development packages."
             )
+            set(${outputVariable} "" PARENT_SCOPE)
+            set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+            return()
         endif()
 
         if(NOT sourcePath STREQUAL resolvedSourcePath)
@@ -139,9 +152,11 @@ function(
     else()
         set(${outputVariable} "${canonicalMetadataPath}" PARENT_SCOPE)
     endif()
+
+    set(${failureVariable} "" PARENT_SCOPE)
 endfunction()
 
-function(aimcpp_prepare_gnu_import_std outputVariable)
+function(aimcpp_prepare_gnu_import_std outputVariable failureVariable)
     if(CMAKE_CXX_COMPILER)
         set(candidateCompiler "${CMAKE_CXX_COMPILER}")
     elseif(DEFINED ENV{CXX} AND NOT "$ENV{CXX}" STREQUAL "")
@@ -152,6 +167,7 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
 
     if(NOT candidateCompiler)
         set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "" PARENT_SCOPE)
         return()
     endif()
 
@@ -165,17 +181,21 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
 
     if(compilerVersionResult OR NOT compilerVersionText MATCHES "(g\\+\\+|GCC|Free Software Foundation)")
         set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "" PARENT_SCOPE)
         return()
     endif()
 
     if(CMAKE_VERSION VERSION_LESS "4.0.0")
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "GCC import std requires CMake 4.0 or newer.\n"
             "Active CMake: ${CMAKE_VERSION}\n"
             "Active compiler: ${candidateCompiler}\n"
             "CMake 3.30/3.31 supports Clang and MSVC import std, but not GCC/libstdc++.\n"
-            "Install CMake 4.x, remove the old build directory, and configure again with Ninja."
+            "The project can use its standard-header compatibility mode instead."
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     execute_process(
@@ -187,26 +207,32 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
     )
 
     if(compilerFullVersionResult OR NOT compilerFullVersion MATCHES "^([0-9]+)")
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "Could not determine the GCC version from ${candidateCompiler}: "
             "${compilerFullVersionError}"
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     set(compilerMajorVersion "${CMAKE_MATCH_1}")
 
     if(compilerMajorVersion VERSION_LESS "15")
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "GCC import std requires GCC 15 or newer.\n"
             "Active compiler: ${candidateCompiler}\n"
             "Active GCC version: ${compilerFullVersion}"
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     if(compilerMajorVersion VERSION_GREATER_EQUAL "16"
         AND CMAKE_VERSION VERSION_LESS "4.4.0"
     )
-        message(FATAL_ERROR
+        string(CONCAT failureMessage
             "GCC ${compilerFullVersion} is newer than the GNU modules integration verified by "
             "CMake ${CMAKE_VERSION}.\n"
             "Observed failure: CMake 4.3 accepts GCC 16 metadata but its scanner does not "
@@ -214,6 +240,9 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
             "Use GCC 15.x with CMake 4.0-4.3, or use a CMake release that explicitly supports "
             "the active GCC major version."
         )
+        set(${outputVariable} "" PARENT_SCOPE)
+        set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+        return()
     endif()
 
     if(CMAKE_CXX_STDLIB_MODULES_JSON)
@@ -228,12 +257,15 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
         )
 
         if(metadataPathResult OR metadataPath STREQUAL "libstdc++.modules.json")
-            message(FATAL_ERROR
+            string(CONCAT failureMessage
                 "GCC ${compilerFullVersion} could not locate libstdc++.modules.json.\n"
                 "Compiler: ${candidateCompiler}\n"
                 "Compiler error: ${metadataPathError}\n"
                 "Install the matching libstdc++ development package."
             )
+            set(${outputVariable} "" PARENT_SCOPE)
+            set(${failureVariable} "${failureMessage}" PARENT_SCOPE)
+            return()
         endif()
     endif()
 
@@ -242,7 +274,9 @@ function(aimcpp_prepare_gnu_import_std outputVariable)
         "${compilerMajorVersion}"
         "${CMAKE_BINARY_DIR}/aimcpp-libstdc++.modules.json"
         preparedMetadataPath
+        preparationFailure
     )
 
     set(${outputVariable} "${preparedMetadataPath}" PARENT_SCOPE)
+    set(${failureVariable} "${preparationFailure}" PARENT_SCOPE)
 endfunction()

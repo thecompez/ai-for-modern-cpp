@@ -32,11 +32,15 @@ not apply.
 Do not begin with `Main.qml`. Define the interaction model first:
 
 ```text
+Audience and usage context:
 Primary user goal:
+Product-specific visual direction:
+Information hierarchy and content density:
 Screens and navigation:
 User actions:
 Authoritative state:
 Loading, empty, success, and failure states:
+Affordances, immediate feedback, and error prevention/recovery:
 Keyboard path and focus order:
 Reusable components:
 Design tokens:
@@ -47,6 +51,35 @@ Localization requirements:
 
 A visually attractive screen that omits failure, focus, resizing, or ownership
 states is incomplete.
+
+## Product-Specific UI/UX Direction
+
+Consistency is not repetition. Tokens and reusable components should make the
+product coherent, but every screen composition must follow its task and
+information hierarchy. Before drawing components, explain:
+
+- who uses the product, in which environment, and what they need to notice
+  first;
+- which action is primary, which actions are secondary, and which actions are
+  destructive or reversible;
+- how the interface makes system status, selection, progress, validation, and
+  recovery visible without requiring recall;
+- how progressive disclosure controls complexity and preserves an appropriate
+  content density;
+- which visual qualities make the product recognizable without weakening
+  usability or accessibility.
+
+Do not default every product to the same centered hero, rounded-card grid,
+gratuitous gradient, glass panel, oversized empty spacing, or dashboard shell.
+Do not copy a reference screenshot as a component recipe. Extract useful
+interaction principles, then adapt hierarchy, density, typography, motion, and
+component composition to the actual product.
+
+Use established UX principles deliberately: recognition over recall, visible
+system status, clear affordances, immediate feedback, error prevention,
+actionable recovery, consistent terminology, keyboard efficiency, and
+accessible contrast. A distinctive visual direction is successful only when
+the main task becomes easier to understand and complete.
 
 ## Architecture
 
@@ -81,31 +114,46 @@ Dependency rules:
 Small QML expressions for visibility, formatting, and visual state are
 acceptable. Parsing, persistence, validation, and domain decisions are not.
 
-## Generic Reference Layout
+## Responsibility-Oriented Reference Layout
 
 ```text
 src/
-  app/
+  domain/
+    app_domain.cppm
+    app_domain.cpp
+  application/
     app.cppm
     app.cpp
   presentation/
     app_view_model.hpp
     app_view_model.cpp
+  adapters/
   bootstrap/
     main.cpp
   cli/
     main.cpp  # optional secondary adapter
-qml/
+ui/
   Main.qml
+  pages/
   components/
     PrimaryActionButton.qml
     StatusPanel.qml
+  theme/
+    Theme.qml
+  assets/
 tests/
-  app_tests.cpp
-  app_view_model_tests.cpp
-  qml/
+  domain/
+  application/
+  presentation/
+  ui/
     tst_AppShell.qml
 ```
+
+Create only directories that own real behavior or assets. The structure may be
+smaller for a small product, but a new Qt Quick project uses `ui/` as its visual
+boundary rather than a top-level `qml/` technology bucket. `pages/`,
+`components/`, `theme/`, and `assets/` are responsibility-based subdivisions,
+not mandatory empty ceremony.
 
 The `.hpp` presentation file is permitted only when Qt MOC requires a textual
 meta-object boundary. It is an external-tool adapter under `MOD-007`, not a
@@ -140,6 +188,8 @@ state transitions, persistence policy, or other authoritative behavior.
 
 ## QML Naming And Component Structure
 
+- Keep QML, visual tokens, and presentation assets under the top-level `ui/`
+  boundary for new repositories.
 - QML component files and exported QML types use PascalCase.
 - `id`, property, signal, handler, and function names use lowerCamelCase.
 - Reusable components describe a UI role: `PrimaryActionButton`, not
@@ -153,6 +203,8 @@ state transitions, persistence policy, or other authoritative behavior.
 - Prefer `RowLayout`, `ColumnLayout`, `GridLayout`, anchors, and implicit sizes
   over absolute coordinates.
 - Define reusable spacing, radius, typography, color, and motion tokens.
+- Let task hierarchy and content density determine composition; do not place
+  every piece of content in an identical card merely for visual consistency.
 - Support light/dark appearance through tokens rather than scattered colors.
 - Preserve readable content under resizing and text expansion.
 - Use animation to explain state changes, not delay interaction.
@@ -199,9 +251,11 @@ qt_add_qml_module(MyApp
     URI MyApp
     VERSION 1.0
     QML_FILES
-        qml/Main.qml
-        qml/components/PrimaryActionButton.qml
-        qml/components/StatusPanel.qml
+        ui/Main.qml
+        ui/pages/HomePage.qml
+        ui/components/PrimaryActionButton.qml
+        ui/components/StatusPanel.qml
+        ui/theme/Theme.qml
 )
 
 target_link_libraries(MyApp
@@ -228,6 +282,9 @@ At minimum verify:
 7. Configure, build, CTest, and relevant QML test runner results separately.
 8. When a CLI adapter exists, verify it calls the shared application/domain
    behavior and does not replace graphical interaction coverage.
+9. Inspect the main flow at representative window sizes and confirm that the
+   product-specific hierarchy, affordances, feedback, and recovery behavior are
+   clear rather than merely visually consistent.
 
 ## Forbidden Shapes
 
@@ -237,6 +294,12 @@ At minimum verify:
 - Implementing domain decisions or validation in button-handler JavaScript.
 - Registering a global mutable service object for convenient QML access.
 - Hard-coding every position and size for one screenshot.
+- Reusing a generic card/gradient/dashboard recipe without a product-specific
+  UX rationale.
+- Copying a reference design without adapting hierarchy and interaction to the
+  product.
+- Creating a top-level `qml/` dumping directory in a new repository instead of
+  an explicit `ui/` boundary.
 - Blocking the GUI thread during file, network, or expensive domain work.
 - Linking all Qt modules rather than the required target-local components.
 - Claiming a polished interface without keyboard and accessibility verification.

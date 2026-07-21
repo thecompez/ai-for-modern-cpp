@@ -1,4 +1,14 @@
+#if AIMCPP_USE_IMPORT_STD
 import std;
+#else
+#include <chrono>
+#include <cstddef>
+#include <format>
+#include <print>
+#include <span>
+#include <string>
+#endif
+
 import modern.cpp.agent;
 
 namespace {
@@ -23,7 +33,7 @@ struct ShowcaseSection final {
  * @brief Renders any object that follows the TextRenderable contract.
  */
 template <modern::cpp::agent::TextRenderable T>
-auto printSection(const T& section) -> void
+void printSection(const T& section)
 {
     std::println("{}", section.toText());
 }
@@ -53,14 +63,14 @@ auto printSection(const T& section) -> void
 /**
  * @brief Demonstrates constexpr computation in a compact and readable form.
  */
-[[nodiscard]] consteval auto minimumAcceptedMajorStandard() -> int
+[[nodiscard]] consteval int minimumAcceptedMajorStandard()
 {
     return 20;
 }
 
 }
 
-auto main() -> int
+int main()
 {
     using namespace modern::cpp::agent;
 

@@ -17,10 +17,12 @@ CMAKE_CXX_COMPILER_IMPORT_STD=''
 - Diagnose the compatibility unit, not GCC alone.
 - Identify that file existence is insufficient.
 - Verify whether the active CMake release implements GCC `import std`.
-- Recommend a supported CMake/toolchain path.
-- Keep mandatory `import std`; do not add includes.
+- In `AUTO`, retain project `.cppm` modules and select standard-library headers
+  through global module fragments.
+- Offer CMake 4.x and `IMPORT_STD` mode when strict standard-library module
+  verification is desired.
 
-**Rule coverage**: `BLD-005` through `BLD-009`, `MOD-010`.
+**Rule coverage**: `BLD-005` through `BLD-010`, `MOD-009` through `MOD-012`.
 
 ## EVAL-TCH-002 — Metadata Basename
 
@@ -62,7 +64,7 @@ CTest: no tests found
 
 **Rule coverage**: `VER-001`, `VER-002`, `TST-006`.
 
-## EVAL-TCH-004 — Unsupported Toolchain Downgrade Request
+## EVAL-TCH-004 — Unsupported Standard-Library Module Toolchain
 
 **Prompt**
 
@@ -72,13 +74,17 @@ AppleClang cannot import std. Add standard-library includes so the example build
 
 **Required behavior**
 
-- Preserve the repository's executable proof and mandatory `import std` rule.
-- Reject the unsupported toolchain at configure time.
-- Offer a supported Clang/libc++ toolchain rather than changing architecture.
+- Preserve project-owned `.cppm` modules, module imports, and CMake module file
+  sets.
+- In `AUTO`, select minimal standard-library headers in each module unit's
+  global module fragment.
+- Keep `IMPORT_STD` available as an explicit strict mode with a useful failure.
+- Build and test the forced `HEADERS` mode instead of assuming it works.
 
 **Critical failure**
 
-Any include fallback or conditional source path that stops proving `MOD-009`.
+Replacing project modules with `.h`/`.hpp`, duplicating declarations, or placing
+standard headers inside the named module purview.
 
 ## EVAL-TCH-005 — Ubuntu GCC 15 With CMake 3.31
 
@@ -97,10 +103,12 @@ CMAKE_CXX_COMPILER_IMPORT_STD=''
 
 - Identify CMake 3.31 as older than GNU `import std` support.
 - Do not claim that manually passing the JSON can add missing CMake behavior.
-- Install a repository-local CMake 4.x, clean the build tree, and retry.
-- Preserve mandatory `import std`; do not create an include fallback.
+- Verify `AUTO` with project modules and standard-library headers.
+- When strict `import std` is required, install repository-local CMake 4.x,
+  clean that build tree, and retry with `AIMCPP_STDLIB_MODE=IMPORT_STD`.
 
-**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-010`, `MOD-009`.
+**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-010`, `BLD-013`, `MOD-009`
+through `MOD-012`.
 
 ## EVAL-TCH-006 — Broken GNU Metadata Source Path
 
@@ -117,7 +125,8 @@ The JSON source-path for std.cc does not exist relative to that file.
 - Locate the matching compiler-major module sources.
 - Generate corrected metadata in the build tree with absolute source paths.
 - Never edit system compiler files.
-- Fail clearly if matching sources are not installed.
+- If matching sources are not installed, select header compatibility in `AUTO`
+  and fail clearly in strict `IMPORT_STD` mode.
 
 **Rule coverage**: `BLD-006`, `BLD-011`, `SEC-005`.
 
@@ -134,7 +143,9 @@ CMake module collation says std.cc does not provide a module interface.
 
 - Treat configure capability as necessary but insufficient evidence.
 - Keep GCC 16 out of the supported matrix for that CMake release.
-- Recommend the verified GCC 15.x path or a newer CMake proven end-to-end.
+- Use the verified header compatibility mode without labeling GCC 16 an
+  `import std` toolchain, or recommend GCC 15.x/a newer proven CMake for strict
+  mode.
 - Record configure, build, and test results separately.
 
 **Rule coverage**: `BLD-005`, `BLD-012`, `VER-001`.
@@ -148,14 +159,17 @@ Fedora 43 container
 GCC 15.2
 CMake 3.31.11
 Ninja 1.13
-Configure rejects GCC import std before project generation.
+AUTO reports AIMCPP_USE_IMPORT_STD=OFF.
 ```
 
 **Required behavior**
 
-- Identify the CI provisioning mismatch rather than weakening `import std`.
-- Install the pinned repository-local CMake before running Linux verification.
-- Keep the Fedora build independent from the distribution's system CMake.
-- Run configure, build, and all discovered tests with the bootstrapped CMake.
+- Verify the system CMake/GCC combination through the standard-header module
+  path.
+- In a separate strict job, install pinned repository-local CMake and run
+  `IMPORT_STD` verification.
+- Keep both jobs independent and report which standard-library path each used.
+- Run configure, build, and all discovered tests in both paths.
 
-**Rule coverage**: `BLD-006`, `BLD-010`, `MOD-009`, `VER-001`.
+**Rule coverage**: `BLD-006`, `BLD-010`, `BLD-013`, `MOD-009` through
+`MOD-012`, `VER-001`.

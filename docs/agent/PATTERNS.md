@@ -9,9 +9,18 @@ never be copied into production code.
 
 ```cpp
 // project_name.cppm
+module;
+
+#if !APP_USE_IMPORT_STD
+#include <string>
+#include <string_view>
+#endif
+
 export module project.name;
 
+#if APP_USE_IMPORT_STD
 import std;
+#endif
 
 export namespace project::name {
 
@@ -21,7 +30,7 @@ export namespace project::name {
 class ProjectName final {
 public:
     explicit ProjectName(std::string value);
-    [[nodiscard]] auto value() const noexcept -> std::string_view;
+    [[nodiscard]] std::string_view value() const noexcept;
 
 private:
     std::string m_value;
@@ -32,9 +41,20 @@ private:
 
 ```cpp
 // project_name.cpp
+module;
+
+#if !APP_USE_IMPORT_STD
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#endif
+
 module project.name;
 
+#if APP_USE_IMPORT_STD
 import std;
+#endif
 
 namespace project::name {
 
@@ -46,13 +66,17 @@ ProjectName::ProjectName(std::string value)
     }
 }
 
-auto ProjectName::value() const noexcept -> std::string_view
+std::string_view ProjectName::value() const noexcept
 {
     return m_value;
 }
 
 }
 ```
+
+The standard-library path is conditional; the project module is not. Fallback
+headers stay in the global module fragment between `module;` and the named
+module declaration.
 
 **Incorrect**
 
@@ -67,6 +91,17 @@ private:
 ```
 
 Violations: `MOD-002`, `MOD-003`, `MOD-006`, and `NAM-005`.
+
+**Incorrect fallback placement**
+
+```cpp
+export module project.name;
+
+#include <string>
+```
+
+The include is inside the named module purview. This violates `MOD-011` and can
+attach textual declarations to the wrong module.
 
 ## Recoverable Error
 
@@ -127,21 +162,49 @@ Violations: `NAM-003`, `NAM-005`, `NAM-006`, `NAM-009`, and `SYN-004`.
 
 ## Modern Function Syntax
 
-**Correct**
+**Correct for a simple result**
+
+```cpp
+void inputDecimalPoint();
+[[nodiscard]] bool isReady() const noexcept;
+```
+
+**Correct when a longer result benefits from alignment**
 
 ```cpp
 [[nodiscard]] auto evaluate(std::string_view expressionText) const
     -> std::expected<double, ErrorCode>;
 ```
 
-**Incorrect**
+**Incorrect for naming and contract design**
 
 ```cpp
 double evaluate_expression(std::string expression_text);
 ```
 
-The correct form makes the naming, non-owning input, failure contract,
-constness, and significant result explicit.
+The approved forms choose return syntax based on readability. The API still
+makes naming, non-owning input, failure, constness, and significant results
+explicit.
+
+## Modern Formatted Console Output
+
+**Correct**
+
+```cpp
+std::println("Completed {} operations", operationCount);
+std::print("Progress: {}%\r", percentage);
+```
+
+**Incorrect for ordinary project output**
+
+```cpp
+std::cout << "Completed " << operationCount << " operations\n";
+std::cerr << "Operation failed\n";
+```
+
+Use `std::format` when the text must become a value instead of being written
+immediately. Stream insertion is limited to an explicitly justified API
+boundary that accepts only streams.
 
 ## Qt Quick Presentation Boundary
 
@@ -208,7 +271,7 @@ requires both interfaces to share application and domain behavior.
 
 ```cmake
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml QuickControls2)
-qt_add_qml_module(MyApp URI MyApp QML_FILES qml/Main.qml)
+qt_add_qml_module(MyApp URI MyApp QML_FILES ui/Main.qml)
 ```
 
 **Incorrect for a new UI without an exception**
@@ -219,6 +282,40 @@ target_link_libraries(MyApp PRIVATE Qt6::Widgets)
 ```
 
 The incorrect form violates `GUI-001`, `GUI-002`, and `GUI-012`.
+
+## Qt Quick Repository And Experience Shape
+
+**Correct**
+
+```text
+src/domain/          Stable product rules
+src/application/     Use cases and authoritative state
+src/presentation/    Small typed QML-facing adapter
+src/adapters/        Platform and third-party boundaries
+src/bootstrap/       Composition root
+ui/pages/            Screen composition by user task
+ui/components/       Reusable roles, not copied decoration
+ui/theme/            Design tokens
+ui/assets/           Presentation assets
+```
+
+```text
+Audience → primary task → information hierarchy → interaction states
+         → affordances and feedback → visual direction → components
+```
+
+**Incorrect**
+
+```text
+qml/
+  Main.qml           One giant screen and every visual asset
+
+Every screen uses the same rounded cards, gradient, spacing, and dashboard
+shell without regard to task, density, feedback, or recovery.
+```
+
+The incorrect shape confuses implementation technology with architectural
+ownership and violates `ARC-007`, `GUI-017`, and `GUI-018`.
 
 ## Resource Ownership
 

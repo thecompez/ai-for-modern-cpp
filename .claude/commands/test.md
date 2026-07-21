@@ -17,6 +17,9 @@ ctest --test-dir build --output-on-failure --no-tests=error
 
 If presets exist, prefer the repository presets.
 
+For CMake, module, or toolchain-policy changes, verify fresh `IMPORT_STD` and
+`HEADERS` builds separately; `AUTO` does not prove both source paths.
+
 Report:
 
 - Configure result.

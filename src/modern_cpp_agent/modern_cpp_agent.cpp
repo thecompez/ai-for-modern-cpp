@@ -1,6 +1,23 @@
+module;
+
+#if !AIMCPP_USE_IMPORT_STD
+#include <algorithm>
+#include <expected>
+#include <format>
+#include <optional>
+#include <span>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#include <vector>
+#endif
+
 module modern.cpp.agent;
 
+#if AIMCPP_USE_IMPORT_STD
 import std;
+#endif
 
 namespace modern::cpp::agent {
 

@@ -108,6 +108,47 @@ rules.
 **Rule coverage**: `GUI-001`, `GUI-003` through `GUI-005`, `GUI-012`,
 `GUI-015`, `GUI-016`, `ARC-002`, `SCP-003`, and `VER-001`.
 
+## EVAL-UI-006 — Generic Repetitive AI Interface
+
+**Proposal under review**
+
+```text
+Use the same centered title, gradient background, glass panel, and grid of
+rounded cards used in the last three generated applications. Start coding
+before defining the audience, hierarchy, states, or recovery flow.
+```
+
+**Expected findings**
+
+- `GUI-017`: define the audience, primary task, information hierarchy,
+  affordances, feedback, error prevention/recovery, and product-specific visual
+  direction before choosing components.
+- Reusable tokens may provide consistency, but screen composition must follow
+  the task and content density rather than repeat one decorative recipe.
+- Verify the main flow at representative sizes and states; visual novelty alone
+  is not evidence of usable UX.
+
+## EVAL-UI-007 — Technology-Named QML Bucket
+
+**Proposed new repository layout**
+
+```text
+src/
+  main.cpp
+qml/
+  Main.qml
+  EverythingElse.qml
+```
+
+**Expected findings**
+
+- `ARC-007`: identify domain, application, presentation, adapter, and
+  composition responsibilities that actually exist.
+- `GUI-018`: place QML, theme tokens, and visual assets under `ui/`, with
+  responsibility-based `pages/`, `components/`, `theme/`, or `assets/`
+  subdivisions only when justified.
+- Do not create empty layers merely to imitate the reference layout.
+
 ## EVAL-SYN-001 — Lowercase Enum Cases
 
 **Diff under review**
@@ -157,7 +198,8 @@ Result parse_value(const char* text) {
 **Expected findings**
 
 - Replace the macro with a typed `constexpr` value.
-- Use lowerCamelCase, a trailing return type, and a lifetime-aware input type.
+- Use lowerCamelCase, select return syntax for readability, and use a
+  lifetime-aware input type.
 - Replace `NULL` and the C-style cast.
 - Add braces and explicit failure handling.
 
@@ -181,3 +223,35 @@ Human: Enumerators must be PascalCase and private members must use m_.
 - Synchronize executable examples if they contain the obsolete shapes.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `NAM-003`, `NAM-005`, `SYN-004`.
+
+## EVAL-SYN-005 — Mechanical Trailing Return Type
+
+**Diff under review**
+
+```cpp
+auto AppSession::inputDecimalPoint() -> void
+{
+    // ...
+}
+```
+
+**Expected finding**
+
+`SYN-001`: `void AppSession::inputDecimalPoint()` is clearer for this simple
+result. Do not require or mechanically rewrite trailing return syntax. Retain a
+trailing return type when the language requires it or a complex/dependent
+signature materially benefits.
+
+## EVAL-SYN-006 — Legacy Formatted Console Output
+
+**Diff under review**
+
+```cpp
+std::cout << "Completed " << operationCount << " operations" << '\n';
+```
+
+**Expected finding**
+
+`SYN-023`: use `std::println("Completed {} operations", operationCount)` for
+new ordinary console output. A stream-only third-party boundary requires an
+explicit local justification rather than becoming the project default.

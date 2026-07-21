@@ -44,7 +44,12 @@ aimcpp_repair_gnu_stdlib_metadata(
     "15"
     "${repairedMetadataPath}"
     selectedMetadataPath
+    repairFailure
 )
+
+if(repairFailure)
+    message(FATAL_ERROR "Metadata repair unexpectedly failed: ${repairFailure}")
+endif()
 
 if(NOT selectedMetadataPath STREQUAL repairedMetadataPath)
     message(FATAL_ERROR "Broken metadata was not replaced with repaired metadata.")
@@ -62,4 +67,18 @@ foreach(moduleIndex RANGE 0 1)
     endif()
 endforeach()
 
-message(STATUS "Broken GCC module metadata repair verified.")
+aimcpp_repair_gnu_stdlib_metadata(
+    "${AIMCPP_TEST_BINARY_DIR}/missing.modules.json"
+    "15"
+    "${AIMCPP_TEST_BINARY_DIR}/unused.modules.json"
+    unavailableMetadataPath
+    unavailableMetadataReason
+)
+
+if(unavailableMetadataPath OR NOT unavailableMetadataReason)
+    message(FATAL_ERROR
+        "Unavailable GNU import-std metadata must produce a recoverable probe failure."
+    )
+endif()
+
+message(STATUS "GNU import-std metadata repair and fallback signaling verified.")

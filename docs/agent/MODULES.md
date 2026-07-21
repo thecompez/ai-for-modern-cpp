@@ -30,9 +30,18 @@ Move code to `.cpp` when it:
 ## Canonical Shape
 
 ```cpp
+module;
+
+#if !APP_USE_IMPORT_STD
+#include <string>
+#include <string_view>
+#endif
+
 export module project.identity;
 
+#if APP_USE_IMPORT_STD
 import std;
+#endif
 
 export namespace project::identity {
 
@@ -42,7 +51,7 @@ export namespace project::identity {
 class UserId final {
 public:
     explicit UserId(std::string value);
-    [[nodiscard]] auto value() const noexcept -> std::string_view;
+    [[nodiscard]] std::string_view value() const noexcept;
 
 private:
     std::string m_value;
@@ -52,9 +61,20 @@ private:
 ```
 
 ```cpp
+module;
+
+#if !APP_USE_IMPORT_STD
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <utility>
+#endif
+
 module project.identity;
 
+#if APP_USE_IMPORT_STD
 import std;
+#endif
 
 namespace project::identity {
 
@@ -66,13 +86,29 @@ UserId::UserId(std::string value)
     }
 }
 
-auto UserId::value() const noexcept -> std::string_view
+std::string_view UserId::value() const noexcept
 {
     return m_value;
 }
 
 }
 ```
+
+`module;` begins the global module fragment. Standard-library headers belong
+there when the effective toolchain cannot provide `import std`; including them
+after `export module project.identity;` would attach declarations to the named
+module purview and is forbidden. When `APP_USE_IMPORT_STD` is true, the fragment
+is empty and the named module imports `std` normally.
+
+The compatibility macro is a target-provided build decision, not a
+source-by-source preference. Every producer and consumer of a module must see
+the same value. Ordinary non-module `.cpp` entry points may conditionally
+choose `import std;` or the minimal standard headers directly, but project
+modules and their CMake `CXX_MODULES` registration do not change.
+
+This fallback applies only to standard-library delivery. It does not authorize
+project-owned headers, duplicate declarations, or a parallel legacy source
+tree.
 
 ## CMake Registration
 

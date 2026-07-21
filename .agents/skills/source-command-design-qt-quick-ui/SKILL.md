@@ -29,32 +29,40 @@ Read completely before editing:
    unspecified user-facing interactive application.
 2. Inspect the existing Qt version, QML modules, CMake targets, screens,
    components, tests, and current diff.
-3. Define the primary user goal, navigation, actions, and authoritative state.
-4. Enumerate loading, empty, success, disabled, and failure states.
-5. Define reusable components and design tokens for spacing, typography, color,
-   radius, and motion.
-6. Define responsive behavior, keyboard path, focus order, accessible names,
+3. Define the audience, usage context, primary user goal, navigation, actions,
+   and authoritative state.
+4. Define a product-specific visual direction, information hierarchy, and
+   content density. Reject generic repeated card, gradient, glass-panel, and
+   dashboard recipes that are not justified by the product task.
+5. Enumerate loading, empty, success, disabled, and failure states, including
+   affordances, immediate feedback, error prevention, and recovery.
+6. Define reusable components and design tokens for spacing, typography, color,
+   radius, and motion without making every screen composition repetitive.
+7. Define responsive behavior, keyboard path, focus order, accessible names,
    and localization needs.
-7. Draw the QML → presentation adapter → application → domain dependency path,
+8. Draw the QML → presentation adapter → application → domain dependency path,
    plus any optional CLI adapter that shares the application layer.
-8. Keep domain/application behavior in C++ modules and expose only a minimal
+9. Keep domain/application behavior in C++ modules and expose only a minimal
    typed presentation contract to QML.
-9. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
-10. Do not introduce Qt Widgets unless the user explicitly requests it or an
+10. Place new QML, design tokens, and visual assets under the top-level `ui/`
+    boundary, using responsibility-based subdirectories only when needed.
+11. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
+12. Do not introduce Qt Widgets unless the user explicitly requests it or an
    inspected compatibility boundary requires it; document the exception.
-11. Keep any secondary CLI thin and connected to the same application/domain
+13. Keep any secondary CLI thin and connected to the same application/domain
     modules; do not let it replace the primary interface.
-12. Add C++ presentation tests and relevant QML interaction, lint, or smoke
+14. Add C++ presentation tests and relevant QML interaction, lint, or smoke
     coverage.
-13. Configure, build, test with zero-tests-as-error, inspect the final diff, and
+15. Configure, build, test with zero-tests-as-error, inspect the final diff, and
     report exact evidence.
 
 ## Output
 
 Before implementation, state:
 
-- user flow and screen-state model;
-- visual/component system;
+- audience, user flow, and screen-state model;
+- product-specific visual direction, hierarchy, density, and component system;
+- affordance, feedback, prevention, and recovery decisions;
 - accessibility and responsive decisions;
 - C++/QML ownership boundary;
 - planned verification.

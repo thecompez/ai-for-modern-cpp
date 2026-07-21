@@ -19,23 +19,29 @@ understood and programmed.
 
 **Rule coverage**: `KNO-001` through `KNO-005`.
 
-## EVAL-REF-002 — Mandatory `import std`
+## EVAL-REF-002 — Preserve Modules Across Standard-Library Modes
 
 **Conversation**
 
 ```text
-Agent: I added a standard-header fallback for unsupported compilers.
-Human: The reference must always use import std and reject traditional mode.
+Agent: The toolchain cannot provide import std, so I will replace modules with
+headers or reject the build.
+Human: Keep project modules and use standard-library includes in global module
+fragments when pure import std support is unavailable.
 ```
 
 **Required reflection**
 
-- Make `import std` a stable mandatory rule.
-- Remove fallback source paths and stale documentation.
-- Add configure-time rejection and a negative toolchain eval.
-- Verify the supported toolchain still builds and tests.
+- Keep `.cppm`, project module imports, and `CXX_MODULES` registration mandatory.
+- Prefer `import std` when observed support exists.
+- Add a standard-header compatibility path using `module;` global fragments,
+  without creating project-owned headers or duplicate source trees.
+- Provide automatic and forced modes so both source paths can be built and
+  tested independently.
+- Synchronize toolchain diagnostics, CI, patterns, evals, and contract tests.
 
-**Rule coverage**: `MOD-009`, `MOD-010`, `KNO-005`, `BLD-008`.
+**Rule coverage**: `MOD-009` through `MOD-012`, `KNO-005`, `BLD-005`,
+`BLD-008`, and `BLD-013`.
 
 ## EVAL-REF-003 — Local Preference Versus General Rule
 
@@ -124,3 +130,31 @@ a CLI may exist as a secondary adapter.
   machine-checkable knowledge assertions.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `GUI-015`, `GUI-016`, `ARC-002`.
+
+## EVAL-REF-008 — Mechanical Style And Generic UI Corrections
+
+**Conversation**
+
+```text
+Agent: I forced auto ... -> ReturnType everywhere, created a top-level qml/
+bucket, reused the same decorative card layout, and wrote console output with
+std::cout.
+Human: Prefer readable return declarations, a cohesive ui/ boundary,
+product-specific UX, and current standard formatted output.
+```
+
+**Required reflection**
+
+- Generalize the correction into readable syntax selection rather than a ban
+  on every trailing return type.
+- Require `std::print`/`std::println` for ordinary new formatted output while
+  preserving explicitly justified stream-only boundaries.
+- Describe `ui/` as an architectural presentation boundary and avoid empty
+  ceremonial subdirectories.
+- Require audience, task hierarchy, states, affordances, feedback, prevention,
+  recovery, and product-specific visual direction before implementation.
+- Synchronize canonical rules, guides, patterns, workflows, review checks,
+  evals, and machine-checkable assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `ARC-007`, `SYN-001`, `SYN-023`,
+`GUI-017`, and `GUI-018`.

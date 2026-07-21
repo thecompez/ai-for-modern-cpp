@@ -23,12 +23,20 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 
 - [ ] `ARC-001`: Each new behavior has a clear owner.
 - [ ] `ARC-002`: Dependency direction remains stable and intentional.
+- [ ] `ARC-007`: Repository layout exposes real responsibilities without empty
+  layers or dumping grounds.
 - [ ] `MOD-001`: New internal production code uses modules.
 - [ ] `MOD-002`: Exported declarations are in `.cppm`.
 - [ ] `MOD-003`: Non-trivial implementation is in `.cpp`.
 - [ ] `MOD-004`: No I/O, platform branch, or large algorithm leaked into an exported interface.
 - [ ] `MOD-006`: No unjustified `.h` file was introduced.
-- [ ] `MOD-009`: The executable proof still uses mandatory `import std`.
+- [ ] `MOD-009`: Project-owned `.cppm` modules remain mandatory in every
+  standard-library mode.
+- [ ] `MOD-010`: `import std` is preferred when supported and standard headers
+  are used only as the documented compatibility path.
+- [ ] `MOD-011`: Fallback standard headers are in the global module fragment.
+- [ ] `MOD-012`: No project-owned header fallback or duplicate source tree was
+  introduced.
 
 ## Naming And API
 
@@ -38,7 +46,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `NAM-005`: Private/protected data members use `m_`.
 - [ ] `NAM-006`: Project-owned data members do not use a trailing underscore.
 - [ ] `NAM-009`: Multiword names preserve lowerCamelCase/PascalCase boundaries.
-- [ ] `SYN-001`: Project functions use trailing return types.
+- [ ] `SYN-001`: Leading or trailing return syntax was selected for readability,
+  not mechanical uniformity.
 - [ ] `SYN-002`: Variables and members have deliberate initial state.
 - [ ] `SYN-004`: Enumerations are scoped and every enumerator is PascalCase.
 - [ ] `SYN-005`: Null pointers use `nullptr`.
@@ -47,6 +56,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `SYN-016`: Class layout presents its contract before private state.
 - [ ] `SYN-018`: Constructor initialization follows member declaration order.
 - [ ] `SYN-019`: Stored/asynchronous lambda captures have valid lifetimes.
+- [ ] `SYN-023`: Ordinary formatted console output uses `std::print` or
+  `std::println`.
 - [ ] `API-001`: Exported APIs have English Doxygen contracts.
 - [ ] `API-002`: Ownership, lifetime, optionality, and failure are explicit.
 - [ ] `API-005`: Public templates use meaningful constraints where required.
@@ -76,16 +87,24 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `GUI-014`: QObject/QML/RAII ownership is explicit.
 - [ ] `GUI-015`: An unspecified user-facing interactive application was not silently reduced to CLI-only.
 - [ ] `GUI-016`: Any secondary CLI shares application/domain modules and does not replace or duplicate the primary UI.
+- [ ] `GUI-017`: The UI has a product-specific hierarchy and interaction
+  rationale rather than a generic repetitive recipe.
+- [ ] `GUI-018`: New Qt Quick repositories keep QML and visual assets under an
+  explicit top-level `ui/` boundary.
 
 ## Build And Tests
 
 - [ ] `BLD-002`: Module interfaces are registered in `CXX_MODULES` file sets.
 - [ ] `BLD-003`: CMake changes are target-local.
 - [ ] `BLD-005`: `import std` support uses observed toolchain capability.
-- [ ] `BLD-008`: No silent downgrade was added.
-- [ ] `BLD-010`: GCC is not accepted with a pre-4.0 CMake release.
+- [ ] `BLD-008`: Neither language level nor project module architecture was
+  silently downgraded.
+- [ ] `BLD-010`: Pre-4.0 CMake selects standard headers for GCC in `AUTO` and is
+  rejected only by strict `IMPORT_STD` mode.
 - [ ] `BLD-011`: Every GNU metadata source resolves or is repaired only in the build tree.
 - [ ] `BLD-012`: Compiler-major support is backed by a full CI build, not version assumptions.
+- [ ] `BLD-013`: `AUTO`, `IMPORT_STD`, and `HEADERS` are explicit and both
+  effective source paths have CI coverage.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
