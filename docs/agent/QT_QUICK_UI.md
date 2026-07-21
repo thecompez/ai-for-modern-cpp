@@ -6,6 +6,27 @@ Use this guide for any new or modified Qt graphical interface. Canonical rules:
 The default stack is Qt 6, Qt Quick, QML, and Qt Quick Controls. Qt Widgets is a
 compatibility technology, not the default for new interfaces.
 
+## Interaction Surface Selection
+
+Classify the product surface before designing screens or targets:
+
+| Request or inspected context | Primary surface |
+|---|---|
+| Explicit graphical, desktop, Qt, or QML application | Qt Quick |
+| User-facing interactive application with no interface specified | Qt Quick |
+| Explicit CLI tool, service, library, daemon, or headless process | Requested non-graphical surface |
+| Existing compatible UI under a constrained change | Preserve it and document any `GUI-002` exception |
+
+Do not silently interpret an unspecified user-facing interactive application as
+CLI-only. Under `GUI-015`, Qt Quick is the primary interface. If automation,
+testing, or headless use has real value, a CLI may be added as a secondary
+adapter under `GUI-016`; it is not a substitute for the graphical interface.
+
+Both adapters call the same C++ application and domain modules. QML and CLI
+argument parsing must not contain duplicated domain decisions. When the request
+is explicitly non-graphical, do not add Qt merely to follow a default that does
+not apply.
+
 ## Required Design Pass
 
 Do not begin with `Main.qml`. Define the interaction model first:
@@ -33,6 +54,7 @@ states is incomplete.
 flowchart LR
     QML["Qt Quick presentation"] --> ViewModel["C++ presentation adapter"]
     ViewModel --> Application["Application module"]
+    CLI["Optional CLI adapter"] --> Application
     Application --> Domain["Pure C++ domain modules"]
     Adapter["Platform and persistence adapters"] --> Application
 ```
@@ -71,6 +93,8 @@ src/
     app_view_model.cpp
   bootstrap/
     main.cpp
+  cli/
+    main.cpp  # optional secondary adapter
 qml/
   Main.qml
   components/
@@ -99,6 +123,20 @@ Expose the smallest contract QML needs:
 - explicit busy, error, empty, and disabled states.
 
 Do not expose a large service object or raw domain graph to QML.
+
+## Optional CLI Adapter
+
+When an additional CLI is justified, keep it as a thin composition and
+input/output adapter:
+
+```cmake
+add_executable(MyAppCli src/cli/main.cpp)
+target_link_libraries(MyAppCli PRIVATE app_core)
+target_compile_features(MyAppCli PRIVATE cxx_std_26)
+```
+
+The CLI forwards user intent to `app_core`; it does not reimplement validation,
+state transitions, persistence policy, or other authoritative behavior.
 
 ## QML Naming And Component Structure
 
@@ -188,10 +226,14 @@ At minimum verify:
 5. Resizing, long translations, empty/error/loading states, and theme contrast.
 6. QML lint or equivalent project-provided static checks.
 7. Configure, build, CTest, and relevant QML test runner results separately.
+8. When a CLI adapter exists, verify it calls the shared application/domain
+   behavior and does not replace graphical interaction coverage.
 
 ## Forbidden Shapes
 
 - Choosing `QWidget` because the request merely says "Qt".
+- Delivering only a CLI for an unspecified user-facing interactive application.
+- Duplicating application or domain behavior between QML and a CLI adapter.
 - Implementing domain decisions or validation in button-handler JavaScript.
 - Registering a global mutable service object for convenient QML access.
 - Hard-coding every position and size for one screenshot.

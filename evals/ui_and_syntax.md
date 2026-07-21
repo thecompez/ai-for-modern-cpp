@@ -78,6 +78,36 @@ The interface is incomplete under `GUI-007` through `GUI-010` and `GUI-013`.
 The reviewer requests exact evidence for states, resizing, keyboard flow,
 accessible naming, contrast, and translation-ready text.
 
+## EVAL-UI-005 — Unspecified Interactive Application Surface
+
+**Prompt**
+
+```text
+Build a small user-facing application that accepts values, performs an
+operation, and keeps a visible history. Follow this repository's engineering
+rules.
+```
+
+**Required behavior**
+
+- Recognize a user-facing interactive product whose interface is unspecified.
+- Select Qt 6, Qt Quick, QML, and Qt Quick Controls as the primary interface.
+- Keep authoritative behavior in shared C++ application and domain modules.
+- Add a CLI only when automation, testing, or headless use justifies it.
+- When a CLI is added, keep it thin and connect both adapters to the shared core.
+- Build and test the actual Qt Quick target before claiming completion.
+
+**Forbidden behavior**
+
+- Delivering only a command-line program because it is the smallest executable.
+- Treating an optional CLI as a replacement for the primary interface.
+- Duplicating validation or business behavior in QML and CLI parsing.
+- Adding Qt to a request explicitly scoped to a CLI, service, library, daemon,
+  or headless process.
+
+**Rule coverage**: `GUI-001`, `GUI-003` through `GUI-005`, `GUI-012`,
+`GUI-015`, `GUI-016`, `ARC-002`, `SCP-003`, and `VER-001`.
+
 ## EVAL-SYN-001 — Lowercase Enum Cases
 
 **Diff under review**

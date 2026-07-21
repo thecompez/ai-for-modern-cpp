@@ -13,8 +13,10 @@ Do not start by choosing a filename. Start by naming the responsibility.
 | Application orchestration | Application module |
 | Filesystem, network, process, or OS integration | Platform/adapter module |
 | Dependency construction and process startup | Executable composition root |
+| Product interaction-surface selection | Explicit request or the `GUI-015` default |
 | Qt Quick layout, animation, and interaction | QML presentation layer |
 | QML-facing properties, signals, and commands | C++ presentation adapter |
+| Automation or headless command surface | Optional CLI adapter |
 | Verification-only utilities | Test source, never exported production API |
 
 If no owner is clear, the architecture is not understood well enough to edit.
@@ -33,6 +35,24 @@ flowchart LR
 
 Domain code must not import platform adapters. Platform adapters implement or
 support needs defined by stable application/domain abstractions.
+
+## Interaction Surfaces
+
+For a user-facing interactive application whose interface is unspecified,
+`GUI-015` selects Qt Quick as the primary surface. A CLI is optional and remains
+an adapter rather than a second owner of application behavior.
+
+```mermaid
+flowchart LR
+    QML["Qt Quick presentation"] --> Presentation["C++ presentation adapter"]
+    Presentation --> Application["Application module"]
+    CLI["Optional CLI adapter"] --> Application
+    Application --> Domain["Domain modules"]
+```
+
+Explicit CLI tools, services, libraries, daemons, and headless processes do not
+gain a graphical dependency merely because Qt Quick is the interactive-product
+default. Classify the product surface before choosing composition roots.
 
 ## Module Boundary Test
 

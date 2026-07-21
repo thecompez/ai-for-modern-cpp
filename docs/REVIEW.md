@@ -74,6 +74,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `GUI-012`: QML is registered with `qt_add_qml_module` and target-local Qt dependencies.
 - [ ] `GUI-013`: C++ presentation behavior and relevant QML interaction have coverage.
 - [ ] `GUI-014`: QObject/QML/RAII ownership is explicit.
+- [ ] `GUI-015`: An unspecified user-facing interactive application was not silently reduced to CLI-only.
+- [ ] `GUI-016`: Any secondary CLI shares application/domain modules and does not replace or duplicate the primary UI.
 
 ## Build And Tests
 

@@ -32,6 +32,7 @@ and update the guide in the same change when authorized.
 | What should the public contract expose? | `API_DESIGN.md` |
 | Is this `expected`, an exception, or RAII? | `ERRORS_AND_RESOURCES.md` |
 | Where does OS-specific code belong? | `PLATFORM_BOUNDARIES.md` |
+| What interface should an unspecified interactive application use? | `QT_QUICK_UI.md`, then `ARCHITECTURE.md` |
 | How should a Qt interface be designed and implemented? | `QT_QUICK_UI.md` |
 | Why did configure or `import std` fail? | `CMAKE_AND_TOOLCHAINS.md`, then `COMMON_FAILURES.md` |
 | What and how should I test? | `TESTING_AND_VERIFICATION.md` |

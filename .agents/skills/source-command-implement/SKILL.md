@@ -16,17 +16,20 @@ Use this command when implementing a feature, bug fix, or refactor.
 ## Required Process
 
 1. Read `AGENTS.md`.
-2. Use its task-routing table and read every selected guide completely.
-3. Understand the smallest subsystem that owns the requested behavior.
-4. Inspect existing module boundaries, tests, working tree, and current diff.
-5. Make the smallest correct change.
-6. Preserve `.cppm` declaration and `.cpp` implementation separation.
-7. Use C++20+ features appropriately.
-8. Build.
-9. Run tests with zero discovered tests treated as an error.
-10. Fix failures and repeat verification.
-11. Inspect the final diff and run `git diff --check`.
-12. Report exact build and test results.
+2. Classify the product surface. For an unspecified user-facing interactive
+   application, apply `GUI-015`, read the Qt Quick guides, and use Qt Quick as
+   the primary interface rather than silently selecting CLI-only.
+3. Use the task-routing table and read every selected guide completely.
+4. Understand the smallest subsystem that owns the requested behavior.
+5. Inspect existing module boundaries, tests, working tree, and current diff.
+6. Make the smallest correct change.
+7. Preserve `.cppm` declaration and `.cpp` implementation separation.
+8. Use C++20+ features appropriately.
+9. Build.
+10. Run tests with zero discovered tests treated as an error.
+11. Fix failures and repeat verification.
+12. Inspect the final diff and run `git diff --check`.
+13. Report exact build and test results.
 
 ## Rules
 

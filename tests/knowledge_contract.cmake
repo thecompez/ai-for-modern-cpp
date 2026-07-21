@@ -74,6 +74,8 @@ set(_required_rule_ids
     GUI-002
     GUI-004
     GUI-012
+    GUI-015
+    GUI-016
     BLD-001
     BLD-010
     BLD-011
@@ -107,6 +109,8 @@ foreach(_rule_id IN ITEMS
     GUI-001
     GUI-004
     GUI-012
+    GUI-015
+    GUI-016
     BLD-010
     BLD-011
     BLD-012
@@ -210,12 +214,55 @@ foreach(_required_shape IN ITEMS
     "Qt6::Widgets"
     "keyboard"
     "accessibility"
+    "user-facing interactive application"
+    "CLI-only"
+    "secondary adapter"
 )
     string(FIND "${_qt_quick_guide}" "${_required_shape}" _qt_shape_position)
     if(_qt_shape_position EQUAL -1)
         message(FATAL_ERROR "Qt Quick guide is missing required guidance: ${_required_shape}")
     endif()
 endforeach()
+
+file(READ "${AIMCPP_SOURCE_DIR}/docs/agent/PATTERNS.md" _pattern_guide)
+foreach(_required_shape IN ITEMS
+    "Qt Quick primary interface"
+    "optional CLI adapter"
+    "GUI-015"
+    "GUI-016"
+)
+    string(FIND "${_pattern_guide}" "${_required_shape}" _pattern_shape_position)
+    if(_pattern_shape_position EQUAL -1)
+        message(FATAL_ERROR
+            "Pattern guide is missing interaction-surface guidance: ${_required_shape}"
+        )
+    endif()
+endforeach()
+
+file(READ "${AIMCPP_SOURCE_DIR}/evals/ui_and_syntax.md" _ui_eval_suite)
+foreach(_required_shape IN ITEMS
+    "EVAL-UI-005"
+    "GUI-015"
+    "GUI-016"
+)
+    string(FIND "${_ui_eval_suite}" "${_required_shape}" _ui_eval_position)
+    if(_ui_eval_position EQUAL -1)
+        message(FATAL_ERROR
+            "UI eval suite is missing interaction-surface coverage: ${_required_shape}"
+        )
+    endif()
+endforeach()
+
+file(READ
+    "${AIMCPP_SOURCE_DIR}/.agents/skills/source-command-implement/SKILL.md"
+    _implement_skill
+)
+string(FIND "${_implement_skill}" "GUI-015" _implement_surface_rule_position)
+if(_implement_surface_rule_position EQUAL -1)
+    message(FATAL_ERROR
+        "Implementation workflow does not route unspecified interactive applications through GUI-015."
+    )
+endif()
 
 file(READ "${AIMCPP_SOURCE_DIR}/src/main.cpp" _executable_entry_point)
 string(FIND "${_executable_entry_point}" "Agent Template" _legacy_purpose_position)
@@ -235,6 +282,7 @@ foreach(_required_phrase IN ITEMS
     "evals/README.md"
     "AIMCPP_IMPORT_STD_REQUIRED=ON"
     "source-command-design-qt-quick-ui"
+    "Interaction Surface Default"
     "docs/agent/SYNTAX_AND_STYLE.md"
     "scripts/bootstrap-linux-cmake.sh"
     "scripts/verify-linux.sh"

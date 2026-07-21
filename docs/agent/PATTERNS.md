@@ -178,6 +178,30 @@ Button {
 The incorrect form violates `GUI-003`, `GUI-004`, security boundaries, and the
 explicit error model.
 
+## Interaction Surface Selection
+
+**Correct for an unspecified user-facing interactive application**
+
+```text
+Qt Quick primary interface
+    → C++ presentation adapter
+        → shared C++ application and domain modules
+    ← optional CLI adapter for automation or headless use
+```
+
+**Incorrect**
+
+```text
+CLI-only deliverable
+    → business behavior embedded in command parsing
+
+No primary graphical interface and no shared application boundary
+```
+
+The incorrect form silently chooses a product surface the user did not request
+and violates `GUI-015`. If a CLI is useful, `GUI-016` keeps it secondary and
+requires both interfaces to share application and domain behavior.
+
 ## Qt Technology Selection
 
 **Correct**

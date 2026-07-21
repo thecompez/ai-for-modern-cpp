@@ -70,6 +70,7 @@ After reading this file, read only the guides required for the task.
 | Design or review a public API | `docs/agent/API_DESIGN.md` and `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
+| Select the interface for an unspecified user-facing interactive application | `docs/agent/QT_QUICK_UI.md` and `docs/agent/ARCHITECTURE.md` |
 | Design or implement a Qt graphical interface | `docs/agent/QT_QUICK_UI.md`, `docs/agent/ARCHITECTURE.md`, and `docs/agent/NAMING.md` |
 | Change CMake, compilers, modules, or `import std` | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
@@ -369,8 +370,10 @@ See `docs/agent/PLATFORM_BOUNDARIES.md`.
 
 ## 12. Qt Quick UI Rules
 
-These rules apply when a derived project requires a Qt graphical interface.
-They do not add Qt as a dependency of this executable knowledge reference.
+These rules apply when a derived project requires a Qt graphical interface or
+when `GUI-015` selects one for an otherwise unspecified user-facing interactive
+application. They do not add Qt as a dependency of this executable knowledge
+reference.
 
 - **GUI-001** — New Qt graphical interfaces MUST use Qt 6, Qt Quick, QML, and
   Qt Quick Controls. Qt Widgets is not the default UI technology.
@@ -404,6 +407,15 @@ They do not add Qt as a dependency of this executable knowledge reference.
   QML interaction tests, linting, or smoke coverage where the toolchain permits.
 - **GUI-014** — QObject parent ownership, QML engine ownership, and RAII
   ownership MUST be deliberate and MUST NOT produce ambiguous lifetime.
+- **GUI-015** — For a user-facing interactive application, when the interface
+  type is unspecified and the context does not clearly identify a CLI tool,
+  service, library, daemon, or other headless product, an agent MUST NOT deliver
+  a CLI-only application. The primary interface MUST use Qt 6, Qt Quick, QML,
+  and Qt Quick Controls.
+- **GUI-016** — A CLI MAY be provided as a secondary adapter for automation,
+  testing, or headless use. It MUST depend on the same application and domain
+  modules as the graphical interface and MUST NOT duplicate business logic or
+  replace the required primary interface.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -604,6 +616,8 @@ Agents MUST NOT:
 - Introduce lowercase or snake_case enum-class enumerators.
 - Introduce trailing-underscore or unprefixed private data members.
 - Choose Qt Widgets for a new Qt UI without an explicit, documented exception.
+- Silently reduce an unspecified user-facing interactive application to a
+  CLI-only deliverable.
 - Put authoritative domain or application behavior in QML JavaScript.
 - Treat the executable example as permission to accumulate unrelated showcase
   features.

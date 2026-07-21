@@ -99,9 +99,24 @@ The reference implementation demonstrates and enforces:
 - Explicit recoverable errors with `std::expected`.
 - RAII ownership and isolated platform boundaries.
 - Target-based CMake, Ninja, real builds, and honest test evidence.
-- Qt Quick/QML as the default for new Qt interfaces, with C++ module-based
-  domain behavior and an explicit presentation boundary.
+- Qt Quick/QML as the primary interface for new user-facing interactive
+  applications when the surface is unspecified, with C++ module-based domain
+  behavior and an explicit presentation boundary.
+- Optional CLI adapters for automation, tests, or headless use share the same
+  application and domain modules rather than duplicating behavior.
 - No fake success reports and no unrelated broad rewrites.
+
+## Interaction Surface Default
+
+An unspecified user-facing interactive application is not a request for a
+CLI-only program. Its primary interface uses Qt 6, Qt Quick, QML, and Qt Quick
+Controls. A request explicitly scoped to a CLI tool, service, library, daemon,
+or headless process remains non-graphical.
+
+A CLI may be added as a secondary adapter when it provides real automation,
+testing, or headless value. The Qt Quick interface and CLI must call the same
+C++ application and domain modules; neither adapter owns duplicated business
+logic.
 
 ## Qt Quick UI Workflow
 

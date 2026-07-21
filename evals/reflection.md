@@ -102,3 +102,25 @@ Use neutral placeholders such as MyApp or AppName.
   drifting back toward one example application.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `DOC-008`.
+
+## EVAL-REF-007 — CLI-Only Default For An Interactive Application
+
+**Conversation**
+
+```text
+Agent: The interface was unspecified, so I delivered only a CLI program.
+Human: User-facing interactive applications should have a Qt Quick primary UI;
+a CLI may exist as a secondary adapter.
+```
+
+**Required reflection**
+
+- Generalize the correction into an interaction-surface selection rule.
+- Preserve explicit CLI, service, library, daemon, and headless scopes.
+- Require Qt Quick as the primary surface for otherwise unspecified
+  user-facing interactive applications.
+- Keep an optional CLI thin and connected to shared application/domain modules.
+- Synchronize routing, the Qt guide, architecture, patterns, review, evals, and
+  machine-checkable knowledge assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-015`, `GUI-016`, `ARC-002`.

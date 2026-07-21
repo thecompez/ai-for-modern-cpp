@@ -10,15 +10,18 @@ Use this command when implementing a feature, bug fix, or refactor.
 ## Required Process
 
 1. Read `AGENTS.md`.
-2. Read the task guides selected by its routing table.
-3. Understand the smallest subsystem that owns the requested behavior.
-4. Inspect existing module boundaries, tests, and the current diff.
-5. Make the smallest correct change.
-6. Preserve `.cppm` declaration and `.cpp` implementation separation.
-7. Build and run tests with zero tests treated as an error.
-8. Fix failures and repeat verification.
-9. Inspect the final diff and run `git diff --check`.
-10. Report exact build and test results.
+2. Classify the product surface. An unspecified user-facing interactive
+   application uses Qt Quick as its primary interface under `GUI-015`; do not
+   silently choose CLI-only.
+3. Read the task guides selected by the routing table.
+4. Understand the smallest subsystem that owns the requested behavior.
+5. Inspect existing module boundaries, tests, and the current diff.
+6. Make the smallest correct change.
+7. Preserve `.cppm` declaration and `.cpp` implementation separation.
+8. Build and run tests with zero tests treated as an error.
+9. Fix failures and repeat verification.
+10. Inspect the final diff and run `git diff --check`.
+11. Report exact build and test results.
 
 ## Rules
 
