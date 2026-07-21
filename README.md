@@ -202,9 +202,12 @@ bash scripts/bootstrap-linux-cmake.sh
 bash scripts/verify-linux.sh
 ```
 
-On Fedora 43 or another distribution that already supplies a supported CMake:
+Fedora 43 also packages CMake 3.31, so use the same repository-local bootstrap:
 
 ```bash
+sudo dnf install --assumeyes gcc-c++ ninja-build python3 python3-pip
+bash scripts/bootstrap-linux-cmake.sh
+.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
 bash scripts/verify-linux.sh
 ```
 

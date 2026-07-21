@@ -140,3 +140,17 @@ bash scripts/verify-linux.sh
 
 The bootstrap installs pinned CMake 4.3.4 into the ignored `.tools/` directory;
 it does not replace the system CMake.
+
+### Fedora 43
+
+Fedora 43 provides GCC 15.2 but its CMake 3.31 package is also too old for GNU
+`import std`. Do not infer CMake compatibility from the distribution or compiler
+version. Install the Python tooling, run the same repository-local CMake 4.3.4
+bootstrap, and then verify the full configure/build/test path:
+
+```bash
+sudo dnf install --assumeyes gcc-c++ ninja-build python3 python3-pip
+bash scripts/bootstrap-linux-cmake.sh
+.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
+bash scripts/verify-linux.sh
+```

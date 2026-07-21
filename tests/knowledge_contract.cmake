@@ -5,6 +5,7 @@ endif()
 set(_required_knowledge_files
     AGENTS.md
     README.md
+    .github/workflows/ci.yml
     cmake/AimcppImportStd.cmake
     docs/REVIEW.md
     docs/agent/README.md
@@ -117,6 +118,20 @@ foreach(_rule_id IN ITEMS
         message(FATAL_ERROR "Review contract does not cover: ${_rule_id}")
     endif()
 endforeach()
+
+file(READ "${AIMCPP_SOURCE_DIR}/.github/workflows/ci.yml" _ci_workflow)
+string(
+    REGEX MATCHALL
+    "bash scripts/bootstrap-linux-cmake[.]sh"
+    _linux_cmake_bootstrap_steps
+    "${_ci_workflow}"
+)
+list(LENGTH _linux_cmake_bootstrap_steps _linux_cmake_bootstrap_count)
+if(_linux_cmake_bootstrap_count LESS 2)
+    message(FATAL_ERROR
+        "Every Linux GCC CI job must bootstrap the supported repository-local CMake."
+    )
+endif()
 
 set(_domain_neutral_knowledge_files
     README.md

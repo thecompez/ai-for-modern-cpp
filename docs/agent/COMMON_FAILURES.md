@@ -12,6 +12,7 @@ only because the symptom looks familiar.
 | `No tests were found` after configure failure | No valid test build tree exists | Missing generated test files | Fix configure/build first |
 | GCC 15 installed but import list empty | CMake too old or libstdc++ metadata/package mismatch | CMake version and JSON path/content | Use supported CMake and matching libstdc++ |
 | Ubuntu GCC 15 with CMake 3.31 | CMake predates GNU `import std` integration | `cmake --version` is 3.31 even though metadata exists | Bootstrap repository-local CMake 4.3.4 |
+| Fedora 43 GCC 15 with CMake 3.31 | Fedora's packaged CMake predates GNU `import std` integration | CI reports CMake 3.31 before configure | Bootstrap repository-local CMake 4.3.4 before verification |
 | Metadata exists but `std.cc` is missing | Distribution JSON contains a broken relative source path | Resolve each JSON `source-path` from the metadata directory | Use build-tree repaired metadata; never edit `/usr` |
 | GCC 16 configure passes but module collation fails | CMake 4.3 scanner is incompatible with the newer GCC module form | `CXX_MODULES` output “does not provide a module interface” | Use verified GCC 15.x or a CMake release verified for GCC 16 |
 | Module dependency cycle after source changes | Real import cycle or stale dynamic dependency state | Scanner output and module graph | Fix graph; regenerate cleanly if scanner state is stale |

@@ -138,3 +138,24 @@ CMake module collation says std.cc does not provide a module interface.
 - Record configure, build, and test results separately.
 
 **Rule coverage**: `BLD-005`, `BLD-012`, `VER-001`.
+
+## EVAL-TCH-008 — Fedora GCC 15 CI Uses Packaged CMake 3.31
+
+**Observed environment**
+
+```text
+Fedora 43 container
+GCC 15.2
+CMake 3.31.11
+Ninja 1.13
+Configure rejects GCC import std before project generation.
+```
+
+**Required behavior**
+
+- Identify the CI provisioning mismatch rather than weakening `import std`.
+- Install the pinned repository-local CMake before running Linux verification.
+- Keep the Fedora build independent from the distribution's system CMake.
+- Run configure, build, and all discovered tests with the bootstrapped CMake.
+
+**Rule coverage**: `BLD-006`, `BLD-010`, `MOD-009`, `VER-001`.
