@@ -144,8 +144,15 @@ rather than Qt Widgets for new UI, keeps QML and visual assets under `ui/`, and
 verifies the C++/QML boundary. See
 [`docs/agent/QT_QUICK_UI.md`](docs/agent/QT_QUICK_UI.md).
 
+When QML uses responsibility-based subdirectories, generated projects select
+QTP0004 through a minimum-version-compatible guard before QML module
+registration. A missing `.qmltypes` file after an earlier failed CMake Generate
+step is treated as a cascading symptom.
+
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).
+The copy-ready CMake shape for generated Qt Quick projects is documented in
+[`docs/agent/PROJECT_CMAKE_BASELINE.md`](docs/agent/PROJECT_CMAKE_BASELINE.md).
 
 ## Build The Executable Proof
 
@@ -153,6 +160,11 @@ The active compiler, standard library, CMake version, generator, and standard
 library module metadata determine whether `AUTO` selects `import std` or the
 standard-header compatibility path. Project-owned C++ modules are mandatory in
 both modes.
+
+`import std` discovery is two-phase: the verified experimental gate and active
+toolchain metadata are prepared before `project()` enables C++, then the
+detected `CMAKE_CXX_COMPILER_IMPORT_STD` capability selects module-std behavior
+afterward. Reordering those inputs requires a fresh CMake configuration.
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug

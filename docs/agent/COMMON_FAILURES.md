@@ -6,6 +6,7 @@ only because the symptom looks familiar.
 | Symptom | Likely cause | Evidence | Correct direction |
 |---|---|---|---|
 | `CMAKE_CXX_COMPILER_IMPORT_STD=''` | Effective toolchain not recognized for `import std` | CMake/compiler/library/metadata versions and selected mode | Use `AUTO` header compatibility or fix the toolchain for strict `IMPORT_STD` |
+| `CXX_MODULE_STD` says experimental support was not enabled when detecting the toolchain | The import-std gate or metadata was set after `project()`/`enable_language(CXX)`, or compiler detection is stale | Compare the first `project()` position with gate/metadata setup and inspect the build-tree compiler cache | Move detection inputs before C++ enablement, consume capability afterward, then regenerate from a fresh CMake configuration |
 | `module 'std' not found` | Source imports `std` but CMake did not build/provide its BMI | Missing `__cmake_cxx_std_*` target or metadata | Fix module integration and regenerate |
 | `libc++.modules.json: File not found` | Compiler returned a basename or stale cache path | Inspect configured metadata path | Associate metadata with the canonical active compiler |
 | `build.ninja: No such file` | Configure failed before generation | Earlier CMake error | Fix configure; do not diagnose Ninja separately |
@@ -19,6 +20,8 @@ only because the symptom looks familiar.
 | Works with `opt/llvm`, fails with `Cellar/llvm` | Path identity comparison used symlink spelling | Canonical compiler and prefix paths | Compare real paths, not display paths |
 | Standard header is included after `export module` | Textual declarations entered the named module purview | Inspect ordering around `module;` and the named declaration | Move fallback includes into the global module fragment |
 | Fallback build cannot find a standard name | Compatibility include set is incomplete | First compiler error and the owning source unit | Add the minimal owning standard header to that unit's global fragment |
+| IDE reports a generated `.qmltypes` file is missing after CMake Generate failed | QML type generation never completed | Find the first earlier CMake failure and inspect whether the QML target was generated | Fix the first Generate failure, clear stale CMake state, and regenerate before investigating QML metadata |
+| Qt warns that QTP0004 is not set for QML files in extra directories | The project has responsibility-based QML subdirectories but did not select the policy | Declared minimum Qt version and order around `find_package`/`qt_add_qml_module` | Guard `qt_policy(SET QTP0004 NEW)` with `QT_KNOWN_POLICY_QTP0004` before registering the QML module |
 
 ## Diagnosis Discipline
 

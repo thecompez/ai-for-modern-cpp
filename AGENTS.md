@@ -72,6 +72,7 @@ After reading this file, read only the guides required for the task.
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
 | Select the interface for an unspecified user-facing interactive application | `docs/agent/QT_QUICK_UI.md` and `docs/agent/ARCHITECTURE.md` |
 | Design or implement a Qt graphical interface | `docs/agent/QT_QUICK_UI.md`, `docs/agent/ARCHITECTURE.md`, and `docs/agent/NAMING.md` |
+| Generate a new Qt Quick/C++ project baseline | `docs/agent/PROJECT_CMAKE_BASELINE.md`, `docs/agent/QT_QUICK_UI.md`, and `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Change CMake, compilers, modules, or `import std` | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
 | Diagnose a known build or module failure | `docs/agent/COMMON_FAILURES.md` |
@@ -451,6 +452,11 @@ reference.
   a top-level `ui/` boundary. Pages, reusable components, theme tokens, and
   assets SHOULD use responsibility-based subdirectories when they exist; a
   top-level `qml/` dumping directory is not the preferred project structure.
+- **GUI-019** — When a QML module contains files in extra directories, projects
+  that support Qt policy `QTP0004` MUST select its `NEW` behavior before
+  `qt_add_qml_module`. The policy check MUST remain compatible with the declared
+  minimum Qt version. Missing generated `.qmltypes` after a failed CMake
+  Generate step is a cascading symptom, not an independent root cause.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -505,6 +511,16 @@ import std when supported; global-fragment standard headers otherwise
 - **BLD-013** — Standard-library integration MUST expose `AUTO`, `IMPORT_STD`,
   and `HEADERS` modes. CI MUST exercise both effective source paths, and
   configure output MUST report the requested mode and selected result.
+- **BLD-014** — `import std` detection MUST follow CMake's two-phase ordering.
+  The version-scoped experimental gate and any standard-library metadata needed
+  for compiler detection MUST be configured before the first `project()` or
+  `enable_language(CXX)` call. Only after C++ is enabled may a project inspect
+  `CMAKE_CXX_COMPILER_IMPORT_STD` and select `CMAKE_CXX_MODULE_STD` or target
+  `CXX_MODULE_STD`. Capability MUST NOT be invented from a metadata file,
+  compiler version, or stale cache entry. Generated Qt Quick/C++ projects MUST
+  begin from the combined baseline in
+  `docs/agent/PROJECT_CMAKE_BASELINE.md` rather than assembling these phases
+  from unrelated snippets.
 
 Do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout`
 are exported by `import std`. Prefer standard C++ facilities or isolate C

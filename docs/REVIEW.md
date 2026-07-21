@@ -91,6 +91,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   rationale rather than a generic repetitive recipe.
 - [ ] `GUI-018`: New Qt Quick repositories keep QML and visual assets under an
   explicit top-level `ui/` boundary.
+- [ ] `GUI-019`: QTP0004 is selected with a minimum-version-compatible guard
+  before QML module registration, and missing generated `.qmltypes` diagnostics
+  are not mistaken for an earlier Generate failure.
 
 ## Build And Tests
 
@@ -105,6 +108,10 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `BLD-012`: Compiler-major support is backed by a full CI build, not version assumptions.
 - [ ] `BLD-013`: `AUTO`, `IMPORT_STD`, and `HEADERS` are explicit and both
   effective source paths have CI coverage.
+- [ ] `BLD-014`: Experimental gates and compiler-detection metadata precede
+  C++ enablement; detected capability is inspected and `CXX_MODULE_STD` is
+  selected only afterward. Generated Qt Quick/C++ projects preserve the
+  combined `PROJECT_CMAKE_BASELINE.md` ordering.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.

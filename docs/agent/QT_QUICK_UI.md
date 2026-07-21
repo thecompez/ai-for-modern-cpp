@@ -3,6 +3,10 @@
 Use this guide for any new or modified Qt graphical interface. Canonical rules:
 `GUI-*`, plus `ARC-*`, `NAM-*`, `SYN-*`, `RES-*`, and `TST-*`.
 
+Generated projects should begin with the combined ordering in
+[`PROJECT_CMAKE_BASELINE.md`](PROJECT_CMAKE_BASELINE.md), which keeps
+`import std` detection and Qt policy setup in their required phases.
+
 The default stack is Qt 6, Qt Quick, QML, and Qt Quick Controls. Qt Widgets is a
 compatibility technology, not the default for new interfaces.
 
@@ -241,6 +245,10 @@ product scope requires it. Do not concatenate translated sentence fragments.
 ```cmake
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml QuickControls2 Test)
 
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
+
 qt_add_executable(MyApp
     src/bootstrap/main.cpp
     src/presentation/app_view_model.cpp
@@ -266,6 +274,18 @@ target_link_libraries(MyApp
         Qt6::QuickControls2
 )
 ```
+
+Set guarded Qt policies after `find_package(Qt6 ...)` and before
+`qt_add_qml_module`. `QTP0004` requires `qmldir` metadata for extra QML
+directories; guarding it with `QT_KNOWN_POLICY_QTP0004` preserves compatibility
+when the project's declared minimum Qt predates that policy. Do not claim a
+higher Qt minimum merely to silence the warning.
+
+QML type metadata such as `MyApp.qmltypes` is generated during a successful
+CMake Generate/build workflow. If generation first fails for an unrelated
+toolchain property, a missing `.qmltypes` diagnostic from the IDE is a
+cascading symptom. Fix the first CMake failure, clear the stale CMake
+configuration, and regenerate before diagnosing QML registration.
 
 Do not link `Qt6::Widgets` unless `GUI-002` has a documented exception.
 
@@ -300,6 +320,10 @@ At minimum verify:
   product.
 - Creating a top-level `qml/` dumping directory in a new repository instead of
   an explicit `ui/` boundary.
+- Ignoring QTP0004 for QML files in extra directories or requiring a newer Qt
+  release solely to avoid a guarded policy check.
+- Diagnosing a missing generated `.qmltypes` file before fixing an earlier
+  failed CMake Generate step.
 - Blocking the GUI thread during file, network, or expensive domain work.
 - Linking all Qt modules rather than the required target-local components.
 - Claiming a polished interface without keyboard and accessibility verification.

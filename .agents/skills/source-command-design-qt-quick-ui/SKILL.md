@@ -15,12 +15,13 @@ Read completely before editing:
 
 1. `AGENTS.md`
 2. `docs/agent/QT_QUICK_UI.md`
-3. `docs/agent/ARCHITECTURE.md`
-4. `docs/agent/NAMING.md`
-5. `docs/agent/SYNTAX_AND_STYLE.md`
-6. `docs/agent/API_DESIGN.md`
-7. `docs/agent/ERRORS_AND_RESOURCES.md`
-8. `docs/agent/TESTING_AND_VERIFICATION.md`
+3. `docs/agent/PROJECT_CMAKE_BASELINE.md`
+4. `docs/agent/ARCHITECTURE.md`
+5. `docs/agent/NAMING.md`
+6. `docs/agent/SYNTAX_AND_STYLE.md`
+7. `docs/agent/API_DESIGN.md`
+8. `docs/agent/ERRORS_AND_RESOURCES.md`
+9. `docs/agent/TESTING_AND_VERIFICATION.md`
 
 ## Design Process
 
@@ -46,14 +47,19 @@ Read completely before editing:
    typed presentation contract to QML.
 10. Place new QML, design tokens, and visual assets under the top-level `ui/`
     boundary, using responsibility-based subdirectories only when needed.
-11. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
-12. Do not introduce Qt Widgets unless the user explicitly requests it or an
+11. For a generated project, start from `PROJECT_CMAKE_BASELINE.md`; do not
+    reconstruct import-std and Qt ordering from partial snippets.
+12. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
+13. For QML subdirectories, select QTP0004 `NEW` behind
+    `QT_KNOWN_POLICY_QTP0004` before `qt_add_qml_module`. Treat missing generated
+    `.qmltypes` after a failed CMake Generate step as a cascading symptom.
+14. Do not introduce Qt Widgets unless the user explicitly requests it or an
    inspected compatibility boundary requires it; document the exception.
-13. Keep any secondary CLI thin and connected to the same application/domain
+15. Keep any secondary CLI thin and connected to the same application/domain
     modules; do not let it replace the primary interface.
-14. Add C++ presentation tests and relevant QML interaction, lint, or smoke
+16. Add C++ presentation tests and relevant QML interaction, lint, or smoke
     coverage.
-15. Configure, build, test with zero-tests-as-error, inspect the final diff, and
+17. Configure, build, test with zero-tests-as-error, inspect the final diff, and
     report exact evidence.
 
 ## Output

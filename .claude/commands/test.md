@@ -19,6 +19,8 @@ If presets exist, prefer the repository presets.
 
 For CMake, module, or toolchain-policy changes, verify fresh `IMPORT_STD` and
 `HEADERS` builds separately; `AUTO` does not prove both source paths.
+Use a fresh CMake configuration when pre-`project()` compiler-detection inputs
+change so the previous capability cache cannot mask the result.
 
 Report:
 

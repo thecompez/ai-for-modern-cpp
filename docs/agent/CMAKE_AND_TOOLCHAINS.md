@@ -4,6 +4,11 @@ Use this guide for build-system edits, compiler selection, C++ modules, and
 standard-library integration failures. Canonical rules: `BLD-*` and
 `MOD-009` through `MOD-012`.
 
+For a combined, copy-ready generated-project shape, use
+[`PROJECT_CMAKE_BASELINE.md`](PROJECT_CMAKE_BASELINE.md). Do not copy only its
+post-`project()` target block while omitting the pre-`project()` detection
+phase.
+
 ## Compatibility Unit
 
 Never diagnose the compiler in isolation.
@@ -20,6 +25,42 @@ Compiler
 
 `CMAKE_CXX_COMPILER_IMPORT_STD` is the configure-time evidence. A version
 number alone is not proof.
+
+## Two-Phase Import-Std Detection
+
+CMake discovers standard-library module support while enabling the C++
+language. Inputs to that discovery must therefore exist before the first
+`project(... LANGUAGES CXX)` or `enable_language(CXX)` call; target selection
+belongs after it.
+
+```cmake
+cmake_minimum_required(VERSION 3.31)
+
+# Phase 1: before C++ compiler detection.
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<verified-gate-for-this-CMake-range>")
+set(CMAKE_CXX_STDLIB_MODULES_JSON "<validated-toolchain-metadata>")
+set(CMAKE_CXX_SCAN_FOR_MODULES ON)
+
+project(MyApp LANGUAGES CXX)
+
+# Phase 2: consume the capability CMake actually detected.
+set(APP_USE_IMPORT_STD OFF)
+if(26 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD)
+    set(APP_USE_IMPORT_STD ON)
+endif()
+set(CMAKE_CXX_MODULE_STD ${APP_USE_IMPORT_STD})
+```
+
+The experimental gate is version-scoped; do not copy the placeholder above or
+guess a UUID. The metadata path must belong to the active compiler and must be
+validated before compiler detection. Do not set
+`CMAKE_CXX_COMPILER_IMPORT_STD` yourself: it is an observed result.
+
+Setting the gate after `project()` is too late even if later status output says
+that `import std` was selected. CMake will reject `CXX_MODULE_STD` during the
+Generate step because the toolchain was detected without experimental support.
+After correcting pre-`project()` inputs, start with a fresh build tree or clear
+the IDE's CMake configuration so cached compiler-detection files are recreated.
 
 ## Standard-Library Integration Modes
 
@@ -128,6 +169,11 @@ Experimental UUIDs are CMake-version-specific capability gates. Keep them
 scoped to documented version ranges. Do not guess a UUID or reuse an older
 value silently. An unknown gate selects `HEADERS` behavior in `AUTO` and is a
 configuration error only in explicit `IMPORT_STD` mode.
+
+All gate and metadata preparation belongs before `project()`. Capability
+inspection and `CMAKE_CXX_MODULE_STD` selection belong after `project()`.
+Reversing those phases violates `BLD-014` and cannot be repaired by changing a
+target property later.
 
 ## macOS Homebrew LLVM
 

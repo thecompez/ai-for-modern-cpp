@@ -10,5 +10,7 @@ Read `AGENTS.md`, `docs/agent/ARCHITECTURE.md`, `docs/agent/MODULES.md`, and
 responsibility, choose a dotted lowercase module identity, separate `.cppm`
 declarations from `.cpp` implementation, use `import std` or minimal
 global-module-fragment standard headers according to the target mode, register
-the module file set, add public-behavior tests, then
+the module file set, and keep import-std detection two-phase: verified gate and
+metadata before `project()`, detected capability and `CXX_MODULE_STD` selection
+afterward. Add public-behavior tests, then
 configure, build, test, and report exact evidence.

@@ -26,6 +26,8 @@ If presets exist, prefer the repository presets.
 When CMake, modules, standard-library integration, or toolchain policy changes,
 run separate fresh builds with `AIMCPP_STDLIB_MODE=IMPORT_STD` and
 `AIMCPP_STDLIB_MODE=HEADERS`. `AUTO` alone does not prove both source paths.
+Fresh configuration is mandatory when pre-`project()` compiler-detection inputs
+change; an incremental run may preserve the old capability cache.
 
 Report:
 

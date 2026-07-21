@@ -158,3 +158,32 @@ product-specific UX, and current standard formatted output.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `ARC-007`, `SYN-001`, `SYN-023`,
 `GUI-017`, and `GUI-018`.
+
+## EVAL-REF-009 — Repeated Generated-Project Toolchain Ordering Failure
+
+**Conversation pattern**
+
+```text
+Agent: The generated project reports that import std is selected.
+Human: CMake still rejects CXX_MODULE_STD because experimental support was not
+enabled when detecting the toolchain, and the IDE then reports missing QML type
+metadata.
+```
+
+**Required reflection**
+
+- Promote the repeated failure into a general two-phase CMake ordering rule,
+  not a project-name-specific patch.
+- Require experimental gates and validated standard-library metadata before
+  the first C++ language enablement call.
+- Require capability inspection and module-std target selection afterward.
+- Classify missing generated QML metadata after a failed Generate step as a
+  cascading symptom.
+- Add guarded QTP0004 guidance for QML subdirectories without falsifying the
+  project's minimum Qt version.
+- Keep one combined generated-project CMake baseline so agents do not join
+  correct fragments in an invalid order.
+- Synchronize canonical rules, toolchain and Qt guides, failure catalog,
+  patterns, review checks, workflows, evals, and machine-checkable assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `BLD-014`, `GUI-019`, `VER-002`.

@@ -17,6 +17,7 @@ set(_required_knowledge_files
     docs/agent/ERRORS_AND_RESOURCES.md
     docs/agent/PLATFORM_BOUNDARIES.md
     docs/agent/QT_QUICK_UI.md
+    docs/agent/PROJECT_CMAKE_BASELINE.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
     docs/agent/TESTING_AND_VERIFICATION.md
     docs/agent/COMMON_FAILURES.md
@@ -83,11 +84,13 @@ set(_required_rule_ids
     GUI-016
     GUI-017
     GUI-018
+    GUI-019
     BLD-001
     BLD-010
     BLD-011
     BLD-012
     BLD-013
+    BLD-014
     TST-001
     VER-001
     VER-007
@@ -126,10 +129,12 @@ foreach(_rule_id IN ITEMS
     GUI-016
     GUI-017
     GUI-018
+    GUI-019
     BLD-010
     BLD-011
     BLD-012
     BLD-013
+    BLD-014
     VER-007
     REP-007
 )
@@ -170,6 +175,7 @@ set(_domain_neutral_knowledge_files
     docs/agent/NAMING.md
     docs/agent/SYNTAX_AND_STYLE.md
     docs/agent/QT_QUICK_UI.md
+    docs/agent/PROJECT_CMAKE_BASELINE.md
     docs/agent/PATTERNS.md
 )
 
@@ -295,12 +301,68 @@ foreach(_required_shape IN ITEMS
     "error prevention"
     "ui/Main.qml"
     "top-level `ui/`"
+    "QT_KNOWN_POLICY_QTP0004"
+    "qt_policy(SET QTP0004 NEW)"
+    "cascading symptom"
 )
     string(FIND "${_qt_quick_guide}" "${_required_shape}" _qt_shape_position)
     if(_qt_shape_position EQUAL -1)
         message(FATAL_ERROR "Qt Quick guide is missing required guidance: ${_required_shape}")
     endif()
 endforeach()
+
+string(FIND "${_qt_quick_guide}" "qt_policy(SET QTP0004 NEW)" _qt_policy_position)
+string(FIND "${_qt_quick_guide}" "qt_add_qml_module(MyApp" _qt_module_position)
+if(_qt_policy_position EQUAL -1
+    OR _qt_module_position EQUAL -1
+    OR NOT _qt_policy_position LESS _qt_module_position
+)
+    message(FATAL_ERROR
+        "Qt Quick guide must select guarded QTP0004 behavior before QML module registration."
+    )
+endif()
+
+file(READ "${AIMCPP_SOURCE_DIR}/docs/agent/PROJECT_CMAKE_BASELINE.md" _project_cmake_baseline)
+foreach(_required_shape IN ITEMS
+    "cmake/AimcppImportStd.cmake"
+    "CMAKE_EXPERIMENTAL_CXX_IMPORT_STD"
+    "CMAKE_CXX_STDLIB_MODULES_JSON"
+    "project(MyApp"
+    "CMAKE_CXX_COMPILER_IMPORT_STD"
+    "CMAKE_CXX_MODULE_STD"
+    "APP_USE_IMPORT_STD=$<BOOL:"
+    "QT_KNOWN_POLICY_QTP0004"
+    "qt_policy(SET QTP0004 NEW)"
+    "qt_add_qml_module(MyApp"
+    "Clear CMake Configuration"
+    "cascading"
+)
+    string(FIND "${_project_cmake_baseline}" "${_required_shape}" _baseline_shape_position)
+    if(_baseline_shape_position EQUAL -1)
+        message(FATAL_ERROR
+            "Generated-project CMake baseline is missing: ${_required_shape}"
+        )
+    endif()
+endforeach()
+
+string(FIND "${_project_cmake_baseline}" "CMAKE_EXPERIMENTAL_CXX_IMPORT_STD" _baseline_gate_position)
+string(FIND "${_project_cmake_baseline}" "CMAKE_CXX_STDLIB_MODULES_JSON" _baseline_metadata_position)
+string(FIND "${_project_cmake_baseline}" "project(MyApp" _baseline_project_position)
+string(FIND "${_project_cmake_baseline}" "CMAKE_CXX_COMPILER_IMPORT_STD" _baseline_capability_position)
+string(FIND "${_project_cmake_baseline}" "set(CMAKE_CXX_MODULE_STD" _baseline_module_std_position)
+string(FIND "${_project_cmake_baseline}" "qt_policy(SET QTP0004 NEW)" _baseline_qt_policy_position)
+string(FIND "${_project_cmake_baseline}" "qt_add_qml_module(MyApp" _baseline_qml_module_position)
+
+if(NOT _baseline_gate_position LESS _baseline_project_position
+    OR NOT _baseline_metadata_position LESS _baseline_project_position
+    OR NOT _baseline_project_position LESS _baseline_capability_position
+    OR NOT _baseline_capability_position LESS _baseline_module_std_position
+    OR NOT _baseline_qt_policy_position LESS _baseline_qml_module_position
+)
+    message(FATAL_ERROR
+        "Generated-project CMake baseline no longer preserves compiler and Qt phase ordering."
+    )
+endif()
 
 file(READ "${AIMCPP_SOURCE_DIR}/docs/agent/PATTERNS.md" _pattern_guide)
 foreach(_required_shape IN ITEMS
@@ -315,6 +377,9 @@ foreach(_required_shape IN ITEMS
     "global module fragment"
     "#if !APP_USE_IMPORT_STD"
     "Incorrect fallback placement"
+    "Correct import-std detection order"
+    "Incorrect import-std detection order"
+    "QT_KNOWN_POLICY_QTP0004"
 )
     string(FIND "${_pattern_guide}" "${_required_shape}" _pattern_shape_position)
     if(_pattern_shape_position EQUAL -1)
@@ -346,6 +411,10 @@ foreach(_required_shape IN ITEMS
     "IMPORT_STD"
     "HEADERS"
     "AIMCPP_USE_IMPORT_STD"
+    "Two-Phase Import-Std Detection"
+    "before the first"
+    "CMAKE_CXX_COMPILER_IMPORT_STD"
+    "fresh build tree"
 )
     string(FIND "${_toolchain_guide}" "${_required_shape}" _toolchain_shape_position)
     if(_toolchain_shape_position EQUAL -1)
@@ -360,12 +429,14 @@ foreach(_required_shape IN ITEMS
     "EVAL-UI-005"
     "EVAL-UI-006"
     "EVAL-UI-007"
+    "EVAL-UI-008"
     "EVAL-SYN-005"
     "EVAL-SYN-006"
     "GUI-015"
     "GUI-016"
     "GUI-017"
     "GUI-018"
+    "GUI-019"
 )
     string(FIND "${_ui_eval_suite}" "${_required_shape}" _ui_eval_position)
     if(_ui_eval_position EQUAL -1)
@@ -390,6 +461,8 @@ foreach(_required_shape IN ITEMS
     "std::print"
     "return syntax for readability"
     "global module fragments"
+    "first C++ language enablement"
+    "PROJECT_CMAKE_BASELINE.md"
 )
     string(FIND "${_implement_skill}" "${_required_shape}" _implement_modern_shape_position)
     if(_implement_modern_shape_position EQUAL -1)
@@ -406,6 +479,7 @@ file(READ
 foreach(_required_shape IN ITEMS
     "AIMCPP_STDLIB_MODE=IMPORT_STD"
     "AIMCPP_STDLIB_MODE=HEADERS"
+    "Fresh configuration is mandatory"
 )
     string(FIND "${_test_skill}" "${_required_shape}" _test_mode_position)
     if(_test_mode_position EQUAL -1)
@@ -423,6 +497,9 @@ foreach(_required_shape IN ITEMS
     "product-specific visual direction"
     "top-level `ui/`"
     "error prevention"
+    "QT_KNOWN_POLICY_QTP0004"
+    "cascading symptom"
+    "PROJECT_CMAKE_BASELINE.md"
 )
     string(FIND "${_qt_design_skill}" "${_required_shape}" _qt_skill_shape_position)
     if(_qt_skill_shape_position EQUAL -1)
@@ -433,12 +510,34 @@ foreach(_required_shape IN ITEMS
 endforeach()
 
 file(READ "${AIMCPP_SOURCE_DIR}/evals/reflection.md" _reflection_eval_suite)
-string(FIND "${_reflection_eval_suite}" "EVAL-REF-008" _reflection_eval_position)
-if(_reflection_eval_position EQUAL -1)
-    message(FATAL_ERROR
-        "Reflection eval suite is missing the durable UI and syntax correction scenario."
-    )
-endif()
+foreach(_required_shape IN ITEMS "EVAL-REF-008" "EVAL-REF-009" "BLD-014" "GUI-019")
+    string(FIND "${_reflection_eval_suite}" "${_required_shape}" _reflection_eval_position)
+    if(_reflection_eval_position EQUAL -1)
+        message(FATAL_ERROR
+            "Reflection eval suite is missing durable correction coverage: ${_required_shape}"
+        )
+    endif()
+endforeach()
+
+file(READ "${AIMCPP_SOURCE_DIR}/evals/toolchains.md" _toolchain_eval_suite)
+foreach(_required_shape IN ITEMS "EVAL-TCH-009" "BLD-014")
+    string(FIND "${_toolchain_eval_suite}" "${_required_shape}" _toolchain_eval_position)
+    if(_toolchain_eval_position EQUAL -1)
+        message(FATAL_ERROR
+            "Toolchain eval suite is missing detection-order coverage: ${_required_shape}"
+        )
+    endif()
+endforeach()
+
+file(READ "${AIMCPP_SOURCE_DIR}/docs/agent/COMMON_FAILURES.md" _failure_catalog)
+foreach(_required_shape IN ITEMS "experimental support was not enabled" ".qmltypes" "QTP0004")
+    string(FIND "${_failure_catalog}" "${_required_shape}" _failure_shape_position)
+    if(_failure_shape_position EQUAL -1)
+        message(FATAL_ERROR
+            "Failure catalog is missing a durable diagnosis: ${_required_shape}"
+        )
+    endif()
+endforeach()
 
 file(READ "${AIMCPP_SOURCE_DIR}/src/main.cpp" _executable_entry_point)
 foreach(_required_shape IN ITEMS
@@ -474,6 +573,37 @@ foreach(_required_shape IN ITEMS
     endif()
 endforeach()
 
+string(FIND "${_cmake_contract}" "CMAKE_EXPERIMENTAL_CXX_IMPORT_STD" _gate_position)
+string(FIND "${_cmake_contract}" "CMAKE_CXX_STDLIB_MODULES_JSON" _metadata_position)
+string(FIND "${_cmake_contract}" "project(" _project_position)
+string(FIND "${_cmake_contract}" "CMAKE_CXX_COMPILER_IMPORT_STD" _capability_position)
+string(FIND "${_cmake_contract}" "CMAKE_CXX_MODULE_STD" _module_std_position)
+
+foreach(_required_position IN ITEMS
+    _gate_position
+    _metadata_position
+    _project_position
+    _capability_position
+    _module_std_position
+)
+    if(${_required_position} EQUAL -1)
+        message(FATAL_ERROR
+            "CMake contract is missing an import-std detection phase marker: ${_required_position}"
+        )
+    endif()
+endforeach()
+
+if(NOT _gate_position LESS _project_position
+    OR NOT _metadata_position LESS _project_position
+    OR NOT _project_position LESS _capability_position
+    OR NOT _capability_position LESS _module_std_position
+)
+    message(FATAL_ERROR
+        "CMake import-std detection must prepare gate/metadata before project(), "
+        "then inspect capability before selecting CMAKE_CXX_MODULE_STD."
+    )
+endif()
+
 file(GLOB_RECURSE _legacy_headers
     "${AIMCPP_SOURCE_DIR}/src/*.h"
     "${AIMCPP_SOURCE_DIR}/src/*.hpp"
@@ -498,6 +628,10 @@ foreach(_required_phrase IN ITEMS
     "docs/agent/SYNTAX_AND_STYLE.md"
     "scripts/bootstrap-linux-cmake.sh"
     "scripts/verify-linux.sh"
+    "two-phase"
+    "QTP0004"
+    "cascading symptom"
+    "docs/agent/PROJECT_CMAKE_BASELINE.md"
 )
     string(FIND "${_readme}" "${_required_phrase}" _phrase_position)
     if(_phrase_position EQUAL -1)

@@ -271,6 +271,9 @@ requires both interfaces to share application and domain behavior.
 
 ```cmake
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml QuickControls2)
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
 qt_add_qml_module(MyApp URI MyApp QML_FILES ui/Main.qml)
 ```
 
@@ -282,6 +285,11 @@ target_link_libraries(MyApp PRIVATE Qt6::Widgets)
 ```
 
 The incorrect form violates `GUI-001`, `GUI-002`, and `GUI-012`.
+
+When QML files occupy extra directories, the guarded QTP0004 selection must
+precede `qt_add_qml_module`. A missing generated `.qmltypes` file after an
+earlier failed Generate step is not evidence that QML registration itself is
+the first failure.
 
 ## Qt Quick Repository And Experience Shape
 
@@ -366,6 +374,35 @@ auto applicationRule() -> Result
 ```
 
 ## CMake Module Registration
+
+**Correct import-std detection order**
+
+```cmake
+# Verified version-scoped gate and validated metadata are prepared here.
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<verified-version-specific-gate>")
+set(CMAKE_CXX_STDLIB_MODULES_JSON "<validated-active-toolchain-metadata>")
+
+project(MyApp LANGUAGES CXX)
+
+if(26 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD)
+    set(CMAKE_CXX_MODULE_STD ON)
+else()
+    set(CMAKE_CXX_MODULE_STD OFF)
+endif()
+```
+
+**Incorrect import-std detection order**
+
+```cmake
+project(MyApp LANGUAGES CXX)
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<gate-set-too-late>")
+set(CMAKE_CXX_MODULE_STD ON)
+```
+
+The incorrect form asks CMake to use a capability that was not enabled during
+compiler detection. Later metadata or a target property cannot repair that
+ordering; recreate the CMake configuration after moving phase-one inputs before
+`project()`.
 
 **Correct**
 

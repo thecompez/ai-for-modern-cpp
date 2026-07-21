@@ -17,7 +17,9 @@ Use this after the human corrected AI-generated work.
 6. Update `docs/REVIEW.md` when the correction is reviewable.
 7. Add or update a pattern, eval, and knowledge-contract assertion when useful.
 8. Keep executable examples synchronized.
-9. Do not add noisy or overly specific rules.
+9. Separate first causal failures from cascading IDE or generated-file
+   diagnostics before promoting the lesson.
+10. Do not add noisy or overly specific rules.
 
 ## Output
 

@@ -173,3 +173,39 @@ AUTO reports AIMCPP_USE_IMPORT_STD=OFF.
 
 **Rule coverage**: `BLD-006`, `BLD-010`, `BLD-013`, `MOD-009` through
 `MOD-012`, `VER-001`.
+
+## EVAL-TCH-009 — Import-Std Gate Enabled After Project
+
+**Proposed CMake shape**
+
+```cmake
+project(MyApp LANGUAGES CXX)
+
+set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<version-specific-gate>")
+set(CMAKE_CXX_MODULE_STD ON)
+```
+
+**Observed failure**
+
+```text
+The CXX_MODULE_STD property requires toolchain support, but experimental
+import std support was not enabled when detecting the toolchain.
+```
+
+**Required behavior**
+
+- Identify `project()` as the point at which CMake enabled C++ and performed
+  compiler capability detection.
+- Move the verified version-scoped gate and validated active-toolchain metadata
+  before the first C++ enablement call.
+- Inspect `CMAKE_CXX_COMPILER_IMPORT_STD` only after language enablement, then
+  select `CMAKE_CXX_MODULE_STD` from that observed capability.
+- Do not manually populate the capability list or infer it from compiler
+  version or metadata existence.
+- Clear the prior CMake configuration and verify configure, build, and tests as
+  separate results.
+- For a generated Qt Quick/C++ project, begin from
+  `PROJECT_CMAKE_BASELINE.md` rather than reconstructing the two phases from
+  partial examples.
+
+**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-009`, `BLD-014`, `VER-001`.

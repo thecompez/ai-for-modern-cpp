@@ -20,6 +20,8 @@ Use this command when implementing a feature, bug fix, or refactor.
    application, apply `GUI-015`, read the Qt Quick guides, and use Qt Quick as
    the primary interface rather than silently selecting CLI-only.
 3. Use the task-routing table and read every selected guide completely.
+   Generated Qt Quick/C++ projects must read and start from
+   `docs/agent/PROJECT_CMAKE_BASELINE.md`.
 4. Understand the smallest subsystem that owns the requested behavior.
 5. Inspect existing module boundaries, tests, working tree, and current diff.
 6. Make the smallest correct change.
@@ -28,11 +30,14 @@ Use this command when implementing a feature, bug fix, or refactor.
    standard headers only in global module fragments.
 9. Use C++20+ features appropriately, choose return syntax for readability,
    and prefer `std::print` or `std::println` for ordinary formatted output.
-10. Build.
-11. Run tests with zero discovered tests treated as an error.
-12. Fix failures and repeat verification.
-13. Inspect the final diff and run `git diff --check`.
-14. Report exact build and test results.
+10. For `import std` CMake work, put verified gate/metadata inputs before the
+    first C++ language enablement and consume `CMAKE_CXX_COMPILER_IMPORT_STD`
+    only afterward; recreate stale compiler-detection state after reordering.
+11. Build.
+12. Run tests with zero discovered tests treated as an error.
+13. Fix failures and repeat verification.
+14. Inspect the final diff and run `git diff --check`.
+15. Report exact build and test results.
 
 ## Rules
 

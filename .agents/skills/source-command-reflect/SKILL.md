@@ -24,7 +24,9 @@ Use this after the human corrected AI-generated work.
 7. Add or update a pattern and eval scenario when they make the behavior clearer.
 8. Extend `tests/knowledge_contract.cmake` when the invariant is machine-checkable.
 9. Keep executable examples synchronized with the new rule.
-10. Do not add noisy or overly specific rules.
+10. Separate first causal failures from cascading IDE or generated-file
+    diagnostics when generalizing the correction.
+11. Do not add noisy or overly specific rules.
 
 ## Output
 

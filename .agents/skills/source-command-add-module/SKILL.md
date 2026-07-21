@@ -18,9 +18,12 @@ Use this skill when introducing a new project-owned C++ module.
 6. Follow the repository's selected standard-library mode: `import std` when
    enabled, otherwise minimal standard headers in the global module fragment.
 7. Register the interface with `FILE_SET CXX_MODULES`.
-8. Link consumers to the owning CMake target.
-9. Add public-behavior tests.
-10. Configure, build, test, inspect the diff, and report exact evidence.
+8. If standard-library detection changes, prepare the verified experimental
+   gate and metadata before `project()`, then inspect detected capability and
+   select `CXX_MODULE_STD` afterward.
+9. Link consumers to the owning CMake target.
+10. Add public-behavior tests.
+11. Configure, build, test, inspect the diff, and report exact evidence.
 
 Do not create `.h` files or add a module named `utils`, `helpers`, `common`, or
 `misc` without a repository-established domain reason.

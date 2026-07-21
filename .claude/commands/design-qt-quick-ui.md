@@ -3,6 +3,7 @@
 Read `AGENTS.md` and then completely read:
 
 - `docs/agent/QT_QUICK_UI.md`
+- `docs/agent/PROJECT_CMAKE_BASELINE.md`
 - `docs/agent/ARCHITECTURE.md`
 - `docs/agent/NAMING.md`
 - `docs/agent/SYNTAX_AND_STYLE.md`
@@ -22,8 +23,13 @@ QML/C++ ownership boundary. Reject generic repetitive screen recipes.
 
 Use Qt 6, Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`. Keep domain
 and application behavior in modern C++ modules. Keep new QML, tokens, and
-visual assets under the top-level `ui/` boundary. Do not introduce Qt Widgets
+visual assets under the top-level `ui/` boundary. For QML subdirectories, set
+QTP0004 `NEW` behind `QT_KNOWN_POLICY_QTP0004` before module registration, and
+treat missing generated `.qmltypes` after failed CMake generation as a
+cascading symptom. Do not introduce Qt Widgets
 without an explicit user request or inspected compatibility requirement.
+For a generated project, begin with `PROJECT_CMAKE_BASELINE.md` instead of
+assembling the CMake file from partial snippets.
 Keep any secondary CLI thin, connected to the shared application/domain modules,
 and subordinate to the primary interface.
 

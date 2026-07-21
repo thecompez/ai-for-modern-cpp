@@ -149,6 +149,30 @@ qml/
   subdivisions only when justified.
 - Do not create empty layers merely to imitate the reference layout.
 
+## EVAL-UI-008 — QML Policy Warning After Failed Generate
+
+**Observed IDE output**
+
+```text
+Qt policy QTP0004 is not set for extra directories containing QML files.
+The CXX_MODULE_STD property requires toolchain support.
+MyApp.qmltypes does not exist.
+```
+
+**Required behavior**
+
+- Treat the CMake Generate failure as causal and the missing generated
+  `.qmltypes` file as a cascading IDE symptom.
+- Fix the first toolchain failure and regenerate before diagnosing QML type
+  registration.
+- When the QML module has extra directories, select QTP0004 `NEW` before
+  `qt_add_qml_module`.
+- Guard the policy with `QT_KNOWN_POLICY_QTP0004` when the declared minimum Qt
+  version may predate the policy; do not raise the minimum solely to silence a
+  warning.
+
+**Rule coverage**: `GUI-012`, `GUI-019`, `BLD-014`, `VER-001`, `VER-002`.
+
 ## EVAL-SYN-001 — Lowercase Enum Cases
 
 **Diff under review**
