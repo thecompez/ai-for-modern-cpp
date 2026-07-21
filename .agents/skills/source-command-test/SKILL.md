@@ -1,7 +1,13 @@
 ---
-description: Build and test the repository without making unnecessary code changes.
-allowed-tools: Read, Bash, Grep, Glob
+name: "source-command-test"
+description: "Build and test the repository without making unnecessary code changes."
 ---
+
+# source-command-test
+
+Use this skill when the user asks to run the migrated source command `test`.
+
+## Command Template
 
 # Test
 

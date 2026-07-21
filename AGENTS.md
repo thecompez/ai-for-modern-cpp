@@ -1,14 +1,16 @@
 # AGENTS.md
 
-# AI Agent Guide for Modern C++ Repositories
+# Modern C++ Agent Knowledge Contract
 
-This file is the canonical instruction guide for AI coding agents working in this repository.
+This file is the canonical repository-wide instruction contract for AI coding
+agents. Every agent must read it before planning, editing, reviewing, testing,
+or releasing work in this repository.
 
-Every agent, including Claude Code, Codex, GitHub Copilot, and other coding agents, must read this file before making changes.
-
-The goal of this repository is to maintain a modern, safe, testable, module-based C++ codebase aligned with the current direction of ISO C++.
-
-This guide is intentionally strict. Its purpose is to prevent AI agents from producing legacy C++, fake validation reports, unsafe ownership patterns, or broad unrelated rewrites.
+The repository is not primarily an application or a generic project scaffold.
+It is an executable reference that teaches AI agents how to reason about,
+design, change, verify, and report work in a modern C++ repository. The source
+code proves that the rules compile; the documentation explains the decisions;
+the evals test whether an agent applies them correctly.
 
 Primary references:
 
@@ -19,250 +21,146 @@ Primary references:
 
 ---
 
-## 1. Agent Operating Principles
+## 1. Normative Language And Authority
 
-Agents must optimize for correctness, safety, maintainability, and verifiability.
+The words **MUST**, **MUST NOT**, **SHOULD**, **SHOULD NOT**, and **MAY** are
+normative.
 
-Before editing code, the agent must:
+- **MUST / MUST NOT**: required for acceptance unless a higher-priority human
+  instruction explicitly overrides the rule.
+- **SHOULD / SHOULD NOT**: the default; deviations require a concrete reason.
+- **MAY**: optional and context-dependent.
 
-1. Read the relevant existing files.
-2. Identify the owning subsystem.
-3. Understand the module boundary.
-4. Make the smallest correct change.
-5. Build.
-6. Test.
-7. Report exact results.
+`AGENTS.md` is the canonical policy. Files under `docs/agent/` provide required
+task-specific detail. If a detailed guide conflicts with this file, this file
+wins and the conflict must be reported and corrected.
 
-Agents must not:
-
-- Guess project behavior without reading code.
-- Invent successful build or test results.
-- Hide failing tests.
-- Replace modern C++ with legacy patterns.
-- Make broad formatting-only changes.
-- Modify unrelated files.
-- Add new dependencies without a strong reason.
-- Ignore compiler warnings introduced by the change.
+Rule identifiers are stable review handles. Agents should cite them when
+explaining a decision or reporting a violation.
 
 ---
 
-## 2. Toolchain Policy
+## 2. Repository Knowledge Model
 
-The primary development path assumes a recent toolchain with strong support for modules, `import std`, concepts, and current C++26 features.
+- **KNO-001** — The repository MUST optimize for teaching reliable agent
+  behavior, not accumulating unrelated product features.
+- **KNO-002** — Production code MUST act as an executable proof of documented
+  rules.
+- **KNO-003** — Correct/incorrect examples MUST live in documentation unless
+  they are expected to compile and are verified by the build.
+- **KNO-004** — Repeated human corrections MUST be evaluated for promotion into
+  a durable rule, review check, pattern, or eval scenario.
+- **KNO-005** — Policy changes MUST update every affected knowledge surface:
+  canonical rules, task guide, review checklist, examples, and evals.
 
-Preferred primary compiler:
-
-```text
-Clang 22 or newer
-```
-
-Supported fallback compilers may be used only when the requested feature set works correctly:
-
-```text
-Clang 18.1.2+     minimum for practical module experiments
-MSVC 14.36+       when module support is verified
-GCC 15+           when module and standard library support are verified
-```
-
-The preferred generator is:
-
-```text
-Ninja
-```
-
-The preferred CMake version is:
-
-```text
-CMake 4.3+
-```
-
-Minimum CMake baseline for this repository family:
-
-```cmake
-cmake_minimum_required(VERSION 3.30)
-```
-
-If the active compiler, standard library, CMake version, or generator cannot support the requested modern C++ feature, the agent must fail clearly or use the repository-provided fallback option.
-
-The agent must not silently downgrade the code style.
+The knowledge architecture is described in
+[`docs/agent/README.md`](docs/agent/README.md).
 
 ---
 
-## 3. Language Standard Policy
+## 3. Task Routing
 
-This repository targets C++20 or newer.
+After reading this file, read only the guides required for the task.
 
-Preferred standard order:
+| Task | Required guide |
+|---|---|
+| Understand repository structure or introduce a subsystem | `docs/agent/ARCHITECTURE.md` |
+| Add or change a C++ module | `docs/agent/MODULES.md` and `docs/agent/NAMING.md` |
+| Design or review a public API | `docs/agent/API_DESIGN.md` and `docs/agent/ERRORS_AND_RESOURCES.md` |
+| Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
+| Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
+| Change CMake, compilers, modules, or `import std` | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
+| Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
+| Diagnose a known build or module failure | `docs/agent/COMMON_FAILURES.md` |
+| Learn approved and forbidden code shapes | `docs/agent/PATTERNS.md` |
+| Review a change | `docs/REVIEW.md` and all guides touched by the diff |
+| Evaluate agent behavior | `evals/README.md` and the relevant scenario suite |
 
-1. C++26 when available.
-2. C++23 when C++26 is not available.
-3. C++20 as the minimum acceptable baseline.
-
-New code must not be written in legacy C++ style.
-
-Required modern C++ features when appropriate:
-
-- Modules.
-- Concepts.
-- Compile-time constraints.
-- `constexpr`.
-- `consteval` when useful.
-- `constinit` for stable static initialization.
-- Ranges.
-- Coroutines only when they simplify asynchronous control flow.
-- `std::expected` or the project equivalent for recoverable errors.
-- `std::span` for non-owning contiguous views.
-- `std::string_view` for read-only string parameters with clear lifetime.
-- `std::optional` for optional values.
-- `std::variant` for closed alternatives.
-- `std::chrono` for time.
-- `std::filesystem` for paths.
-- RAII for ownership and cleanup.
-- Strongly typed enums.
-
-Legacy patterns are not allowed by default.
-
-The following are discouraged by default and require either explicit user request, a low-level systems reason, or a documented compatibility boundary:
-
-- Raw owning pointers.
-- Manual `new` and `delete`.
-- C-style arrays for owned storage.
-- C-style casts.
-- Hidden global mutable state.
-- Macro-driven business logic.
-- New `.h` files.
-- New `.hpp` files unless required for dependency boundaries or compatibility.
-- Classic `.h` / `.cpp` architecture for new internal project code.
-
-When such a pattern is truly necessary, the agent must document why it is necessary in the code review summary.
-
-Acceptable reasons include:
-
-- Low-level allocator implementation.
-- ABI boundary.
-- C API interop.
-- Operating system API boundary.
-- Third-party library compatibility.
-- Embedded or performance-critical memory layout.
-- Placement-new or custom lifetime management in a carefully isolated type.
-- Compiler or standard library workaround.
-- Explicit user instruction.
-
-Even in those cases, isolate the unsafe or low-level pattern behind a small, tested, RAII-safe abstraction.
+Do not load every detailed guide by default. Route by task, then read each
+selected guide completely.
 
 ---
 
-## 4. File Extension Rules
+## 4. Required Agent Loop
 
-The repository uses the following extension policy:
+Every implementation task MUST follow this loop:
 
 ```text
-.cppm   C++ module interface / declaration
-.cpp    C++ module implementation or executable entry point
-.hpp    Optional dependency boundary, compatibility header, or third-party adapter
-.h      Not allowed for new project files unless explicitly requested or required by external tooling
+Read the request and applicable rules
+Inspect the current diff and working tree
+Locate the owning subsystem and module boundary
+Read the relevant implementation and tests
+State important assumptions
+Make the smallest correct change
+Configure
+Build
+Run tests
+Inspect failures
+Fix and repeat verification
+Review the final diff
+Report exact evidence
 ```
 
-Declaration must live in `.cppm`.
-
-Implementation must live in `.cpp`.
-
-If a dependency cannot be imported as a module and requires textual inclusion, isolate it behind `.hpp`.
-
-Do not create `.h` files for new code unless the user explicitly requests it or the external ecosystem requires that exact extension.
-
-If a `.h` file is unavoidable, explain why in the final report.
+- **SCP-001** — Agents MUST inspect before editing and MUST NOT guess project
+  behavior.
+- **SCP-002** — Agents MUST preserve unrelated human changes in a dirty working
+  tree.
+- **SCP-003** — Agents MUST make the smallest coherent change that fully solves
+  the request.
+- **SCP-004** — Broad rewrites, dependency additions, API renames, and formatting
+  churn require explicit justification.
+- **SCP-005** — Diagnosis does not authorize implementation unless the user also
+  asks for a fix.
+- **SCP-006** — No agent may claim success before collecting real verification
+  evidence.
 
 ---
 
-# Module Naming Rule
-- Module names must be dotted, lowercase, stable, domain-oriented, and without `_`.
-- Good: `app.userid`, `project.search`, `project.localization`, `company.core`, `engine.plugin`, `core.memory`.
-- Bad: `app.user_id`, `project.search_engine`, `core.memory_utils`.
-- Avoid vague module names like `utils`, `helpers`, `common`, and `misc` unless the project already requires them.
+## 5. Architecture Rules
 
-# Naming
-- Types/classes/concepts: PascalCase.
-- Functions, parameters, and local variables: lowerCamelCase.
-- Private/protected non-static data members: `m_` prefix.
-- Good members: `m_data`, `m_size`, `m_value`, `m_name`.
-- Bad members: `data_`, `size_`, `value_`, `name_`.
-- `enum class` enumerators must be PascalCase.
-- Good: `enum class HttpMethod { Unknown, Get, Post, Put, Patch, Delete };`
-- Bad: `enum class HttpMethod { get, post, delete_, unknown };`
-- Avoid workaround names like `delete_`, `class_`, `concept_`, `template_`, or `del`.
-- Avoid reserved or project-forbidden identifiers like `__name`, `_Name`, global `_name`, `name_`, and `Name_`.
-- 
-## 5. Naming Policy
+- **ARC-001** — Each behavior MUST have a clear owning subsystem.
+- **ARC-002** — Dependencies SHOULD point from composition and adapters toward
+  stable domain abstractions, not the reverse.
+- **ARC-003** — Public interfaces MUST expose the smallest useful surface.
+- **ARC-004** — Platform code, third-party adaptation, and low-level operations
+  MUST remain at explicit boundaries.
+- **ARC-005** — Vague dumping grounds such as `utils`, `helpers`, `common`, and
+  `misc` MUST NOT be introduced without an existing domain-specific reason.
+- **ARC-006** — New abstractions MUST solve a demonstrated design pressure; do
+  not add speculative layers.
 
-Use dot-separated C++ module names.
-
-Correct:
-
-```cpp
-export module modern.cpp.agent;
-import modern.cpp.agent;
-```
-
-Incorrect:
-
-```cpp
-export module modern_cpp_agent;
-import modern_cpp_agent;
-```
-
-Use C++ namespaces that mirror the module identity.
-
-Correct:
-
-```cpp
-export namespace modern::cpp::agent {
-}
-```
-
-Incorrect:
-
-```cpp
-export namespace modern_cpp_agent {
-}
-```
-
-Private class data members must use the `m_` prefix.
-
-Correct:
-
-```cpp
-private:
-    std::string m_value;
-```
-
-Incorrect:
-
-```cpp
-private:
-    std::string value_;
-```
-
-File names may stay filesystem-friendly:
-
-```text
-modern_cpp_agent.cppm
-modern_cpp_agent.cpp
-```
-
-The module identity inside the code is the important part:
-
-```cpp
-export module modern.cpp.agent;
-```
+See `docs/agent/ARCHITECTURE.md`.
 
 ---
 
-## 6. Module Architecture
+## 6. Language And Module Rules
 
-New production code must use modules by default.
+This repository targets C++20 or newer and uses C++26 for its executable
+reference path. Prefer C++26, then C++23, with C++20 as the minimum family for
+derived repositories.
 
-Preferred structure:
+- **MOD-001** — New internal production code MUST use C++ modules by default.
+- **MOD-002** — Exported declarations MUST live in `.cppm` files.
+- **MOD-003** — Non-trivial implementations MUST live in `.cpp` implementation
+  units.
+- **MOD-004** — Large algorithms, filesystem mutation, networking, database
+  logic, UI behavior, and platform branches MUST NOT live in exported module
+  interfaces.
+- **MOD-005** — Lightweight templates, concepts, compile-time constants, small
+  value types, and small `constexpr` functions MAY remain in `.cppm` when
+  visibility is required.
+- **MOD-006** — New `.h` files are forbidden unless an external tool or ABI
+  requires that exact extension.
+- **MOD-007** — `.hpp` is reserved for third-party, ABI, C API, or textual
+  compatibility boundaries; it is not the default project architecture.
+- **MOD-008** — Any header boundary MUST be isolated, documented, and kept out
+  of domain logic.
+- **MOD-009** — `import std;` is mandatory for this executable reference. There
+  is no textual standard-library fallback.
+- **MOD-010** — An unsupported `import std` toolchain MUST fail clearly during
+  configuration.
+
+Preferred layout:
 
 ```text
 src/
@@ -273,518 +171,240 @@ src/
     project_platform_macos.cpp
     project_platform_windows.cpp
     project_platform_linux.cpp
-    project_compat.hpp
 ```
 
-Example declaration module:
-
-```cpp
-export module project.core;
-
-import std;
-
-export namespace project::core {
-
-/**
- * @brief Represents a validated application name.
- */
-class ApplicationName final {
-public:
-    /**
-     * @brief Creates an application name from a non-empty string.
-     */
-    explicit ApplicationName(std::string value);
-
-    /**
-     * @brief Returns the stored application name.
-     */
-    [[nodiscard]] auto value() const noexcept -> std::string_view;
-
-private:
-    std::string m_value;
-};
-
-}
-```
-
-Example implementation unit:
-
-```cpp
-module project.core;
-
-import std;
-
-namespace project::core {
-
-ApplicationName::ApplicationName(std::string value)
-    : m_value(std::move(value))
-{
-    if (m_value.empty()) {
-        throw std::invalid_argument{"Application name must not be empty."};
-    }
-}
-
-auto ApplicationName::value() const noexcept -> std::string_view
-{
-    return m_value;
-}
-
-}
-```
-
-Do not put large algorithms or platform-specific code inside exported module interfaces.
+See `docs/agent/MODULES.md`.
 
 ---
 
-## 7. Declaration And Implementation Rule
-
-Every non-trivial exported type must have:
-
-- Declaration in `.cppm`.
-- Implementation in `.cpp`.
-
-Acceptable in `.cppm`:
-
-- Public declarations.
-- Concepts.
-- Small value types.
-- Small `constexpr` functions.
-- Doxygen comments.
-- Compile-time constants.
-- Lightweight templates that must be visible to importers.
-
-Not acceptable in `.cppm`:
-
-- Long algorithms.
-- File system mutation logic.
-- Network logic.
-- Database logic.
-- Platform-specific branches.
-- UI behavior code.
-- Test-only helpers.
-- Large implementation details.
-
----
-
-## 8. Concepts And Compile-Time Policy
-
-Use concepts to express compile-time contracts whenever they make an API safer, clearer, or more self-documenting.
-
-Concepts are required when:
-
-- A template expects a specific operation set.
-- A generic algorithm would otherwise fail with unreadable substitution errors.
-- A public template API needs a clear contract.
-- A type category matters to correctness.
-- Compile-time validation prevents runtime misuse.
-
-Good:
-
-```cpp
-template <typename T>
-concept StringLike =
-    requires(T value) {
-        { std::string_view{value} } -> std::same_as<std::string_view>;
-    };
-```
-
-Good:
-
-```cpp
-template <typename T>
-concept PathLike =
-    requires(T value) {
-        { std::filesystem::path{value} };
-    };
-```
-
-Bad:
-
-```cpp
-template <typename T>
-auto parse(T value) -> Result;
-```
-
-Do not use concepts as decorative syntax.
-
-Prefer compile-time enforcement over runtime checks when:
-
-- The rule is knowable at compile time.
-- The diagnostic can be made clear.
-- Runtime flexibility is not required.
-
-Use:
-
-- `static_assert` for invariant checks.
-- Concepts for template constraints.
-- `constexpr` for compile-time computation.
-- `consteval` for values that must be produced at compile time.
-- `constinit` for static storage that must avoid dynamic initialization.
-
-Example:
-
-```cpp
-template <typename T>
-concept NonBooleanIntegral =
-    std::integral<T> && !std::same_as<std::remove_cvref_t<T>, bool>;
-```
-
-If a runtime check is still required, keep it explicit and tested.
-
----
-
-## 9. Public API Documentation
-
-Every exported class, function, enum, concept, and public data structure must have Doxygen-style documentation.
-
-Comments inside source code must be written in English.
-
-Do not write Persian comments inside source code.
-
-Example:
-
-```cpp
-/**
- * @brief Parses a strict semantic version string.
- *
- * The accepted format is `major.minor.patch`.
- */
-[[nodiscard]] auto parseVersion(std::string_view text) -> std::expected<Version, ParseError>;
-```
-
----
-
-## 10. Error Handling
-
-Prefer explicit error handling for recoverable failures.
-
-Use:
-
-- `std::expected` when the active standard library supports it.
-- A project-local `Result<T, E>` equivalent when `std::expected` is unavailable.
-- Exceptions for exceptional conditions, invariant violations, construction failure, or when the subsystem intentionally uses exceptions.
-
-Do not:
-
-- Swallow errors.
-- Log and continue unless continuation is safe.
-- Return fake success.
-- Convert all errors into `bool`.
-- Use exceptions as ordinary control flow for expected failures unless the subsystem explicitly does so.
-
----
-
-## 11. Resource Management
-
-Follow RAII.
-
-Every acquired resource must be owned by a type that releases it deterministically.
-
-This includes:
-
-- Files.
-- Sockets.
-- Handles.
-- Threads.
-- Timers.
-- Temporary directories.
-- Locks.
-- Platform resources.
-- Allocated memory.
-
-Manual resource management is allowed only in isolated low-level code where RAII is being implemented, not bypassed.
-
-Good low-level pattern:
-
-```cpp
-class NativeHandle final {
-public:
-    explicit NativeHandle(void* handle) noexcept;
-    ~NativeHandle();
-
-    NativeHandle(const NativeHandle&) = delete;
-    auto operator=(const NativeHandle&) -> NativeHandle& = delete;
-
-    NativeHandle(NativeHandle&& other) noexcept;
-    auto operator=(NativeHandle&& other) noexcept -> NativeHandle&;
-
-private:
-    void* m_handle {};
-};
-```
-
-Do not use manual cleanup spread across multiple call sites.
-
----
-
-## 12. Platform Boundaries
-
-Use platform macros only at platform boundaries.
-
-Allowed examples:
-
-```cpp
-#if defined(__APPLE__)
-#if defined(_WIN32)
-#if defined(__linux__)
-#if defined(__FreeBSD__)
-```
-
-Do not scatter platform macros across business logic.
-
-Preferred layout:
-
-```text
-project_platform.cppm
-project_platform_macos.cpp
-project_platform_windows.cpp
-project_platform_linux.cpp
-project_platform_freebsd.cpp
-```
-
----
-
-## 13. CMake Policy
-
-Use modern CMake.
-
-Minimum baseline:
-
-```cmake
-cmake_minimum_required(VERSION 3.30)
-```
-
-Preferred CMake for the primary path:
-
-```text
-CMake 4.3+
-```
-
-Use target-based configuration.
-
-Good:
-
-```cmake
-target_compile_features(target_name PRIVATE cxx_std_26)
-target_sources(target_name
-    PUBLIC
-        FILE_SET CXX_MODULES
-        FILES
-            src/project/project.cppm
-    PRIVATE
-        src/project/project.cpp
-)
-```
-
-Avoid unless there is a documented compatibility reason:
-
-```cmake
-include_directories(...)
-add_definitions(...)
-set(CMAKE_CXX_FLAGS ...)
-```
-
-Use target-local alternatives:
-
-```cmake
-target_include_directories(...)
-target_compile_definitions(...)
-target_compile_options(...)
-```
-
----
-
-## 14. `import std` Policy
-
-When the toolchain supports it, prefer:
-
-```cpp
-import std;
-```
-
-The repository may provide an option such as:
-
-```cmake
-option(PROJECT_ENABLE_IMPORT_STD "Enable C++26 import std support when available" ON)
-```
-
-If `import std` is enabled, configure:
-
-```cmake
-set(CMAKE_CXX_MODULE_STD ON)
-set(CMAKE_CXX_SCAN_FOR_MODULES ON)
-```
-
-If the compiler, standard library, CMake version, or generator does not support `import std`, fail clearly or disable the option explicitly.
-
-Do not silently pretend `import std` works.
-
-### Standard Library Module Portability Note
-
-When using `import std;`, do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout` are available as unqualified global identifiers.
+## 7. Naming Rules
+
+- **NAM-001** — Module names MUST be dotted, lowercase, stable,
+  domain-oriented, and contain no underscore.
+- **NAM-002** — Namespaces MUST mirror module identity.
+- **NAM-003** — Types, classes, concepts, and enum-class enumerators MUST use
+  PascalCase.
+- **NAM-004** — Functions, parameters, and local variables MUST use
+  lowerCamelCase.
+- **NAM-005** — Private and protected non-static data members MUST use the
+  `m_` prefix.
+- **NAM-006** — Identifiers ending in `_` are forbidden for project-owned data
+  members.
+- **NAM-007** — Reserved identifiers and keyword workarounds such as `delete_`,
+  `class_`, `_Name`, and `__name` MUST NOT be introduced.
+- **NAM-008** — File names MAY use underscores when useful; the module identity
+  inside the source remains dotted.
 
 Correct:
 
 ```cpp
-std::println("Test failure: {}", error.what());
+export module modern.cpp.agent;
+
+export namespace modern::cpp::agent {
+enum class StandardLevel { Cpp20, Cpp23, Cpp26 };
+}
 ```
 
-Avoid in pure `import std;` examples:
-
-```cpp
-std::println(stderr, "Test failure: {}", error.what());
-```
-
-If standard C interop is required, isolate it through a compatibility boundary.
+See `docs/agent/NAMING.md`.
 
 ---
 
+## 8. API And Compile-Time Rules
 
-### Ranges Portability Note
+- **API-001** — Every exported class, function, enum, concept, and public data
+  structure MUST have English Doxygen documentation.
+- **API-002** — Public APIs MUST communicate ownership, lifetime, optionality,
+  and failure explicitly.
+- **API-003** — Use `std::span` for non-owning contiguous views and
+  `std::string_view` for read-only strings only when lifetime is clear.
+- **API-004** — Use `std::optional` for optional values and `std::variant` for
+  closed alternatives.
+- **API-005** — Generic public APIs MUST use meaningful concepts when an
+  operation set or type category affects correctness.
+- **API-006** — Prefer compile-time enforcement when the rule is knowable at
+  compile time and produces a useful diagnostic.
+- **API-007** — Concepts MUST express real contracts and MUST NOT be decorative.
+- **API-008** — Use `constexpr`, `consteval`, `constinit`, ranges, and coroutines
+  only when they improve correctness or clarity.
 
-Do not use `std::views::enumerate` in repository examples unless the active standard library is verified to support it.
+See `docs/agent/API_DESIGN.md`.
 
-Some recent Clang/libc++ combinations may compile C++26 modules but still not provide `std::views::enumerate`.
+---
 
-Prefer explicit indexed loops or stable range algorithms for template code that must build reliably.
+## 9. Error And Resource Rules
 
-## 15. Build Verification
+- **ERR-001** — Recoverable expected failures SHOULD use `std::expected` or the
+  project equivalent.
+- **ERR-002** — Exceptions MAY represent construction failure, violated
+  invariants, or genuinely exceptional subsystem failures.
+- **ERR-003** — Exceptions MUST NOT be ordinary control flow for expected
+  outcomes unless the owning subsystem explicitly establishes that policy.
+- **ERR-004** — Errors MUST NOT be swallowed, converted into fake success, or
+  reduced to an unexplained `bool`.
+- **ERR-005** — Logging and continuing is allowed only when continuation is
+  demonstrably safe.
+- **RES-001** — Every acquired resource MUST have deterministic RAII ownership.
+- **RES-002** — Raw owning pointers and scattered manual cleanup are forbidden.
+- **RES-003** — `new` and `delete` MAY appear only inside an isolated low-level
+  ownership abstraction with tests and justification.
+- **RES-004** — Move-only resource owners MUST make copy and move semantics
+  explicit.
+- **RES-005** — Files, sockets, handles, locks, threads, timers, and temporary
+  directories are resources and follow the same ownership rules.
 
-After changing code, run the relevant build command.
+See `docs/agent/ERRORS_AND_RESOURCES.md`.
 
-Default:
+---
+
+## 10. Platform Boundary Rules
+
+- **PLT-001** — Platform macros MAY appear only at platform boundaries.
+- **PLT-002** — Business and domain logic MUST NOT contain scattered platform
+  conditionals.
+- **PLT-003** — Each supported platform SHOULD have a separate implementation
+  unit behind a stable module declaration.
+- **PLT-004** — OS handles and C APIs MUST be wrapped behind small RAII-safe
+  adapters.
+- **PLT-005** — Unsupported platforms MUST fail explicitly, not silently select
+  unrelated behavior.
+
+See `docs/agent/PLATFORM_BOUNDARIES.md`.
+
+---
+
+## 11. CMake And Toolchain Rules
+
+Primary path:
+
+```text
+Clang 22+ or GCC 15+
+CMake 4.3+
+Ninja 1.11+
+C++26
+import std
+```
+
+- **BLD-001** — Use target-based modern CMake.
+- **BLD-002** — New module interfaces MUST be declared through
+  `target_sources(... FILE_SET CXX_MODULES ...)`.
+- **BLD-003** — Use target-local compile features, definitions, include paths,
+  and options; do not mutate global compiler flags casually.
+- **BLD-004** — `CMAKE_CXX_MODULE_STD` and `CMAKE_CXX_SCAN_FOR_MODULES` MUST be
+  enabled for targets that use `import std`.
+- **BLD-005** — `CMAKE_CXX_COMPILER_IMPORT_STD` is authoritative. Compiler
+  version claims alone are not proof of support.
+- **BLD-006** — Toolchain, standard-library metadata, CMake, and generator form
+  one compatibility unit and MUST be diagnosed together.
+- **BLD-007** — Unsupported toolchains MUST fail at configure time with the
+  observed values and a useful remediation direction.
+- **BLD-008** — Agents MUST NOT silently downgrade language standard, modules,
+  or `import std` to obtain a green build.
+- **BLD-009** — CMake experimental gates MUST be version-scoped and verified
+  against the active CMake release.
+
+Do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout`
+are exported by `import std`. Prefer standard C++ facilities or isolate C
+interop behind a compatibility boundary.
+
+Do not use `std::views::enumerate` in portable examples unless the active
+standard library has been verified to provide it.
+
+See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
+
+---
+
+## 12. Testing And Verification Rules
+
+- **TST-001** — Every behavior change MUST have relevant automated coverage
+  when practical.
+- **TST-002** — Tests SHOULD exercise public behavior rather than private
+  implementation details.
+- **TST-003** — Recoverable failures, invalid input, boundary values, and
+  ownership behavior MUST be tested when introduced.
+- **TST-004** — Tests MUST be deterministic and independent of external network
+  or mutable global state unless explicitly classified as integration tests.
+- **TST-005** — Temporary resources MUST use RAII cleanup.
+- **TST-006** — A test command that discovers zero tests MUST NOT be reported as
+  a successful test run.
+- **VER-001** — Configure, build, and test are separate results and MUST be
+  reported separately.
+- **VER-002** — Agents MUST stop a command chain after configure failure; later
+  missing-build and zero-test messages are cascading symptoms.
+- **VER-003** — Exact commands and exact pass/fail counts MUST be reported.
+- **VER-004** — Warnings introduced by the change MUST be resolved.
+- **VER-005** — Upstream experimental warnings MAY remain only when identified
+  accurately and not caused by project code.
+- **VER-006** — `git diff --check` and final-diff inspection are required before
+  completion.
+- **VER-007** — Documentation and agent-rule changes MUST run the knowledge
+  contract test in addition to the normal build and tests.
+
+Preferred loop:
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build --parallel
+ctest --test-dir build --output-on-failure --no-tests=error
 ```
 
-Do not claim the project builds unless the build command completed successfully.
-
-If the build cannot be run, say so clearly.
+See `docs/agent/TESTING_AND_VERIFICATION.md`.
 
 ---
 
-## 16. Test Verification
+## 13. Documentation And Knowledge Rules
 
-After implementation changes, run tests.
-
-Default:
-
-```bash
-ctest --test-dir build --output-on-failure
-```
-
-Do not claim tests pass unless they were actually run and passed.
-
-If tests are missing, add tests when practical.
-
----
-
-## 17. AI Loop Test Requirement
-
-For non-trivial changes, follow this loop:
-
-```text
-Read existing code
-Make the smallest correct change
-Build
-Run tests
-Inspect failures
-Fix
-Build again
-Run tests again
-Summarize exact results
-```
-
-Do not stop after the first generated solution.
-
-Do not hide failing tests.
-
-Do not make broad unrelated rewrites.
+- **DOC-001** — Source comments and repository technical documentation MUST be
+  written in English.
+- **DOC-002** — Documentation MUST explain decisions, boundaries, and failure
+  modes rather than restating syntax.
+- **DOC-003** — Good and bad examples MUST be labeled unambiguously.
+- **DOC-004** — Bad examples MUST NOT be added as normal build inputs.
+- **DOC-005** — Architecture diagrams MUST match the current dependency graph.
+- **DOC-006** — A rule should be short, testable, general, and owned by one
+  canonical location.
+- **DOC-007** — Task guides MAY elaborate a rule but MUST NOT redefine it.
 
 ---
 
+## 14. Security And Tool Rules
+
+- **SEC-001** — Secrets, tokens, private endpoints, and machine-specific paths
+  MUST NOT be committed.
+- **SEC-002** — Local active MCP configuration belongs in `.mcp.json` and MUST
+  remain ignored.
+- **SEC-003** — Prefer the smallest useful permission set: read-only context,
+  local git, remote read access, build/test tools, then write capability only
+  with explicit intent.
+- **SEC-004** — Deployment, payment, production database, destructive, or broad
+  write tools require explicit user authorization.
+- **SEC-005** — Destructive operations require exact targets and prior
+  read-only resolution.
+- **SEC-006** — External dependencies require a strong reason and a documented
+  ownership/update strategy.
+
+See `docs/MCP.md` for the MCP safety model.
 
 ---
 
-## MCP Tooling Policy
+## 15. Change, Commit, And Release Rules
 
-MCP configuration is allowed, but it must be safe by default.
+- **CHG-001** — Commits MUST be cohesive and use precise imperative titles.
+- **CHG-002** — Pull request summaries MUST state what changed, why, how it was
+  tested, known limitations, and intentional exceptions.
+- **CHG-003** — Tags, releases, deployments, and publishing require explicit
+  human approval.
+- **CHG-004** — Agents MUST NOT stage, commit, push, or open a pull request
+  unless the user requested that workflow.
 
-Repository-level examples should use:
-
-```text
-.mcp.example.json
-docs/MCP.md
-```
-
-Local active configuration should use:
-
-```text
-.mcp.json
-```
-
-`.mcp.json` must be ignored by git when it may contain local paths, private endpoints, tokens, or machine-specific settings.
-
-Agents must not add secrets to MCP configuration files.
-
-Agents must not enable write-capable, deployment, payment, production database, or destructive tools unless the user explicitly requests them.
-
-Preferred MCP permission order:
-
-```text
-1. Read-only filesystem context
-2. Local git inspection
-3. GitHub read access
-4. Build/test helper tools
-5. Write-capable tools only with explicit user intent
-```
-
-When MCP tools are used, the final report should mention which tool category was used and why.
-
-
-## 18. Claude, Codex, And Copilot Compatibility
-
-This repository should work well with multiple AI coding agents.
-
-For Claude Code:
-
-- `CLAUDE.md` must point to this file.
-- `.claude/commands` may define repeatable workflows.
-- Commands must require build and test verification.
-
-For Codex:
-
-- Keep instructions explicit, direct, and repository-local.
-- Prefer concrete commands over vague process descriptions.
-- Always state the expected file layout.
-- Avoid relying on hidden context.
-
-For GitHub Copilot:
-
-- Keep public APIs documented.
-- Keep modules and namespaces consistently named.
-- Keep examples short and idiomatic.
-- Avoid ambiguous naming patterns.
-
-All agents must treat this file as the source of truth.
-
----
-
-## 19. Commit And PR Rules
-
-Commit messages should be precise.
-
-Good:
+Good commit titles:
 
 ```text
 Add module-based version parser
 Fix platform app data directory resolution
-Add smoke test for configuration loader
+Define agent eval scenarios for module changes
 ```
 
-Bad:
+Bad commit titles:
 
 ```text
 Update code
@@ -792,30 +412,22 @@ Fix stuff
 AI changes
 ```
 
-Pull request summaries must include:
-
-- What changed.
-- Why it changed.
-- How it was tested.
-- Any known limitations.
-- Any intentional low-level exceptions to the default safety rules.
-
 ---
 
-## 20. Final Response Requirements For Agents
+## 16. Final Report Contract
 
-When finishing a task, report:
+Every completed implementation report MUST include:
 
-- Files changed.
-- What changed.
-- Build command used.
-- Test command used.
-- Result of build.
-- Result of tests.
-- Known limitations.
-- Any rule exceptions used and why.
+- **REP-001** — Files changed.
+- **REP-002** — What changed and why.
+- **REP-003** — Configure and build commands with exact results.
+- **REP-004** — Test commands, discovered test count, and exact results.
+- **REP-005** — Known limitations or unverified environments.
+- **REP-006** — Any rule exception and its justification.
+- **REP-007** — For reflected corrections, what was learned and why the new
+  rule is general enough to keep.
 
-Do not write:
+Never report:
 
 ```text
 It should work.
@@ -823,22 +435,47 @@ Probably fixed.
 Tests should pass.
 ```
 
-Write exact results.
+Report only observed evidence.
 
 ---
 
-## 21. Forbidden Agent Behavior
+## 17. Forbidden Agent Behavior
 
-AI agents must not:
+Agents MUST NOT:
 
-- Invent successful build or test results.
-- Create legacy headers for new code without explicit user request or external requirement.
-- Replace modules with classic includes.
-- Convert modern code to older C++ style.
-- Add global mutable state casually.
-- Add broad formatting noise.
-- Change public API names without need.
-- Modify unrelated subsystems.
-- Ignore compiler warnings introduced by the change.
-- Add comments in non-English languages inside code.
-- Use low-level unsafe patterns without isolating them and explaining why.
+- Invent build, test, review, or tool results.
+- Hide failures or present cascading errors as independent root causes.
+- Replace modules with classic include architecture.
+- Add legacy project headers without a justified boundary.
+- Add raw ownership, manual cleanup, or global mutable state casually.
+- Scatter platform macros through domain logic.
+- Change public API names or unrelated subsystems without need.
+- Perform broad formatting-only rewrites during functional work.
+- Add non-English source comments.
+- Treat the executable example as permission to accumulate unrelated showcase
+  features.
+- Turn human corrections into noisy one-off rules; generalize only durable
+  lessons.
+
+---
+
+## 18. Multi-Agent Compatibility
+
+For Claude Code:
+
+- `CLAUDE.md` MUST point to this file.
+- `.claude/commands/` workflows MUST preserve verification requirements.
+
+For Codex:
+
+- Repository-local skills under `.agents/skills/` MUST route back to this file
+  and the applicable task guides.
+- Expected file layout and commands MUST be explicit.
+
+For GitHub Copilot and other agents:
+
+- Public APIs, rule identifiers, module names, and examples MUST remain
+  unambiguous and searchable.
+
+All agent-specific workflows are adapters. `AGENTS.md` remains the source of
+truth.

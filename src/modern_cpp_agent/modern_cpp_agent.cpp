@@ -9,11 +9,11 @@ auto toString(StandardLevel level) noexcept -> std::string_view
     using enum StandardLevel;
 
     switch (level) {
-    case cpp20:
+    case Cpp20:
         return "C++20";
-    case cpp23:
+    case Cpp23:
         return "C++23";
-    case cpp26:
+    case Cpp26:
         return "C++26";
     }
 
@@ -25,13 +25,13 @@ auto toString(VerificationPhase phase) noexcept -> std::string_view
     using enum VerificationPhase;
 
     switch (phase) {
-    case configure:
+    case Configure:
         return "Configure";
-    case build:
+    case Build:
         return "Build";
-    case test:
+    case Test:
         return "Test";
-    case review:
+    case Review:
         return "Review";
     }
 
@@ -57,7 +57,7 @@ auto makePolicySummary(
 ) -> std::string
 {
     return std::format(
-        "{} uses {}+, modules, cppm/cpp separation, concepts, tests, and AI loop verification.",
+        "{} is an executable {}+ knowledge reference with modules, cppm/cpp separation, concepts, tests, and AI loop verification.",
         repositoryName.value(),
         toString(standardLevel)
     );
@@ -66,10 +66,10 @@ auto makePolicySummary(
 auto makeVerificationPipeline() -> std::vector<VerificationPhase>
 {
     return {
-        VerificationPhase::configure,
-        VerificationPhase::build,
-        VerificationPhase::test,
-        VerificationPhase::review
+        VerificationPhase::Configure,
+        VerificationPhase::Build,
+        VerificationPhase::Test,
+        VerificationPhase::Review
     };
 }
 
@@ -140,7 +140,7 @@ auto validateMinimumStandard(
 {
     using enum StandardLevel;
 
-    if (level == cpp20 || level == cpp23 || level == cpp26) {
+    if (level == Cpp20 || level == Cpp23 || level == Cpp26) {
         return level;
     }
 

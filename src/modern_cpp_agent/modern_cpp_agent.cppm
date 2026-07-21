@@ -8,19 +8,19 @@ export namespace modern::cpp::agent {
  * @brief Describes the minimum modern C++ standard policy for a repository.
  */
 enum class StandardLevel {
-    cpp20,
-    cpp23,
-    cpp26
+    Cpp20,
+    Cpp23,
+    Cpp26
 };
 
 /**
  * @brief Describes a project verification phase.
  */
 enum class VerificationPhase {
-    configure,
-    build,
-    test,
-    review
+    Configure,
+    Build,
+    Test,
+    Review
 };
 
 /**
@@ -119,7 +119,7 @@ concept TextRenderable =
 ) -> std::expected<StandardLevel, std::string>;
 
 /**
- * @brief Returns the preferred compiler family and minimum version for this template.
+ * @brief Returns the preferred compiler family and minimum version for this reference.
  */
 [[nodiscard]] consteval auto preferredCompiler() -> std::string_view
 {

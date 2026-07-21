@@ -1,7 +1,13 @@
 ---
-description: Prepare a release using a strict verification-first workflow.
-allowed-tools: Read, Edit, Bash, Grep, Glob
+name: "source-command-release"
+description: "Prepare a release using a strict verification-first workflow."
 ---
+
+# source-command-release
+
+Use this skill when the user asks to run the migrated source command `release`.
+
+## Command Template
 
 # Release
 

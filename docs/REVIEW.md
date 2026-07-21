@@ -1,43 +1,94 @@
-# Review Checklist
+# Rule-Driven Review Contract
 
-Use this checklist when reviewing AI-generated C++ changes.
+Review the requested behavior, the final diff, and the verification evidence.
+Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 
-## Modern C++
+## Review Priority
 
-- [ ] Uses C++20+ style.
-- [ ] Does not introduce legacy `.h` files.
-- [ ] Uses `.cppm` for declarations and `.cpp` for implementation.
-- [ ] Uses modules instead of include-heavy internal architecture.
-- [ ] Uses concepts when compile-time contracts improve clarity.
-- [ ] Uses RAII for resources.
-- [ ] Avoids raw owning pointers.
-- [ ] Avoids global mutable state.
-- [ ] Public exported APIs have Doxygen comments.
+1. Correctness and lost behavior.
+2. Safety, ownership, lifetime, and error handling.
+3. Architecture and module boundaries.
+4. Build, test, and knowledge-contract evidence.
+5. Maintainability and documentation.
+6. Style only when it violates an explicit repository rule.
 
-## Build And Test
+## Scope And Discovery
 
-- [ ] Configure command was run.
-- [ ] Build command was run.
-- [ ] Tests were run.
-- [ ] Failures are reported honestly.
-- [ ] No fake success claims.
+- [ ] `SCP-001`: The owning subsystem and existing behavior were inspected.
+- [ ] `SCP-002`: Unrelated human changes were preserved.
+- [ ] `SCP-003`: The diff is the smallest coherent complete change.
+- [ ] `SCP-004`: No unrelated API rename, dependency, rewrite, or formatting churn exists.
 
-## Scope
+## Architecture And Modules
 
-- [ ] Change is local and minimal.
-- [ ] No unrelated formatting.
-- [ ] No accidental public API rename.
-- [ ] No platform logic scattered through business code.
+- [ ] `ARC-001`: Each new behavior has a clear owner.
+- [ ] `ARC-002`: Dependency direction remains stable and intentional.
+- [ ] `MOD-001`: New internal production code uses modules.
+- [ ] `MOD-002`: Exported declarations are in `.cppm`.
+- [ ] `MOD-003`: Non-trivial implementation is in `.cpp`.
+- [ ] `MOD-004`: No I/O, platform branch, or large algorithm leaked into an exported interface.
+- [ ] `MOD-006`: No unjustified `.h` file was introduced.
+- [ ] `MOD-009`: The executable proof still uses mandatory `import std`.
 
+## Naming And API
 
-## Toolchain
+- [ ] `NAM-001`: Module names are dotted, lowercase, and domain-oriented.
+- [ ] `NAM-002`: Namespaces mirror module identities.
+- [ ] `NAM-003`: Types, concepts, and enum enumerators use PascalCase.
+- [ ] `NAM-005`: Private/protected data members use `m_`.
+- [ ] `API-001`: Exported APIs have English Doxygen contracts.
+- [ ] `API-002`: Ownership, lifetime, optionality, and failure are explicit.
+- [ ] `API-005`: Public templates use meaningful constraints where required.
 
-- [ ] Primary path assumes Clang 22+ when advanced C++26/import-std features are required.
-- [ ] Fallback compiler behavior is explicit and not silently downgraded.
-- [ ] Ninja is preferred for module builds.
+## Errors, Ownership, And Platforms
 
-## Low-Level Exceptions
+- [ ] `ERR-001`: Recoverable failures use `std::expected` or an equivalent.
+- [ ] `ERR-004`: No error is swallowed or converted into fake success.
+- [ ] `RES-001`: Every acquired resource has deterministic RAII ownership.
+- [ ] `RES-002`: No raw owning pointer or scattered cleanup was introduced.
+- [ ] `PLT-001`: Platform macros remain at platform boundaries.
+- [ ] `PLT-004`: Native resources are isolated behind safe adapters.
 
-- [ ] Any raw owning pointer, manual lifetime operation, C-style cast, or macro-driven logic has a documented reason.
-- [ ] Low-level code is isolated behind RAII.
-- [ ] The final report explains why the exception was necessary.
+## Build And Tests
+
+- [ ] `BLD-002`: Module interfaces are registered in `CXX_MODULES` file sets.
+- [ ] `BLD-003`: CMake changes are target-local.
+- [ ] `BLD-005`: `import std` support uses observed toolchain capability.
+- [ ] `BLD-008`: No silent downgrade was added.
+- [ ] `TST-001`: Behavior changes have relevant tests.
+- [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
+- [ ] `TST-006`: Zero discovered tests are not reported as success.
+- [ ] `VER-001`: Configure, build, and tests have separate results.
+- [ ] `VER-003`: Exact commands and pass/fail counts are present.
+- [ ] `VER-006`: Final diff and `git diff --check` were inspected.
+
+## Knowledge Consistency
+
+- [ ] `KNO-001`: The change teaches agent behavior rather than adding unrelated product features.
+- [ ] `KNO-002`: Executable examples still prove the documented rules.
+- [ ] `KNO-003`: Incorrect examples are documentation-only and clearly labeled.
+- [ ] `KNO-005`: Rules, task guides, review checks, patterns, and evals agree.
+- [ ] `DOC-005`: Architecture diagrams match current dependencies.
+- [ ] `VER-007`: The knowledge contract test passed.
+
+## Final Report
+
+- [ ] `REP-001`: Files changed are listed.
+- [ ] `REP-002`: What and why are explained.
+- [ ] `REP-003`: Configure/build evidence is exact.
+- [ ] `REP-004`: Test count and result are exact.
+- [ ] `REP-005`: Known limitations are explicit.
+- [ ] `REP-006`: Any exception is justified.
+- [ ] `REP-007`: Reflected corrections explain the durable lesson.
+
+## Inline Finding Shape
+
+```text
+[Priority] RULE-ID — Short title
+
+Explain the concrete defect, the input or environment that triggers it, and the
+smallest useful remediation. Keep the line range tight.
+```
+
+Do not manufacture findings to fill categories. A clean review may have no
+actionable comments.

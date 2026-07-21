@@ -1,0 +1,72 @@
+# Agent Knowledge Map
+
+This directory turns the canonical rules in `AGENTS.md` into task-specific
+engineering guidance. It exists to improve agent decisions, not to duplicate
+policy.
+
+## Truth Hierarchy
+
+```text
+Higher-priority human and platform instructions
+    ↓
+AGENTS.md — canonical repository policy
+    ↓
+docs/agent/* — task-specific interpretation and decision support
+    ↓
+docs/agent/PATTERNS.md and executable source — examples and proof
+    ↓
+evals/* — behavior assessment
+```
+
+If a guide conflicts with `AGENTS.md`, follow `AGENTS.md`, report the conflict,
+and update the guide in the same change when authorized.
+
+## Routing Map
+
+| Question | Read |
+|---|---|
+| Where should this behavior live? | `ARCHITECTURE.md` |
+| Is this declaration or implementation? | `MODULES.md` |
+| What should this symbol be called? | `NAMING.md` |
+| What should the public contract expose? | `API_DESIGN.md` |
+| Is this `expected`, an exception, or RAII? | `ERRORS_AND_RESOURCES.md` |
+| Where does OS-specific code belong? | `PLATFORM_BOUNDARIES.md` |
+| Why did configure or `import std` fail? | `CMAKE_AND_TOOLCHAINS.md`, then `COMMON_FAILURES.md` |
+| What and how should I test? | `TESTING_AND_VERIFICATION.md` |
+| What does approved code look like? | `PATTERNS.md` |
+
+## Decision Workflow
+
+Before editing:
+
+1. Identify the requested outcome.
+2. Inspect the working tree and current diff.
+3. Identify the owning subsystem.
+4. Select the guides from the routing map.
+5. Read the selected guides completely.
+6. Inspect the relevant source, CMake target, and tests.
+7. State any assumption that materially affects the design.
+
+After editing:
+
+1. Configure from a compatible toolchain.
+2. Build the affected targets.
+3. Run relevant tests with zero-tests treated as an error.
+4. Run the knowledge contract for policy or documentation changes.
+5. Inspect the final diff and `git diff --check`.
+6. Report exact evidence and limitations.
+
+## Knowledge Maintenance
+
+A durable correction belongs in one or more of these surfaces:
+
+| Correction type | Durable destination |
+|---|---|
+| Repository-wide invariant | `AGENTS.md` |
+| Task-specific reasoning | Relevant guide in this directory |
+| Reviewable condition | `docs/REVIEW.md` |
+| Common good/bad shape | `PATTERNS.md` |
+| Reproducible behavioral challenge | `evals/` |
+| Enforceable repository invariant | `tests/knowledge_contract.cmake` |
+
+Do not promote incidental preferences or one-off fixes into global rules.

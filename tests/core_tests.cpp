@@ -13,17 +13,17 @@ auto require(bool condition, std::string_view message) -> void
 auto testStandardToString() -> void
 {
     require(
-        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::cpp20) == "C++20",
+        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::Cpp20) == "C++20",
         "C++20 label mismatch."
     );
 
     require(
-        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::cpp23) == "C++23",
+        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::Cpp23) == "C++23",
         "C++23 label mismatch."
     );
 
     require(
-        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::cpp26) == "C++26",
+        modern::cpp::agent::toString(modern::cpp::agent::StandardLevel::Cpp26) == "C++26",
         "C++26 label mismatch."
     );
 }
@@ -51,11 +51,12 @@ auto testPolicySummary() -> void
 
     const auto summary = modern::cpp::agent::makePolicySummary(
         name,
-        modern::cpp::agent::StandardLevel::cpp26
+        modern::cpp::agent::StandardLevel::Cpp26
     );
 
     require(summary.contains("sample"), "Summary must contain repository name.");
     require(summary.contains("C++26"), "Summary must contain standard level.");
+    require(summary.contains("knowledge reference"), "Summary must describe the repository purpose.");
     require(summary.contains("modules"), "Summary must mention modules.");
 }
 
@@ -82,12 +83,12 @@ auto testVerificationPipeline() -> void
     require(pipeline.size() == 4, "Verification pipeline must contain four phases.");
 
     require(
-        pipeline.front() == modern::cpp::agent::VerificationPhase::configure,
+        pipeline.front() == modern::cpp::agent::VerificationPhase::Configure,
         "Pipeline must start with configure."
     );
 
     require(
-        pipeline.back() == modern::cpp::agent::VerificationPhase::review,
+        pipeline.back() == modern::cpp::agent::VerificationPhase::Review,
         "Pipeline must end with review."
     );
 }
@@ -95,7 +96,7 @@ auto testVerificationPipeline() -> void
 auto testStandardValidation() -> void
 {
     const auto validated = modern::cpp::agent::validateMinimumStandard(
-        modern::cpp::agent::StandardLevel::cpp26
+        modern::cpp::agent::StandardLevel::Cpp26
     );
 
     require(validated.has_value(), "C++26 must be accepted.");

@@ -133,6 +133,17 @@ if(AIMCPP_BUILD_TESTS)
     set_property(TARGET ai-modern-cpp-tests PROPERTY CXX_SCAN_FOR_MODULES ON)
 
     add_test(NAME core_tests COMMAND ai-modern-cpp-tests)
+
+    add_test(
+        NAME knowledge_contract
+        COMMAND
+            ${CMAKE_COMMAND}
+            "-DAIMCPP_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+            -P
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/knowledge_contract.cmake"
+    )
+
+    set_tests_properties(knowledge_contract PROPERTIES LABELS knowledge)
 endif()
 
 message(STATUS "CMAKE_VERSION=${CMAKE_VERSION}")

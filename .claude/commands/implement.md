@@ -10,14 +10,14 @@ Use this command when implementing a feature, bug fix, or refactor.
 ## Required Process
 
 1. Read `AGENTS.md`.
-2. Understand the smallest subsystem that owns the requested behavior.
-3. Inspect existing module boundaries.
-4. Make the smallest correct change.
-5. Preserve `.cppm` declaration and `.cpp` implementation separation.
-6. Use C++20+ features appropriately.
-7. Build.
-8. Run tests.
-9. Fix failures.
+2. Read the task guides selected by its routing table.
+3. Understand the smallest subsystem that owns the requested behavior.
+4. Inspect existing module boundaries, tests, and the current diff.
+5. Make the smallest correct change.
+6. Preserve `.cppm` declaration and `.cpp` implementation separation.
+7. Build and run tests with zero tests treated as an error.
+8. Fix failures and repeat verification.
+9. Inspect the final diff and run `git diff --check`.
 10. Report exact build and test results.
 
 ## Rules

@@ -70,7 +70,7 @@ auto main() -> int
     static_assert(minimumStandard >= 20);
     static_assert(preferredCompiler().contains("Clang"));
 
-    const auto selectedStandard = validateMinimumStandard(StandardLevel::cpp26);
+    const auto selectedStandard = validateMinimumStandard(StandardLevel::Cpp26);
 
     if (!selectedStandard) {
         std::println("Invalid standard policy: {}", selectedStandard.error());
@@ -84,7 +84,7 @@ auto main() -> int
 
     printSection(
         ShowcaseSection {
-            .title = "Modern C++ Agent Template",
+            .title = "Modern C++ Agent Knowledge Reference",
             .body = makePolicySummary(repositoryName, *selectedStandard)
         }
     );
