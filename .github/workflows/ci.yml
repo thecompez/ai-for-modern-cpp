@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: Build and test
+  macos:
+    name: macOS import std
     runs-on: macos-15
 
     steps:
@@ -21,8 +21,31 @@ jobs:
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_COMPILER="$(brew --prefix llvm)/bin/clang++" \
-            -DAIMCPP_ENABLE_IMPORT_STD=ON
+            -DCMAKE_CXX_COMPILER="$(brew --prefix llvm)/bin/clang++"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  linux:
+    name: Linux import std
+    runs-on: ubuntu-latest
+    container: fedora:43
+
+    steps:
+      - name: Install toolchain
+        run: dnf install --assumeyes cmake gcc-c++ git ninja-build
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_CXX_COMPILER=g++
 
       - name: Build
         run: cmake --build build --parallel

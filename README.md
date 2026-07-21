@@ -44,11 +44,9 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-To disable experimental `import std` integration:
-
-```bash
-cmake -S . -B build -G Ninja -DAIMCPP_ENABLE_IMPORT_STD=OFF
-```
+`import std` is mandatory. Configuration fails immediately when the active
+compiler, standard library, CMake version, or generator cannot provide it;
+there is no textual standard library include fallback.
 
 ## Modern Module Layout
 
@@ -62,12 +60,6 @@ Implementation:
 
 ```text
 src/modern_cpp_agent/modern_cpp_agent.cpp
-```
-
-Optional dependency boundary:
-
-```text
-src/modern_cpp_agent/modern_cpp_agent.compat.hpp
 ```
 
 ## License
