@@ -111,6 +111,9 @@ The reference implementation demonstrates and enforces:
   boundary.
 - Optional CLI adapters for automation, tests, or headless use share the same
   application and domain modules rather than duplicating behavior.
+- Full-product verification: every requested surface must be enabled, built,
+  tested, and smoke-checked before an archive is called ready. A passing core
+  build never substitutes for an unbuilt Qt executable.
 - No fake success reports and no unrelated broad rewrites.
 
 ## Interaction Surface Default
@@ -150,6 +153,13 @@ registration. A missing `.qmltypes` file after an earlier failed CMake Generate
 step is treated as a cascading symptom. Nested `QML_ELEMENT` adapter headers are
 also added to the owning target's include path so generated registration code
 can compile them by basename.
+
+A QObject created from QML through `QML_ELEMENT` is not declared `final`,
+because Qt generates a registration wrapper derived from it. Final delivery
+uses a clean Qt-enabled build, compiles all generated QML/MOC/resource sources,
+links the graphical executable, runs all tests, and exercises a deterministic
+QML or GUI smoke flow. If Qt is unavailable, the GUI is reported as
+`NOT VERIFIED`; the archive is not described as final.
 
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).

@@ -23,6 +23,13 @@ ctest --test-dir build --output-on-failure --no-tests=error
 
 If presets exist, prefer the repository presets.
 
+Use a clean final-verification directory, keep every requested default feature
+enabled, and build the full default `all` target. For a Qt product, confirm the
+graphical executable links after generated MOC, QML type-registration,
+resource, and QML cache sources compile. Then run QML creation/interaction or a
+deterministic GUI startup smoke check. A GUI-disabled core build is partial
+evidence, not product verification.
+
 When CMake, modules, standard-library integration, or toolchain policy changes,
 use a fresh build directory and verify the single supported path: project-owned
 modules plus standard headers in global module fragments.
@@ -35,3 +42,7 @@ Report:
 - Exact failing tests if any.
 - Whether failures appear related to the current change.
 - Whether the `knowledge_contract` test passed.
+- A surface/target matrix with `PASS`, `FAIL`, or `NOT VERIFIED`.
+
+If a required SDK is unavailable, report the affected primary surface as
+`NOT VERIFIED`; do not describe the project or archive as ready or final.

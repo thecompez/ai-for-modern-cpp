@@ -33,11 +33,15 @@ Use this command when implementing a feature, bug fix, or refactor.
    and prefer `std::print` or `std::println` for ordinary formatted output.
 10. Keep CMake on the deterministic standard-header path: register `.cppm`
     files with `FILE_SET CXX_MODULES` and enable target module scanning.
-11. Build.
-12. Run tests with zero discovered tests treated as an error.
-13. Fix failures and repeat verification.
+11. In a clean final-verification tree, enable every requested default product
+    surface and build the full default target. A core-only target cannot verify
+    an unbuilt GUI.
+12. Run all tests with zero discovered tests treated as an error, plus the
+    applicable product startup or interaction smoke checks.
+13. Fix failures and repeat the complete verification loop.
 14. Inspect the final diff and run `git diff --check`.
-15. Report exact build and test results.
+15. Report a target-by-target verification matrix. Do not label an archive
+    final while a requested primary surface is `NOT VERIFIED`.
 
 ## Rules
 

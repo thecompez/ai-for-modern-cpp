@@ -103,6 +103,11 @@ target_include_directories(MyApp
 Do not move the adapter to the repository root and do not edit generated
 `*_qmltyperegistrations.cpp` files.
 
+The final verification configuration must leave every requested product option
+enabled and build the default `all` target. Building only a core library or test
+target does not exercise Qt-generated MOC, registration, resource, and QML cache
+sources and cannot validate the graphical application.
+
 ## Configure Failure Workflow
 
 Collect evidence before editing:

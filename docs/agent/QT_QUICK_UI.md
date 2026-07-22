@@ -176,6 +176,33 @@ Expose the smallest contract QML needs:
 
 Do not expose a large service object or raw domain graph to QML.
 
+### Creatable Types And `final`
+
+`QML_ELEMENT` makes a class creatable from QML unless another registration
+policy says otherwise. Qt generates an internal wrapper derived from that C++
+type. Therefore a type instantiated like this:
+
+```qml
+AppViewModel {
+    id: appViewModel
+}
+```
+
+must not be declared `final`:
+
+```cpp
+class AppViewModel : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+};
+```
+
+This is a framework extension point, not an invitation for project code to
+subclass the adapter. A presentation type may remain `final` only when QML does
+not instantiate it and the selected singleton, uncreatable, context-property,
+or factory ownership strategy has been verified not to require Qt-generated
+subclassing.
+
 ## Optional CLI Adapter
 
 When an additional CLI is justified, keep it as a thin composition and
@@ -317,6 +344,15 @@ At minimum verify:
 9. Inspect the main flow at representative window sizes and confirm that the
    product-specific hierarchy, affordances, feedback, and recovery behavior are
    clear rather than merely visually consistent.
+10. Configure a clean build with the GUI enabled, build the full default target,
+    and confirm that MOC, QML type registration, resources, QML cache sources,
+    and the graphical executable all compile and link.
+11. Run a deterministic QML creation/interaction or GUI startup smoke check.
+    Core-only tests do not validate the graphical product.
+
+If Qt or another required GUI dependency is unavailable, report the Qt surface
+as `NOT VERIFIED`. Do not describe the application or downloadable archive as
+ready until the Qt-enabled build and smoke evidence exist.
 
 ## Forbidden Shapes
 
@@ -338,6 +374,11 @@ At minimum verify:
   failed CMake Generate step.
 - Omitting the target-local include directory for a nested `QML_ELEMENT` header
   or editing generated QML type registration source to compensate.
+- Declaring a QML-creatable `QML_ELEMENT` QObject `final` even though Qt's
+  generated registration wrapper must derive from it.
+- Claiming GUI completion from a core-only, GUI-disabled, or headless test build.
+- Delivering a final archive when the requested Qt target or QML smoke flow was
+  not verified in an environment with Qt installed.
 - Blocking the GUI thread during file, network, or expensive domain work.
 - Linking all Qt modules rather than the required target-local components.
 - Claiming a polished interface without keyboard and accessibility verification.

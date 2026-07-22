@@ -13,6 +13,7 @@ only because the symptom looks familiar.
 | Build still asks for `libc++.modules.json` or `libstdc++.modules.json` | Legacy experimental standard-library module configuration remains in CMake cache or sources | Search for import-std gates, metadata variables, and `CXX_MODULE_STD` | Remove the obsolete configuration and recreate the build directory |
 | `module 'std' not found` | Legacy source still contains `import std;` | First compiler failure and source search | Replace it with minimal standard headers; preserve project modules |
 | Generated QML registration reports a project type is undeclared | Qt generated a basename header include, but the nested presentation directory is not on the target include path | Inspect `*_qmltyperegistrations.cpp` and the failing compile command | Add the adapter directory with target-local `target_include_directories` |
+| Qt says a QML element base is marked `final` | A `QML_ELEMENT` type is creatable from QML, but Qt's generated wrapper cannot derive from it | Generated registration stack and the adapter declaration | Remove `final` from the QML-creatable QObject or choose and verify a non-creatable ownership strategy |
 | IDE reports a generated `.qmltypes` file is missing after CMake Generate failed | QML type generation never completed | Find the first earlier CMake failure | Fix the first Generate failure, clear stale CMake state, and regenerate |
 | Qt warns that QTP0004 is not set for QML files in extra directories | The project did not select the policy | Declared Qt minimum and order around QML registration | Guard `qt_policy(SET QTP0004 NEW)` before `qt_add_qml_module` |
 
@@ -52,3 +53,11 @@ c++ --version
 
 Never request tokens, unrelated environment dumps, or broad private filesystem
 listings.
+
+## Partial Success Is Not Product Success
+
+If Qt is absent and a build succeeds only because the GUI option was disabled,
+record the core and tests as `PASS` and the Qt application as `NOT VERIFIED`.
+Do not call the application ready. Re-run a clean configuration with GUI and
+tests enabled, build the full `all` target, run all tests, and run a GUI/QML
+smoke flow before final delivery.

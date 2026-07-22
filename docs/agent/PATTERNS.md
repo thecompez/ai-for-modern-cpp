@@ -281,6 +281,53 @@ the first failure. A nested `QML_ELEMENT` header must also be reachable through
 the owning target's include directories so generated registration code can
 include it by basename.
 
+## QML-Creatable Type Shape
+
+**Correct**
+
+```cpp
+class AppViewModel : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+};
+```
+
+**Incorrect**
+
+```cpp
+class AppViewModel final : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+};
+```
+
+Qt generates a wrapper derived from a QML-creatable type. The incorrect form
+fails in generated QML type-registration code even when core targets and
+headless tests pass.
+
+## Full-Product Verification
+
+**Correct**
+
+```text
+Core target: PASS
+Qt Quick target with GUI enabled: PASS
+All discovered tests: PASS
+QML creation/interaction smoke: PASS
+Final archive: VERIFIED
+```
+
+**Incorrect**
+
+```text
+Core target with GUI disabled: PASS
+Qt SDK unavailable: skipped
+Final Qt application: READY
+```
+
+The incorrect report promotes partial evidence into a product-wide claim. An
+unbuilt requested surface is `NOT VERIFIED` and blocks final delivery.
+
 ## Qt Quick Repository And Experience Shape
 
 **Correct**

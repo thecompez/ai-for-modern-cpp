@@ -97,6 +97,10 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `GUI-020`: Nested `QML_ELEMENT` adapter headers are reachable through the
   owning QML target's include directories; generated registration files are not
   edited.
+- [ ] `GUI-021`: A QML-creatable QObject is not `final`; any final presentation
+  type has an explicit non-creatable registration and ownership strategy.
+- [ ] `GUI-022`: At least one clean Qt-enabled full build compiled generated Qt
+  sources and linked the requested graphical executable.
 
 ## Build And Tests
 
@@ -120,9 +124,15 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
+- [ ] `TST-007`: Tests cover every claimed surface, including presentation and
+  QML/GUI smoke coverage for a Qt product.
 - [ ] `VER-001`: Configure, build, and tests have separate results.
 - [ ] `VER-003`: Exact commands and pass/fail counts are present.
 - [ ] `VER-006`: Final diff and `git diff --check` were inspected.
+- [ ] `VER-008`: Evidence names the exact enabled features and targets; no
+  disabled or unbuilt surface inherits another target's `PASS`.
+- [ ] `VER-009`: A clean full build, all tests, and product smoke checks passed
+  before a generated archive was labeled final.
 
 ## Knowledge Consistency
 
@@ -144,6 +154,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `REP-005`: Known limitations are explicit.
 - [ ] `REP-006`: Any exception is justified.
 - [ ] `REP-007`: Reflected corrections explain the durable lesson.
+- [ ] `REP-008`: Multi-surface products report an enabled/evidence/result matrix
+  with `PASS`, `FAIL`, or `NOT VERIFIED` for every requested surface.
 
 ## Inline Finding Shape
 

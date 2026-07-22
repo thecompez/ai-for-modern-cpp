@@ -463,6 +463,15 @@ reference.
   directory to the QML target; agents MUST NOT edit generated
   `*_qmltyperegistrations.cpp` files or move adapters into the repository root
   merely to satisfy generated includes.
+- **GUI-021** — A QObject exposed as a QML-creatable type MUST NOT be `final`.
+  Qt's generated registration wrapper derives from such a type. A presentation
+  adapter MAY be `final` only when QML does not construct it and its explicit
+  registration and ownership strategy does not require subclassing.
+- **GUI-022** — A requested or default Qt graphical deliverable MUST complete at
+  least one clean Qt-enabled configure and full build before it is described as
+  complete. The build MUST compile generated MOC, QML type-registration,
+  resource, and QML cache sources and link the graphical executable. A core-only
+  or GUI-disabled build is partial evidence and MUST NOT validate the GUI.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -544,6 +553,10 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
 - **TST-005** — Temporary resources MUST use RAII cleanup.
 - **TST-006** — A test command that discovers zero tests MUST NOT be reported as
   a successful test run.
+- **TST-007** — Verification depth MUST cover every claimed product surface.
+  For a Qt application this includes domain/application behavior, presentation
+  behavior, QML creation or interaction smoke coverage, and the complete Qt
+  integration build; a headless unit-test target alone is insufficient.
 - **VER-001** — Configure, build, and test are separate results and MUST be
   reported separately.
 - **VER-002** — Agents MUST stop a command chain after configure failure; later
@@ -556,6 +569,16 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   completion.
 - **VER-007** — Documentation and agent-rule changes MUST run the knowledge
   contract test in addition to the normal build and tests.
+- **VER-008** — Verification claims MUST match the exact configured feature set
+  and targets that ran. Disabled, dependency-skipped, unavailable, or unbuilt
+  deliverables MUST be reported as `NOT VERIFIED`, never inferred from another
+  target's success.
+- **VER-009** — Before delivering a generated project archive or calling it
+  ready, an agent MUST use a clean build tree to configure all requested default
+  features, build the full default target, run all discovered tests with zero
+  tests treated as an error, and run applicable product smoke checks. If the
+  required SDK or runtime is unavailable, the artifact MAY be labeled a draft
+  but MUST NOT be presented as a verified final deliverable.
 
 Preferred loop:
 
@@ -647,6 +670,10 @@ Every completed implementation report MUST include:
 - **REP-006** — Any rule exception and its justification.
 - **REP-007** — For reflected corrections, what was learned and why the new
   rule is general enough to keep.
+- **REP-008** — Reports for multi-surface products MUST include a verification
+  matrix that names each requested surface or deliverable, whether it was
+  enabled, the exact target or test that exercised it, and its `PASS`, `FAIL`,
+  or `NOT VERIFIED` result.
 
 Never report:
 
@@ -691,6 +718,13 @@ Agents MUST NOT:
 - Put authoritative domain or application behavior in QML JavaScript.
 - Produce a generic repetitive UI without a product-specific hierarchy,
   interaction rationale, or verified UX states.
+- Mark a QML-creatable QObject `final` while relying on Qt's generated type
+  registration to construct it.
+- Claim that a Qt application is complete because only its core library, CLI,
+  or headless tests built while the graphical target was disabled or unbuilt.
+- Deliver a generated project as final when any requested primary surface is
+  `NOT VERIFIED` because its SDK, runtime, build target, or smoke test was not
+  available.
 - Create a top-level `qml/` dumping directory for a new Qt Quick repository
   instead of an explicit `ui/` boundary.
 - Edit generated QML type registration files or omit target-local include paths

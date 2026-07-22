@@ -132,6 +132,11 @@ Do not edit the generated registration source. Do not move the adapter into the
 repository root. Keep the responsibility-oriented layout and expose the nested
 directory only to the owning QML target.
 
+If the adapter is constructed from QML with `QML_ELEMENT`, do not declare its
+QObject class `final`: Qt's generated `QQmlElement<T>` wrapper derives from it.
+Use `final` only with a verified registration and ownership strategy in which
+QML does not construct the type.
+
 ## Qt Policy And Regeneration
 
 The guarded QTP0004 selection must precede `qt_add_qml_module`. It supports QML
@@ -142,3 +147,24 @@ When migrating a project that previously used experimental standard-library
 modules, clear its build directory or use **Build > Clear CMake Configuration**
 in Qt Creator. Generated `.qmltypes` files are expected only after a successful
 configure and Generate step.
+
+## Final Delivery Gate
+
+The default options deliberately enable both GUI and tests. Before a generated
+project is called complete or packaged as a final download, use a fresh build
+directory and run:
+
+```bash
+cmake -S . -B build/verify -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DMY_APP_BUILD_GUI=ON \
+  -DMY_APP_BUILD_TESTS=ON
+cmake --build build/verify --parallel --target all
+ctest --test-dir build/verify --output-on-failure --no-tests=error
+```
+
+The build evidence must show the Qt executable linking after generated MOC, QML
+type-registration, resource, and QML cache sources compile. A generated project
+must also provide and run an applicable QML interaction or deterministic GUI
+startup smoke test. If Qt is unavailable, the GUI is `NOT VERIFIED` and the
+archive is a draft, not a verified final deliverable.

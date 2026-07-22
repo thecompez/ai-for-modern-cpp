@@ -71,10 +71,12 @@ set(requiredSurfaces
     .agents/skills/source-command-implement/SKILL.md
     .agents/skills/source-command-test/SKILL.md
     .agents/skills/source-command-design-qt-quick-ui/SKILL.md
+    .agents/skills/source-command-release/SKILL.md
     .claude/commands/add-module.md
     .claude/commands/implement.md
     .claude/commands/test.md
     .claude/commands/design-qt-quick-ui.md
+    .claude/commands/release.md
     .github/workflows/ci.yml
     scripts/verify-linux.sh
 )
@@ -95,6 +97,8 @@ foreach(ruleId IN ITEMS
     MOD-012
     GUI-019
     GUI-020
+    GUI-021
+    GUI-022
     BLD-004
     BLD-005
     BLD-009
@@ -102,11 +106,27 @@ foreach(ruleId IN ITEMS
     BLD-014
     VER-002
     VER-007
+    VER-008
+    VER-009
+    TST-007
+    REP-008
 )
     assert_file_contains("AGENTS.md" "${ruleId}")
 endforeach()
 
-foreach(reviewRule IN ITEMS MOD-010 GUI-020 BLD-005 BLD-013 BLD-014)
+foreach(reviewRule IN ITEMS
+    MOD-010
+    GUI-020
+    GUI-021
+    GUI-022
+    BLD-005
+    BLD-013
+    BLD-014
+    TST-007
+    VER-008
+    VER-009
+    REP-008
+)
     assert_file_contains("docs/REVIEW.md" "${reviewRule}")
 endforeach()
 
@@ -215,6 +235,7 @@ foreach(toolchainGuideText IN ITEMS
     "standard-library headers"
     "target_include_directories"
     "src/presentation"
+    "default `all` target"
 )
     assert_file_contains("docs/agent/CMAKE_AND_TOOLCHAINS.md" "${toolchainGuideText}")
 endforeach()
@@ -227,6 +248,9 @@ foreach(baselineText IN ITEMS
     "target_include_directories(MyApp"
     "src/presentation"
     "QT_KNOWN_POLICY_QTP0004"
+    "-DMY_APP_BUILD_GUI=ON"
+    "--target all"
+    "NOT VERIFIED"
 )
     assert_file_contains("docs/agent/PROJECT_CMAKE_BASELINE.md" "${baselineText}")
 endforeach()
@@ -247,6 +271,9 @@ foreach(qtGuideText IN ITEMS
     "src/presentation"
     "QML_ELEMENT"
     "*_qmltyperegistrations.cpp"
+    "must not be declared `final`"
+    "full default target"
+    "GUI startup smoke"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
@@ -256,6 +283,8 @@ foreach(failureText IN ITEMS
     "undeclared"
     "target_include_directories"
     "*_qmltyperegistrations.cpp"
+    "base is marked `final`"
+    "Partial Success Is Not Product Success"
 )
     assert_file_contains("docs/agent/COMMON_FAILURES.md" "${failureText}")
 endforeach()
@@ -275,6 +304,20 @@ foreach(qtWorkflow IN ITEMS
 )
     assert_file_contains("${qtWorkflow}" "target-local")
     assert_file_contains("${qtWorkflow}" "*_qmltyperegistrations.cpp")
+    assert_file_contains("${qtWorkflow}" "must not be `final`")
+    assert_file_contains("${qtWorkflow}" "full default")
+endforeach()
+
+foreach(verificationWorkflow IN ITEMS
+    .agents/skills/source-command-implement/SKILL.md
+    .agents/skills/source-command-test/SKILL.md
+    .agents/skills/source-command-release/SKILL.md
+    .claude/commands/implement.md
+    .claude/commands/test.md
+    .claude/commands/release.md
+)
+    assert_file_contains("${verificationWorkflow}" "full default")
+    assert_file_contains("${verificationWorkflow}" "NOT VERIFIED")
 endforeach()
 
 foreach(ciText IN ITEMS
@@ -292,6 +335,9 @@ foreach(readmeText IN ITEMS
     "AIMCPP_STANDARD_LIBRARY=HEADERS"
     "global module fragments"
     "Nested `QML_ELEMENT` adapter headers"
+    "passing core"
+    "unbuilt Qt executable"
+    "`NOT VERIFIED`"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -304,8 +350,11 @@ foreach(evalId IN ITEMS
     assert_file_contains("evals/toolchains.md" "${evalId}")
 endforeach()
 assert_file_contains("evals/reflection.md" "EVAL-REF-010")
+assert_file_contains("evals/reflection.md" "EVAL-REF-011")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-009")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-010")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-011")
 
 message(STATUS
-    "Knowledge contract verified: project modules use standard headers and the Qt baseline exposes nested registration adapters."
+    "Knowledge contract verified: project modules use standard headers, Qt integration is complete, and final claims require full-product evidence."
 )

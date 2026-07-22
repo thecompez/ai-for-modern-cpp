@@ -56,14 +56,18 @@ Read completely before editing:
 14. Add every directory containing a nested `QML_ELEMENT` adapter header as a
     target-local private include directory. Never patch generated
     `*_qmltyperegistrations.cpp` files.
-15. Do not introduce Qt Widgets unless the user explicitly requests it or an
+15. A QML-creatable `QML_ELEMENT` QObject must not be `final`; Qt's generated
+    registration wrapper derives from it.
+16. Do not introduce Qt Widgets unless the user explicitly requests it or an
    inspected compatibility boundary requires it; document the exception.
-16. Keep any secondary CLI thin and connected to the same application/domain
+17. Keep any secondary CLI thin and connected to the same application/domain
     modules; do not let it replace the primary interface.
-17. Add C++ presentation tests and relevant QML interaction, lint, or smoke
+18. Add C++ presentation tests and relevant QML interaction, lint, or smoke
     coverage.
-18. Configure, build, test with zero-tests-as-error, inspect the final diff, and
-    report exact evidence.
+19. In a clean tree with the GUI and tests enabled, build the full default
+    target, run all tests and a GUI/QML smoke flow, inspect the final diff, and
+    report exact per-surface evidence. Do not deliver a final archive when the
+    Qt surface is unbuilt or `NOT VERIFIED`.
 
 ## Output
 

@@ -208,3 +208,30 @@ header by basename.
   evals, and knowledge contract.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `GUI-020`, `BLD-014`.
+
+## EVAL-REF-011 — Partial Build Reported As Complete Product
+
+**Conversation pattern**
+
+```text
+Agent: Core and headless tests pass. Qt is unavailable, but the final desktop
+application archive is ready.
+Human: The requested Qt target was never compiled. Every part must be deeply
+verified before the final file is delivered.
+```
+
+**Required reflection**
+
+- Generalize the correction into claim-scope and final-delivery rules rather
+  than a one-project warning.
+- Require a clean build with every requested default surface enabled and the
+  full default target built.
+- Require tests across domain, presentation, QML creation/interaction, and an
+  applicable product smoke flow.
+- Treat unavailable dependencies as `NOT VERIFIED`, never implicit success.
+- Block a ready/final archive until all requested primary surfaces pass.
+- Synchronize canonical policy, testing and Qt guides, workflows, review,
+  patterns, evals, and the executable knowledge contract.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-022`, `TST-007`, `VER-008`,
+`VER-009`, `REP-008`.

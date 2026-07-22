@@ -28,13 +28,16 @@ QTP0004 `NEW` behind `QT_KNOWN_POLICY_QTP0004` before module registration, and
 treat missing generated `.qmltypes` after failed CMake generation as a
 cascading symptom. Add directories containing nested `QML_ELEMENT` adapter
 headers as target-local private include directories, and never edit generated
-`*_qmltyperegistrations.cpp` files. Do not introduce Qt Widgets
+`*_qmltyperegistrations.cpp` files. A QML-creatable `QML_ELEMENT` QObject must not be `final`,
+because Qt's generated registration wrapper derives from it. Do
+not introduce Qt Widgets
 without an explicit user request or inspected compatibility requirement.
 For a generated project, begin with `PROJECT_CMAKE_BASELINE.md` instead of
 assembling the CMake file from partial snippets.
 Keep any secondary CLI thin, connected to the shared application/domain modules,
 and subordinate to the primary interface.
 
-Implement the smallest coherent UI change, add C++ and relevant QML coverage,
-then configure, build, test with zero-tests-as-error, inspect the final diff,
-and report exact results and unverified visual states.
+Implement the smallest coherent UI change and add C++ and QML coverage. In a
+clean tree with GUI and tests enabled, build the full default target, run all
+tests plus a GUI/QML smoke flow, inspect the final diff, and report a
+per-surface verification matrix. An unbuilt Qt target blocks a final archive.

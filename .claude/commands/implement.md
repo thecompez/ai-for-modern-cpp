@@ -27,10 +27,13 @@ Use this command when implementing a feature, bug fix, or refactor.
    for ordinary formatted console output.
 10. Register `.cppm` files with `FILE_SET CXX_MODULES` and enable target module
     scanning.
-11. Build and run tests with zero tests treated as an error.
-12. Fix failures and repeat verification.
+11. In a clean final-verification tree, enable every requested default surface,
+    build the full default target, run all tests with zero tests treated as an
+    error, and run applicable product smoke checks.
+12. Fix failures and repeat the complete verification loop.
 13. Inspect the final diff and run `git diff --check`.
-14. Report exact build and test results.
+14. Report a per-surface verification matrix. Do not call a project or archive
+    final when a requested primary target is unbuilt or `NOT VERIFIED`.
 
 ## Rules
 
