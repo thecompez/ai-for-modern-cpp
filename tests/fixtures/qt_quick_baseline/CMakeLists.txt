@@ -114,7 +114,8 @@ if(MY_APP_BUILD_GUI)
             ${my_app_qmllint_strict_options}
             -I "${QT_QML_OUTPUT_DIRECTORY}"
             -I "${CMAKE_CURRENT_BINARY_DIR}"
-            ${my_app_qml_files}
+            -I "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_QML}"
+            -M MyApp
         DEPENDS MyApp
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM

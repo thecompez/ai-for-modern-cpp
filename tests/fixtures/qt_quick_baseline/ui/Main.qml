@@ -11,6 +11,7 @@ ApplicationWindow {
     height: 320
     visible: true
     title: qsTr("MyApp")
+    font.family: Qt.application.font.family
 
     AppViewModel {
         id: appViewModel

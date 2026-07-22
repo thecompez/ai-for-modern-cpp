@@ -554,6 +554,12 @@ reference.
   warnings. The smoke path MUST reach an explicit ready state and exercise the
   primary flow; merely starting the event loop for a fixed delay is
   insufficient.
+- **GUI-033** — Generated Qt Quick projects MUST give every project QML source
+  a deterministic `QT_RESOURCE_ALIAS` before `qt_add_qml_module`. The preferred
+  shape is a source-relative `ui/...` path whose alias removes only the
+  architectural `ui/` boundary while preserving logical directories such as
+  `pages/`, `components/`, and `theme/`. `Main.qml` MUST remain at the QML
+  module resource root so `loadFromModule(uri, "Main")` resolves it.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -624,6 +630,11 @@ standard-library headers in global module fragments
   and MUST use that same effective style for application runs, QML tests, lint
   setup, screenshots, and smoke verification. The selected style and minimum Qt
   version are build-and-test inputs, not undocumented workstation defaults.
+- **BLD-017** — Generated Qt Quick projects MUST place QML module artifacts and
+  runtime executables under distinct configured output roots. A normal
+  executable target and QML URI with the same approved name MUST remain valid.
+  Strict QML lint MUST import the actual configured QML output root and use
+  only options supported by the declared minimum Qt version.
 
 Do not use `std::views::enumerate` in portable examples unless the active
 standard library has been verified to provide it.
@@ -659,6 +670,12 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   Controls style. Tests MUST cover component creation plus enough interaction
   and representative content to instantiate lazy popups, dialogs, delegates,
   scrollable editors, and other primary-path components.
+- **TST-010** — The generated Qt Quick baseline MUST have an integration
+  fixture whose executable target and QML URI share the same name. When Qt is
+  available it MUST clean-configure, fully build and link, run strict module
+  lint, load `Main` through `loadFromModule`, run a warning-fatal readiness
+  smoke, and verify distinct runtime and QML output paths. Without Qt the GUI
+  fixture is `NOT VERIFIED`, not a core-test success.
 - **VER-001** — Configure, build, and test are separate results and MUST be
   reported separately.
 - **VER-002** — Agents MUST stop a command chain after configure failure; later
@@ -688,6 +705,10 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   Controls style, strict `qmllint` command and warning count, runtime smoke or
   interaction command, and project-owned Qt/QML warning count. A clean compile
   with runtime warnings is not a clean Qt verification result.
+- **VER-012** — Generated Qt project verification MUST record the actual runtime
+  target path, QML output root, module `qmldir`, and `.qmltypes` path after the
+  final link. Successful module scanning, MOC, RCC, registration, or QML cache
+  generation before a failed final link is not a successful GUI build.
 
 Preferred loop:
 

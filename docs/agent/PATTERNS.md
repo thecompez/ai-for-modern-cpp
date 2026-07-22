@@ -281,6 +281,55 @@ the first failure. A nested `QML_ELEMENT` header must also be reachable through
 the owning target's include directories so generated registration code can
 include it by basename.
 
+## Qt QML Resource And Output Paths
+
+**Correct**
+
+```cmake
+set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qml")
+
+set(my_app_qml_files
+    ui/Main.qml
+    ui/pages/HomePage.qml
+    ui/components/PrimaryActionButton.qml
+    ui/theme/Theme.qml
+)
+
+foreach(qmlFile IN LISTS my_app_qml_files)
+    string(REGEX REPLACE "^ui/" "" qmlResourceAlias "${qmlFile}")
+    set_source_files_properties(
+        "${qmlFile}"
+        PROPERTIES QT_RESOURCE_ALIAS "${qmlResourceAlias}"
+    )
+endforeach()
+
+qt_add_executable(MyApp src/bootstrap/main.cpp)
+set_target_properties(MyApp PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
+)
+qt_add_qml_module(MyApp URI MyApp QML_FILES ${my_app_qml_files})
+```
+
+This preserves an approved target and URI that both use `MyApp`, maps
+`ui/Main.qml` to module-root `Main.qml`, and keeps nested aliases below
+`pages/`, `components/`, and `theme/`.
+
+**Incorrect**
+
+```cmake
+set(my_app_qml_files
+    "${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml"
+)
+
+qt_add_executable(MyApp src/bootstrap/main.cpp)
+qt_add_qml_module(MyApp URI MyApp QML_FILES ${my_app_qml_files})
+```
+
+The absolute QML path lacks an explicit stable resource identity. The default
+URI-derived output directory may also claim `<binary-dir>/MyApp/` before the
+linker creates `<binary-dir>/MyApp`. Making the source path relative without
+defining its alias fixes only half of the contract.
+
 ## Qt Quick Controls Style Selection
 
 **Correct for product-owned custom controls**

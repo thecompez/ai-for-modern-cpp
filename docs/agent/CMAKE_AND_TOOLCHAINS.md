@@ -96,6 +96,14 @@ For Qt Quick targets:
   application, strict QML lint, interaction tests, screenshots, and packaging;
 - provide a strict `qmllint` target with zero project warnings and a
   warning-fatal runtime interaction test.
+- list QML files with source-relative paths and assign deterministic
+  `QT_RESOURCE_ALIAS` values before module registration, removing the
+  architectural `ui/` prefix while retaining logical subdirectories;
+- configure a project-wide `QT_QML_OUTPUT_DIRECTORY` for module artifacts and a
+  target-local `RUNTIME_OUTPUT_DIRECTORY` for each executable so a target and
+  URI with the same approved name cannot collide;
+- make strict lint import the configured QML output root and use only command
+  options supported by the declared minimum Qt version.
 
 Qt's generated type registration source may include a MOC adapter by basename.
 If `src/presentation/app_view_model.hpp` is not on the target include path, the
@@ -116,6 +124,34 @@ The final verification configuration must leave every requested product option
 enabled and build the default `all` target. Building only a core library or test
 target does not exercise Qt-generated MOC, registration, resource, and QML cache
 sources and cannot validate the graphical application.
+
+### QML Resource Identity And Output Identity
+
+Source layout, resource layout, and generated output layout are related but
+serve different responsibilities:
+
+```text
+ui/Main.qml                              source boundary
+:/qt/qml/MyApp/Main.qml                 resource identity
+<build>/qml/MyApp/qmldir                generated module metadata
+<build>/bin/MyApp[.exe]                 runtime target
+```
+
+Set `QT_RESOURCE_ALIAS` before `qt_add_qml_module`; removing an absolute path
+alone does not define the desired resource identity. The root alias must agree
+with `loadFromModule`, and aliases for nested files must preserve their logical
+module directories.
+
+Qt derives a default QML output directory from the URI. For an executable
+backing target, a URI root equal to the target name can otherwise create a
+directory at the exact path where a non-bundle executable must be linked.
+Separate `qml/` and `bin/` roots instead of changing the approved target or URI.
+The linker reaching this collision after MOC, RCC, cache generation, and C++
+compilation is still a failed full build.
+
+For the declared Qt 6.6 minimum, `qmllint` supports `--bare`, `-I`, and module
+mode (`-M`). `--max-warnings` is available only from Qt 6.8, so generated CMake
+must add it conditionally while retaining the zero-warning gate on Qt 6.6/6.7.
 
 The copy-ready implementation is in `PROJECT_CMAKE_BASELINE.md`. Its style
 compile definition, `QQuickStyle::setStyle` ordering, strict lint target, and

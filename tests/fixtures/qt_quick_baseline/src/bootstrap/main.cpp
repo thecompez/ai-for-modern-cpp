@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include <QCoreApplication>
+#include <QFontDatabase>
 #include <QGuiApplication>
 #include <QObject>
 #include <QQmlApplicationEngine>
@@ -37,6 +38,13 @@ namespace {
 int main(int argc, char* argv[])
 {
     QGuiApplication application(argc, argv);
+    auto applicationFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    const auto availableFamilies = QFontDatabase::families();
+    if (!availableFamilies.contains(applicationFont.family())
+        && !availableFamilies.isEmpty()) {
+        applicationFont.setFamily(availableFamilies.front());
+    }
+    application.setFont(applicationFont);
     QQuickStyle::setStyle(QStringLiteral(MY_APP_QT_QUICK_CONTROLS_STYLE));
 
     QQmlApplicationEngine engine;

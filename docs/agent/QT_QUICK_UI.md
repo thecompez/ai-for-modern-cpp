@@ -474,12 +474,34 @@ product scope requires it. Do not concatenate translated sentence fragments.
 ```cmake
 find_package(Qt6 REQUIRED COMPONENTS Quick Qml QuickControls2 Test)
 
+set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qml")
+
+set(my_app_qml_files
+    ui/Main.qml
+    ui/pages/HomePage.qml
+    ui/components/PrimaryActionButton.qml
+    ui/components/StatusPanel.qml
+    ui/theme/Theme.qml
+)
+
+foreach(qmlFile IN LISTS my_app_qml_files)
+    string(REGEX REPLACE "^ui/" "" qmlResourceAlias "${qmlFile}")
+    set_source_files_properties(
+        "${qmlFile}"
+        PROPERTIES QT_RESOURCE_ALIAS "${qmlResourceAlias}"
+    )
+endforeach()
+
 if(QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)
 endif()
 
 qt_add_executable(MyApp
     src/bootstrap/main.cpp
+)
+
+set_target_properties(MyApp PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
 )
 
 target_compile_definitions(MyApp
@@ -491,11 +513,7 @@ qt_add_qml_module(MyApp
     URI MyApp
     VERSION 1.0
     QML_FILES
-        ui/Main.qml
-        ui/pages/HomePage.qml
-        ui/components/PrimaryActionButton.qml
-        ui/components/StatusPanel.qml
-        ui/theme/Theme.qml
+        ${my_app_qml_files}
     SOURCES
         src/presentation/app_view_model.cpp
         src/presentation/app_view_model.hpp
@@ -514,6 +532,21 @@ target_link_libraries(MyApp
         Qt6::QuickControls2
 )
 ```
+
+Keep QML sources project-relative and set their aliases before
+`qt_add_qml_module`. The source `ui/Main.qml` aliases to `Main.qml`, while
+`ui/components/PrimaryActionButton.qml` aliases to
+`components/PrimaryActionButton.qml`. This makes `ui/` an architectural source
+boundary without inserting it into the module's runtime resource namespace.
+The alias, URI, and `loadFromModule` call are one contract: the root alias must
+remain `Main.qml` for `loadFromModule("MyApp", "Main")`.
+
+Keep the QML artifact root and runtime target root separate. It is normal for
+the executable target and URI to share the approved name `MyApp`; with explicit
+roots, the module is generated under `qml/MyApp/` and the executable under
+`bin/` instead of both competing for `<binary-dir>/MyApp`. The
+`QT_QML_OUTPUT_DIRECTORY` variable is the deliberate project-wide root for Qt
+QML modules. `RUNTIME_OUTPUT_DIRECTORY` remains target-local.
 
 Set guarded Qt policies after `find_package(Qt6 ...)` and before
 `qt_add_qml_module`. `QTP0004` requires `qmldir` metadata for extra QML
@@ -539,6 +572,15 @@ The composition root must call `QQuickStyle::setStyle` with
 `MY_APP_QT_QUICK_CONTROLS_STYLE` before loading QML. Keep the compile-time
 selection, test environment, and packaged application consistent. A custom
 Controls design must not fall back silently to the host's native default style.
+
+Strict lint must import the configured `QT_QML_OUTPUT_DIRECTORY`, the current
+binary directory, and the active Qt installation's QML directory. Prefer module
+mode (`qmllint -M MyApp`) after the target has generated its `qmldir` and
+`.qmltypes`; it validates C++-registered types, singleton metadata, aliases, and
+nested components as one module. Run it from the source root. `--bare` and `-M`
+are available at the declared Qt 6.6 minimum. Add `--max-warnings 0` only for
+Qt 6.8 or newer; Qt 6.6/6.7 already fail when warnings are emitted and do not
+recognize that option.
 
 ## Verification
 
@@ -580,6 +622,12 @@ At minimum verify:
 15. Confirm zero component-load errors, invalid-property diagnostics,
     unsupported-style customization warnings, binding loops, missing-font
     warnings, clipped popup rows, and truncated primary actions.
+16. Verify source-to-resource mappings: `ui/Main.qml` is the module-root
+    `Main.qml`, logical subdirectories remain present, and
+    `loadFromModule(uri, "Main")` reaches explicit readiness.
+17. Verify the produced runtime target is under `bin/` and `qmldir` plus
+    `.qmltypes` are under the configured `qml/<URI path>/` tree. The full final
+    link must pass when target name and URI root are identical.
 
 If Qt or another required GUI dependency is unavailable, report the Qt surface
 as `NOT VERIFIED`. Do not describe the application or downloadable archive as
@@ -648,3 +696,12 @@ convenient desktop size cannot prove responsiveness or detail quality.
   bilingual rows, RTL content, icons, or focus rings.
 - Passing a GUI smoke test that only waits briefly at startup, never opens lazy
   controls, and ignores project-owned Qt/QML warnings.
+- Passing absolute project QML paths to `qt_add_qml_module` and relying on Qt to
+  infer stable resource names.
+- Letting the architectural `ui/` directory become an accidental runtime module
+  path segment or assigning aliases that move `Main.qml` away from the module
+  root.
+- Leaving QML module output and runtime executable output in the same filesystem
+  location when the target and URI share a name.
+- Renaming the approved product or QML URI, disabling cache generation, or
+  deleting the colliding directory as a substitute for separating output roots.

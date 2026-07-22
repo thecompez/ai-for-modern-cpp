@@ -40,11 +40,30 @@ set_property(TARGET my_app_core PROPERTY CXX_SCAN_FOR_MODULES ON)
 if(MY_APP_BUILD_GUI)
     find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Qml QuickControls2)
 
+    # This is the deliberate project-wide root for generated QML modules.
+    set(QT_QML_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qml")
+
     set(my_app_qml_files
-        "${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml"
-        "${CMAKE_CURRENT_SOURCE_DIR}/ui/pages/HomePage.qml"
-        "${CMAKE_CURRENT_SOURCE_DIR}/ui/components/PrimaryActionButton.qml"
-        "${CMAKE_CURRENT_SOURCE_DIR}/ui/theme/Theme.qml"
+        ui/Main.qml
+        ui/pages/HomePage.qml
+        ui/components/PrimaryActionButton.qml
+        ui/components/StatusPanel.qml
+        ui/theme/Theme.qml
+    )
+
+    foreach(qmlFile IN LISTS my_app_qml_files)
+        string(REGEX REPLACE "^ui/" "" qmlResourceAlias "${qmlFile}")
+        set_source_files_properties(
+            "${qmlFile}"
+            PROPERTIES
+                QT_RESOURCE_ALIAS "${qmlResourceAlias}"
+        )
+    endforeach()
+
+    set_source_files_properties(
+        ui/theme/Theme.qml
+        PROPERTIES
+            QT_QML_SINGLETON_TYPE TRUE
     )
 
     aimcpp_reject_final_qml_creatable_types(
@@ -60,6 +79,11 @@ if(MY_APP_BUILD_GUI)
 
     qt_add_executable(MyApp
         src/bootstrap/main.cpp
+    )
+
+    set_target_properties(MyApp
+        PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin"
     )
 
     target_compile_definitions(MyApp
@@ -92,13 +116,20 @@ if(MY_APP_BUILD_GUI)
     target_compile_features(MyApp PRIVATE cxx_std_26)
     set_property(TARGET MyApp PROPERTY CXX_SCAN_FOR_MODULES ON)
 
+    set(my_app_qmllint_strict_options --bare)
+    if(Qt6_VERSION VERSION_GREATER_EQUAL 6.8)
+        list(APPEND my_app_qmllint_strict_options --max-warnings 0)
+    endif()
+
     add_custom_target(MyApp_qmllint_strict
         COMMAND Qt6::qmllint
-            --bare
-            --max-warnings 0
+            ${my_app_qmllint_strict_options}
+            -I "${QT_QML_OUTPUT_DIRECTORY}"
             -I "${CMAKE_CURRENT_BINARY_DIR}"
-            ${my_app_qml_files}
+            -I "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_QML}"
+            -M MyApp
         DEPENDS MyApp
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM
     )
 endif()
@@ -130,10 +161,54 @@ project together with this baseline. The preflight rejects the common
 diagnostic. Keep every project-owned QML registration header in its `SOURCES`
 list. This early check supplements, and never replaces, the clean full Qt build.
 
-`MyApp_qmllint_strict` uses `--max-warnings 0`; the generated Qt lint target by
-itself reports warnings but does not necessarily fail on them. Keep the strict
-target in the final gate. When a project needs additional QML import paths, add
-them explicitly rather than disabling a lint category.
+`MyApp_qmllint_strict` lints the configured module rather than a disconnected
+set of source files, so it resolves the module's generated `qmldir`, C++ type
+metadata, singleton metadata, and nested QML types from the real
+`QT_QML_OUTPUT_DIRECTORY`. `--bare`, `-I`, and module mode (`-M`) exist in the
+declared Qt 6.6 minimum. `--max-warnings` was added in Qt 6.8, so the baseline
+adds it only when supported; Qt 6.6 and 6.7 already return failure for emitted
+warnings. Keep the strict target in the final gate. When a project needs
+additional QML import paths, add them explicitly rather than disabling a lint
+category.
+
+## QML Source, Resource, And Output Paths
+
+The top-level `ui/` directory is an architectural source boundary, not a QML
+module namespace segment. The baseline therefore keeps source paths relative
+to the project and gives every QML file a deterministic resource alias before
+calling `qt_add_qml_module`:
+
+```text
+source:   ui/Main.qml
+resource: Main.qml
+
+source:   ui/components/PrimaryActionButton.qml
+resource: components/PrimaryActionButton.qml
+```
+
+This preserves `pages/`, `components/`, and `theme/` while keeping
+`loadFromModule("MyApp", "Main")` mapped to the module root. Do not pass an
+absolute project QML path and rely on Qt to infer a stable resource name.
+Setting another source property later, such as `QT_QML_SINGLETON_TYPE`, does
+not clear `QT_RESOURCE_ALIAS`; `set_source_files_properties` updates the named
+properties. The integration fixture verifies both properties together through
+generated singleton metadata, strict module lint, and runtime loading.
+
+`QT_QML_OUTPUT_DIRECTORY` is intentionally a project-wide Qt output contract,
+while `RUNTIME_OUTPUT_DIRECTORY` is target-local. They produce separate roots:
+
+```text
+build/
+  bin/
+    MyApp                 # MyApp.exe on Windows; bundle layout may vary
+  qml/
+    MyApp/
+      qmldir
+      MyApp.qmltypes
+```
+
+The executable target and QML URI may both remain `MyApp`. Never rename an
+approved product or URI merely to avoid a filesystem collision.
 
 ## Required Module Source Shape
 
@@ -261,3 +336,15 @@ target and runtime log must contain zero project warnings, including invalid
 properties, unsupported control customization, binding loops, and missing
 fonts. If Qt is unavailable, the GUI is `NOT VERIFIED` and the archive is a
 draft, not a verified final deliverable.
+
+Also verify the configured artifacts instead of assuming their location:
+
+```text
+build/verify/bin/MyApp
+build/verify/qml/MyApp/qmldir
+build/verify/qml/MyApp/MyApp.qmltypes
+```
+
+On platforms that add a suffix or bundle layout, record the actual target file
+under `bin/` and the same QML module tree under `qml/`. A directory or file named
+`MyApp` in the build root is a regression when these roots are configured.
