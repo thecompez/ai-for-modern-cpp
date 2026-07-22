@@ -63,6 +63,47 @@ if(AIMCPP_BUILD_TESTS)
     )
 
     set_tests_properties(project_checks PROPERTIES LABELS knowledge)
+
+    option(
+        AIMCPP_VERIFY_QT_BASELINE
+        "Run the generated Qt Quick baseline integration fixture when Qt is available"
+        ON
+    )
+
+    if(AIMCPP_VERIFY_QT_BASELINE)
+        find_package(Qt6 6.6 QUIET COMPONENTS Quick Qml QuickControls2)
+
+        if(Qt6_FOUND)
+            add_test(
+                NAME qt_quick_baseline_integration
+                COMMAND
+                    ${CMAKE_COMMAND}
+                    "-DAIMCPP_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+                    "-DAIMCPP_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+                    "-DAIMCPP_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DAIMCPP_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DAIMCPP_QT6_DIR=${Qt6_DIR}"
+                    "-DAIMCPP_CTEST_COMMAND=${CMAKE_CTEST_COMMAND}"
+                    -P
+                    "${CMAKE_CURRENT_SOURCE_DIR}/tests/qt_quick_baseline_integration.cmake"
+            )
+            set_tests_properties(
+                qt_quick_baseline_integration
+                PROPERTIES
+                    LABELS "integration;qt"
+                    TIMEOUT 180
+            )
+            message(STATUS
+                "AIMCPP_QT_BASELINE=ENABLED (Qt ${Qt6_VERSION})"
+            )
+        else()
+            message(STATUS
+                "AIMCPP_QT_BASELINE=NOT VERIFIED (Qt 6.6+ Quick/Qml/QuickControls2 unavailable)"
+            )
+        endif()
+    else()
+        message(STATUS "AIMCPP_QT_BASELINE=DISABLED")
+    endif()
 endif()
 
 message(STATUS "CMAKE_VERSION=${CMAKE_VERSION}")
