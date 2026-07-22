@@ -101,6 +101,15 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   type has an explicit non-creatable registration and ownership strategy.
 - [ ] `GUI-022`: At least one clean Qt-enabled full build compiled generated Qt
   sources and linked the requested graphical executable.
+- [ ] `GUI-023`: The screen has a documented layout contract covering bounds,
+  columns, gutters, shared alignment lines, spacing, repeated metrics, safe
+  insets, and region sizing behavior.
+- [ ] `GUI-024`: Repeated controls and parallel regions preserve intentional
+  edge, center, baseline, size, and gap relationships.
+- [ ] `GUI-025`: Compact, standard, and wide compositions avoid accidental dead
+  space, edge-pinned task content, clipping, and unbounded stretching.
+- [ ] `GUI-026`: Rendered screenshots passed a detail review across required
+  sizes, appearance modes, and representative content states.
 
 ## Build And Tests
 
@@ -126,6 +135,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
 - [ ] `TST-007`: Tests cover every claimed surface, including presentation and
   QML/GUI smoke coverage for a Qt product.
+- [ ] `TST-008`: Critical containment, non-overlap, breakpoint, repeated-size,
+  and alignment invariants have deterministic QML checks where practical.
 - [ ] `VER-001`: Configure, build, and tests have separate results.
 - [ ] `VER-003`: Exact commands and pass/fail counts are present.
 - [ ] `VER-006`: Final diff and `git diff --check` were inspected.
@@ -133,6 +144,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   disabled or unbuilt surface inherits another target's `PASS`.
 - [ ] `VER-009`: A clean full build, all tests, and product smoke checks passed
   before a generated archive was labeled final.
+- [ ] `VER-010`: Exact visual-review viewport sizes, appearance modes, content
+  states, screenshots, and interaction paths are recorded.
 
 ## Knowledge Consistency
 
@@ -156,6 +169,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `REP-007`: Reflected corrections explain the durable lesson.
 - [ ] `REP-008`: Multi-surface products report an enabled/evidence/result matrix
   with `PASS`, `FAIL`, or `NOT VERIFIED` for every requested surface.
+- [ ] `REP-009`: UI reports include the visual acceptance matrix and disclose
+  any alignment, overflow, density, typography, contrast, or responsive limit.
 
 ## Inline Finding Shape
 

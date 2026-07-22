@@ -328,6 +328,43 @@ Final Qt application: READY
 The incorrect report promotes partial evidence into a product-wide claim. An
 unbuilt requested surface is `NOT VERIFIED` and blocks final delivery.
 
+## Layout Contract And Visual Acceptance
+
+**Correct**
+
+```text
+Outer inset: spacing.xl
+Task content max width: 720
+Wide composition: centered task column + bounded secondary panel
+Shared alignment lines: title/display/keypad left and right edges
+Key grid: 4 equal columns, one control height, spacing.md gaps
+Footer: inside task column safe bounds
+Visual matrix: minimum/standard/wide × light/dark × empty/populated/error
+```
+
+```qml
+Item {
+    Layout.fillWidth: true
+    Layout.maximumWidth: theme.taskMaximumWidth
+    Layout.alignment: Qt.AlignHCenter
+}
+```
+
+**Incorrect**
+
+```text
+The outer card fills the wide window.
+The keypad keeps a small fixed width at the left edge.
+The display stretches across the entire card.
+Header actions and the footer use unrelated anchors.
+Only one desktop screenshot was inspected.
+```
+
+The incorrect form can use layout containers and still have drifting edges,
+unbalanced dead space, detached peripheral controls, and no proof of responsive
+quality. Define geometry relationships before implementation and review the
+rendered result across the required visual matrix.
+
 ## Qt Quick Repository And Experience Shape
 
 **Correct**

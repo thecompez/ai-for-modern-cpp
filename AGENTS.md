@@ -472,6 +472,26 @@ reference.
   complete. The build MUST compile generated MOC, QML type-registration,
   resource, and QML cache sources and link the graphical executable. A core-only
   or GUI-disabled build is partial evidence and MUST NOT validate the GUI.
+- **GUI-023** — Before implementing a screen, agents MUST define a layout
+  contract: outer content bounds, columns, alignment lines, margins, gutters,
+  spacing scale, repeated-control metrics, minimum and maximum content widths,
+  and each region's grow, shrink, wrap, or overflow behavior. Coincidental
+  alignment from unrelated hard-coded values is not acceptable.
+- **GUI-024** — Repeated controls and parallel regions MUST preserve deliberate
+  edge, center, baseline, size, and gap relationships. Header actions, content
+  edges, grids, displays, footers, and adjacent panels MUST share documented
+  alignment anchors or have an explicit reason not to.
+- **GUI-025** — Responsive design MUST define compact, standard, and wide
+  compositions. Expanding a window MUST NOT merely stretch containers while
+  leaving task controls pinned to one edge, producing accidental dead space, or
+  separating related content. Use bounded task widths, centering, reflow, or
+  deliberate redistribution according to the product hierarchy.
+- **GUI-026** — A graphical deliverable MUST pass a visual-detail review from
+  rendered screenshots at representative minimum, standard, and wide sizes and
+  in relevant appearance and content states. The review MUST inspect clipping,
+  overlap, truncation, alignment, baselines, spacing rhythm, optical centering,
+  contrast, focus, hit targets, and unintended empty space. Code inspection or
+  successful compilation alone cannot justify a polished or final UI claim.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -557,6 +577,11 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   For a Qt application this includes domain/application behavior, presentation
   behavior, QML creation or interaction smoke coverage, and the complete Qt
   integration build; a headless unit-test target alone is insufficient.
+- **TST-008** — Critical responsive and geometry invariants SHOULD have
+  deterministic QML tests where practical, including parent containment,
+  non-overlap, breakpoint selection, repeated-control sizing, and primary
+  alignment anchors. Automated geometry checks supplement rather than replace
+  rendered visual review.
 - **VER-001** — Configure, build, and test are separate results and MUST be
   reported separately.
 - **VER-002** — Agents MUST stop a command chain after configure failure; later
@@ -579,6 +604,9 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   tests treated as an error, and run applicable product smoke checks. If the
   required SDK or runtime is unavailable, the artifact MAY be labeled a draft
   but MUST NOT be presented as a verified final deliverable.
+- **VER-010** — Final Qt verification MUST record the exact viewport sizes,
+  appearance modes, content states, screenshots, and interaction paths that
+  were visually inspected. Any unreviewed required state is `NOT VERIFIED`.
 
 Preferred loop:
 
@@ -674,6 +702,9 @@ Every completed implementation report MUST include:
   matrix that names each requested surface or deliverable, whether it was
   enabled, the exact target or test that exercised it, and its `PASS`, `FAIL`,
   or `NOT VERIFIED` result.
+- **REP-009** — UI reports MUST list the visual acceptance matrix and any known
+  alignment, overflow, density, typography, contrast, or responsive limitation;
+  a generic statement such as "responsive and polished" is not evidence.
 
 Never report:
 
@@ -725,6 +756,11 @@ Agents MUST NOT:
 - Deliver a generated project as final when any requested primary surface is
   `NOT VERIFIED` because its SDK, runtime, build target, or smoke test was not
   available.
+- Claim a UI is polished or responsive without rendered inspection at minimum,
+  standard, and wide sizes and representative content states.
+- Accept accidental dead space, drifting alignment lines, clipped peripheral
+  controls, inconsistent repeated metrics, or edge-pinned task content merely
+  because the QML uses layout containers.
 - Create a top-level `qml/` dumping directory for a new Qt Quick repository
   instead of an explicit `ui/` boundary.
 - Edit generated QML type registration files or omit target-local include paths

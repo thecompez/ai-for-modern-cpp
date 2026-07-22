@@ -12,6 +12,7 @@ reports. Canonical rules: `TST-*`, `VER-*`, and `REP-*`.
 | Unit/behavior tests | Does the public behavior satisfy its contract? |
 | Product integration | Did every requested surface and generated source build? |
 | Smoke/interaction | Can the primary product surface start and complete its main flow? |
+| Visual acceptance | Is the rendered result aligned, balanced, unclipped, and responsive across required states? |
 | Knowledge contract | Do rules, guides, examples, and executable proof remain aligned? |
 | Diff review | Did the change stay scoped and avoid accidental damage? |
 
@@ -57,6 +58,12 @@ For a Qt Quick product, include all of these layers:
 - a linked graphical executable and a deterministic startup or smoke check;
 - keyboard, focus, resizing, important failure states, and accessibility checks
   in proportion to product risk.
+- rendered screenshot review at minimum, standard, and wide sizes, including
+  meaningful empty, populated, error, focus, long-content, and appearance
+  variants;
+- deterministic QML geometry checks for critical containment, non-overlap,
+  repeated-control metrics, breakpoint selection, and alignment anchors where
+  reliable.
 
 ## Required Commands
 
@@ -82,6 +89,12 @@ ctest --test-dir build/verify --output-on-failure --no-tests=error
 Then run the project's QML test or deterministic GUI smoke target. Building an
 individual core or test target is useful during iteration, but it is not the
 final product gate.
+
+Visual acceptance is also a final product gate. Capture the required screenshot
+matrix from the product's layout contract and inspect shared edges, baselines,
+spacing rhythm, optical centering, clipping, overlap, truncation, contrast, safe
+insets, and accidental dead space. A compiled QML tree can still be visibly
+incorrect.
 
 Use a fresh build directory when changing compilers, standard libraries, CMake
 major versions, module scanning, or when removing legacy experimental
@@ -113,6 +126,7 @@ Build: PASS — 14/14 steps
 Tests: PASS — 2/2 tests
 Qt Quick target: PASS — generated registration/resources compiled and executable linked
 QML smoke: PASS — exact test or smoke command
+Visual acceptance: PASS — exact viewport/state matrix and screenshot evidence
 Warnings: none
 Unverified: Linux runner not available locally
 ```

@@ -23,6 +23,12 @@ graphical executable links after generated MOC, QML registration, resource, and
 QML cache sources compile, then run a QML interaction or deterministic startup
 smoke check. A core-only or GUI-disabled build does not verify the application.
 
+For graphical products, capture and inspect minimum, standard, and wide
+screenshots across relevant appearance/content states. Check shared edges,
+baselines, repeated metrics, spacing rhythm, clipping, overlap, truncation,
+optical centering, contrast, safe insets, and accidental dead space. Run
+deterministic QML geometry checks where practical.
+
 For CMake, module, or toolchain-policy changes, use a fresh build directory and
 verify the single supported standard-library path: project modules plus minimal
 standard headers in global module fragments.
@@ -36,6 +42,7 @@ Report:
 - Whether failures appear related to the current change.
 - Whether the `knowledge_contract` test passed.
 - A per-surface `PASS`, `FAIL`, or `NOT VERIFIED` matrix.
+- A viewport/appearance/content-state visual acceptance matrix.
 
 Do not describe a project or archive as final while a requested primary surface
 is unbuilt or `NOT VERIFIED` because its SDK or runtime was unavailable.

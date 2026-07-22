@@ -99,6 +99,10 @@ foreach(ruleId IN ITEMS
     GUI-020
     GUI-021
     GUI-022
+    GUI-023
+    GUI-024
+    GUI-025
+    GUI-026
     BLD-004
     BLD-005
     BLD-009
@@ -108,8 +112,11 @@ foreach(ruleId IN ITEMS
     VER-007
     VER-008
     VER-009
+    VER-010
     TST-007
+    TST-008
     REP-008
+    REP-009
 )
     assert_file_contains("AGENTS.md" "${ruleId}")
 endforeach()
@@ -119,13 +126,20 @@ foreach(reviewRule IN ITEMS
     GUI-020
     GUI-021
     GUI-022
+    GUI-023
+    GUI-024
+    GUI-025
+    GUI-026
     BLD-005
     BLD-013
     BLD-014
     TST-007
+    TST-008
     VER-008
     VER-009
+    VER-010
     REP-008
+    REP-009
 )
     assert_file_contains("docs/REVIEW.md" "${reviewRule}")
 endforeach()
@@ -274,6 +288,11 @@ foreach(qtGuideText IN ITEMS
     "must not be declared `final`"
     "full default target"
     "GUI startup smoke"
+    "Layout Contract"
+    "Alignment And Rhythm Audit"
+    "Content Balance And Empty Space"
+    "Visual Acceptance Matrix"
+    "minimum, standard, and wide"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
@@ -306,6 +325,8 @@ foreach(qtWorkflow IN ITEMS
     assert_file_contains("${qtWorkflow}" "*_qmltyperegistrations.cpp")
     assert_file_contains("${qtWorkflow}" "must not be `final`")
     assert_file_contains("${qtWorkflow}" "full default")
+    assert_file_contains("${qtWorkflow}" "minimum, standard, and wide")
+    assert_file_contains("${qtWorkflow}" "accidental dead space")
 endforeach()
 
 foreach(verificationWorkflow IN ITEMS
@@ -318,6 +339,17 @@ foreach(verificationWorkflow IN ITEMS
 )
     assert_file_contains("${verificationWorkflow}" "full default")
     assert_file_contains("${verificationWorkflow}" "NOT VERIFIED")
+endforeach()
+
+foreach(visualWorkflow IN ITEMS
+    .agents/skills/source-command-design-qt-quick-ui/SKILL.md
+    .agents/skills/source-command-test/SKILL.md
+    .agents/skills/source-command-release/SKILL.md
+    .claude/commands/design-qt-quick-ui.md
+    .claude/commands/test.md
+    .claude/commands/release.md
+)
+    assert_file_contains("${visualWorkflow}" "acceptance matrix")
 endforeach()
 
 foreach(ciText IN ITEMS
@@ -338,6 +370,8 @@ foreach(readmeText IN ITEMS
     "passing core"
     "unbuilt Qt executable"
     "`NOT VERIFIED`"
+    "Explicit layout contracts"
+    "Rendered visual acceptance"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -351,10 +385,12 @@ foreach(evalId IN ITEMS
 endforeach()
 assert_file_contains("evals/reflection.md" "EVAL-REF-010")
 assert_file_contains("evals/reflection.md" "EVAL-REF-011")
+assert_file_contains("evals/reflection.md" "EVAL-REF-012")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-009")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-010")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-011")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-012")
 
 message(STATUS
-    "Knowledge contract verified: project modules use standard headers, Qt integration is complete, and final claims require full-product evidence."
+    "Knowledge contract verified: project modules, full-product evidence, and rendered Qt visual acceptance remain synchronized."
 )

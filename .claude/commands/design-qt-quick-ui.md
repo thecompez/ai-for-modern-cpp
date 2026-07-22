@@ -17,9 +17,12 @@ and headless scopes, but use Qt Quick as the primary interface for an
 unspecified user-facing interactive application under `GUI-015`. Then
 define the audience, user flows, all screen states, product-specific visual
 direction, information hierarchy, content density, affordances, feedback,
-error prevention and recovery, reusable components, design tokens, responsive
-behavior, keyboard/focus behavior, accessibility, localization, and the
-QML/C++ ownership boundary. Reject generic repetitive screen recipes.
+error prevention and recovery, reusable components, design tokens, and a layout
+contract covering bounds, columns, gutters, shared alignment lines, spacing
+scale, repeated metrics, safe insets, and grow/shrink behavior. Define compact,
+standard, and wide compositions, keyboard/focus behavior, accessibility,
+localization, and the QML/C++ ownership boundary. Reject generic repetitive
+screen recipes.
 
 Use Qt 6, Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`. Keep domain
 and application behavior in modern C++ modules. Keep new QML, tokens, and
@@ -39,5 +42,9 @@ and subordinate to the primary interface.
 
 Implement the smallest coherent UI change and add C++ and QML coverage. In a
 clean tree with GUI and tests enabled, build the full default target, run all
-tests plus a GUI/QML smoke flow, inspect the final diff, and report a
-per-surface verification matrix. An unbuilt Qt target blocks a final archive.
+tests plus a GUI/QML smoke flow, inspect the final diff, and report a per-surface
+verification matrix and visual acceptance matrix. Capture and inspect minimum, standard, and wide
+screenshots across relevant appearance/content states; audit alignment,
+baselines, repeated metrics, spacing, clipping, overlap, optical centering,
+contrast, safe insets, and accidental dead space. An unbuilt or visually
+unreviewed Qt target blocks a final archive.

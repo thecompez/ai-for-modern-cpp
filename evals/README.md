@@ -43,6 +43,8 @@ Any of these fails the scenario regardless of numeric score:
   disabled, skipped, or never built.
 - Delivering a generated Qt archive as final without a Qt-enabled full build
   and applicable QML/GUI smoke evidence.
+- Calling a UI polished or responsive without rendered screenshot review across
+  the required viewport, appearance, and content-state matrix.
 - Release, tag, deployment, or push without authorization.
 
 ## Scenario Suites

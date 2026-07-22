@@ -30,6 +30,12 @@ resource, and QML cache sources compile. Then run QML creation/interaction or a
 deterministic GUI startup smoke check. A GUI-disabled core build is partial
 evidence, not product verification.
 
+For a graphical product, capture and inspect the required minimum, standard,
+and wide screenshot matrix across relevant appearance and content states. Check
+containment, overlap, clipping, shared edges, baselines, repeated metrics,
+spacing rhythm, optical centering, contrast, safe insets, and accidental dead
+space. Run deterministic QML geometry assertions where practical.
+
 When CMake, modules, standard-library integration, or toolchain policy changes,
 use a fresh build directory and verify the single supported path: project-owned
 modules plus standard headers in global module fragments.
@@ -43,6 +49,7 @@ Report:
 - Whether failures appear related to the current change.
 - Whether the `knowledge_contract` test passed.
 - A surface/target matrix with `PASS`, `FAIL`, or `NOT VERIFIED`.
+- The viewport/appearance/content-state visual acceptance matrix.
 
 If a required SDK is unavailable, report the affected primary surface as
 `NOT VERIFIED`; do not describe the project or archive as ready or final.

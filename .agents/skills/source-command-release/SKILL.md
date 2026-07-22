@@ -25,7 +25,11 @@ Use this command to prepare a release.
 7. Confirm the `knowledge_contract` test passes.
 8. Record a per-surface verification matrix; any required `NOT VERIFIED`
    surface blocks a final release artifact.
-9. Prepare release notes.
-10. Ask for explicit human approval before tagging or publishing.
+9. For graphical products, review rendered minimum, standard, and wide
+   screenshots across relevant appearance/content states and record the visual
+   acceptance matrix. Visible alignment, overflow, density, or detail defects
+   block final release.
+10. Prepare release notes.
+11. Ask for explicit human approval before tagging or publishing.
 
 Do not create tags or publish artifacts without explicit approval.

@@ -109,6 +109,12 @@ The reference implementation demonstrates and enforces:
 - Product-specific UI/UX decisions instead of generic repetitive screen
   recipes, with QML and presentation assets grouped under a top-level `ui/`
   boundary.
+- Explicit layout contracts for content bounds, grids, alignment lines,
+  spacing, repeated-control metrics, safe insets, and compact/standard/wide
+  composition instead of relying on layout containers alone.
+- Rendered visual acceptance across representative sizes, appearance modes, and
+  content states, with clipping, alignment, balance, typography, contrast, and
+  accidental dead space reviewed before a UI is called polished.
 - Optional CLI adapters for automation, tests, or headless use share the same
   application and domain modules rather than duplicating behavior.
 - Full-product verification: every requested surface must be enabled, built,

@@ -253,6 +253,45 @@ as final without compiling and linking the graphical executable.
 
 **Rule coverage**: `GUI-022`, `TST-007`, `VER-008`, `VER-009`, `REP-008`.
 
+## EVAL-UI-012 — Wide Layout With Accidental Dead Space
+
+**Rendered evidence**
+
+```text
+A wide primary card contains a full-width display, but its fixed-width control
+grid remains pinned to the left and leaves a large unused region on the right.
+A secondary-panel header action does not align with the panel's right content
+edge. Status text and a trailing icon sit outside the primary card near the
+viewport edge. The agent calls the interface polished and responsive after
+inspecting only this one screenshot.
+```
+
+**Required behavior**
+
+- Identify the missing layout contract rather than merely tweaking isolated
+  pixel values.
+- Define content bounds, maximum task width, columns, gutters, shared alignment
+  anchors, spacing scale, repeated-control metrics, and safe insets.
+- Make display/control-grid width relationships deliberate; at wide sizes cap
+  and center the task area, reflow it, or redistribute justified regions.
+- Align header actions, dividers, list content, numeric edges, and footers to
+  documented anchors.
+- Check numeric typography, tabular figures where useful, icon/text optical
+  centering, contrast, clipping, and unexplained empty space.
+- Capture and inspect minimum, standard, and wide screenshots across relevant
+  appearance and empty/populated/error/long-content states.
+- Add deterministic QML checks for critical containment, non-overlap,
+  breakpoint, repeated-size, and alignment invariants where practical.
+
+**Critical failure**
+
+Calling the UI polished because it uses `GridLayout`/tokens or because it looks
+acceptable at one viewport while visible alignment, balance, or clipping
+defects remain.
+
+**Rule coverage**: `GUI-023` through `GUI-026`, `TST-008`, `VER-010`,
+`REP-009`.
+
 ## EVAL-SYN-001 — Lowercase Enum Cases
 
 **Diff under review**

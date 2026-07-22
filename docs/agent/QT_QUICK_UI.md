@@ -48,7 +48,11 @@ Affordances, immediate feedback, and error prevention/recovery:
 Keyboard path and focus order:
 Reusable components:
 Design tokens:
+Outer content bounds and maximum task width:
+Columns, gutters, and shared alignment lines:
+Repeated-control size and gap invariants:
 Responsive breakpoints or layout behavior:
+Grow, shrink, wrap, overflow, and scrolling rules by region:
 Accessibility labels and announcements:
 Localization requirements:
 ```
@@ -231,13 +235,73 @@ state transitions, persistence policy, or other authoritative behavior.
 
 ## Layout And Visual System
 
-- Prefer `RowLayout`, `ColumnLayout`, `GridLayout`, anchors, and implicit sizes
-  over absolute coordinates.
-- Define reusable spacing, radius, typography, color, and motion tokens.
+Using `RowLayout`, `ColumnLayout`, or `GridLayout` does not by itself create a
+good layout. Define the relationships those containers must preserve.
+
+### Layout Contract
+
+Before QML implementation, record:
+
+| Decision | Required evidence |
+|---|---|
+| Content bounds | Outer insets and the maximum useful task width |
+| Columns | Column purpose, width policy, gutter, and collapse order |
+| Alignment lines | Shared left/right edges, centers, text baselines, and numeric edges |
+| Spacing scale | Named increments and where each tier is used |
+| Repeated controls | Equal width/height, row/column gaps, radius, icon box, and label baseline |
+| Region sizing | Which regions fill, stay intrinsic, cap, reflow, scroll, or hide |
+| Breakpoints | Compact, standard, and wide compositions with transition criteria |
+| Safe bounds | Bottom/top insets and containment for footers, overlays, focus rings, and shadows |
+
+Use one authoritative spacing scale and semantic tokens. A value should come
+from content, a token, or a documented constraint—not from nudging one element
+until a single screenshot looks acceptable.
+
+### Alignment And Rhythm Audit
+
+- Establish a small set of visible alignment lines per screen. Titles, header
+  actions, dividers, panels, displays, grids, and footers should resolve to
+  those lines instead of drifting independently.
+- Repeated peers must share geometry. Keypads, toolbars, list rows, and card
+  groups require consistent sizes and gaps unless hierarchy deliberately marks
+  an exception.
+- Align text by the appropriate metric. Use baselines for related labels,
+  optical centering for icons and glyphs, and a stable right edge with tabular
+  figures for changing numeric values when the product benefits from it.
+- Preserve nested padding relationships. A child surface should not appear
+  arbitrarily closer to one parent edge than another.
+- Keep peripheral content inside its owning layout and safe inset. A status
+  message, keyboard hint, or trailing icon must not float near the window edge
+  because it was anchored outside the main content hierarchy.
+
+### Content Balance And Empty Space
+
+Empty space is useful only when it supports hierarchy. For every large empty
+region, identify whether it provides focus, future content capacity, or a
+deliberate visual pause. Otherwise rebalance the composition.
+
+- Do not let one child remain at a small fixed width on the left while its
+  parent expands indefinitely and leaves unused space on the right.
+- Related elements should normally share a bounded content width or a deliberate
+  alignment relationship. For example, a display and keypad should not imply
+  different grids without a product reason.
+- At wide sizes, cap and center the task area, redistribute columns, or reveal a
+  justified secondary region. Do not scale every control indefinitely.
+- At compact sizes, reflow or collapse secondary panels before primary controls
+  become clipped, crowded, or unreachable.
+
+### Visual Tokens And Detail
+
+- Define reusable spacing, radius, typography, color, icon-size, control-height,
+  border, and motion tokens.
 - Let task hierarchy and content density determine composition; do not place
   every piece of content in an identical card merely for visual consistency.
 - Support light/dark appearance through tokens rather than scattered colors.
-- Preserve readable content under resizing and text expansion.
+- Preserve readable content under resizing, long values, and text expansion.
+- Ensure icons share a coherent visual weight, bounding box, and baseline with
+  adjacent text; geometric centering may still require optical adjustment.
+- Make destructive, primary, and secondary actions visually distinct without
+  breaking their placement and alignment contracts.
 - Use animation to explain state changes, not delay interaction.
 - Avoid magic pixels repeated across components.
 
@@ -349,10 +413,33 @@ At minimum verify:
     and the graphical executable all compile and link.
 11. Run a deterministic QML creation/interaction or GUI startup smoke check.
     Core-only tests do not validate the graphical product.
+12. Capture and inspect rendered screenshots at minimum, standard, and wide
+    viewport sizes. Include light/dark modes where supported and empty,
+    populated, error, focus, and long-content states that materially change the
+    composition.
+13. Perform a detail pass for shared edges, text baselines, control metrics,
+    gaps, optical centering, contrast, clipping, truncation, overlap, safe
+    insets, and unexplained dead space. Fix visible defects before completion.
+14. Add deterministic geometry assertions for critical containment,
+    non-overlap, breakpoint, repeated-size, and alignment invariants where the
+    QML test environment can measure them reliably.
 
 If Qt or another required GUI dependency is unavailable, report the Qt surface
 as `NOT VERIFIED`. Do not describe the application or downloadable archive as
 ready until the Qt-enabled build and smoke evidence exist.
+
+### Visual Acceptance Matrix
+
+Record evidence in a form such as:
+
+| Viewport | Appearance | State | Inspected details | Result |
+|---|---|---|---|---|
+| Minimum supported | Light | Empty + focus | containment, reflow, focus, labels | PASS/FAIL |
+| Standard | Light + dark | Populated + error | hierarchy, spacing, contrast | PASS/FAIL |
+| Wide | Light + dark | Long content/history | max width, balance, alignment | PASS/FAIL |
+
+The exact sizes belong to the product's layout contract. A screenshot at one
+convenient desktop size cannot prove responsiveness or detail quality.
 
 ## Forbidden Shapes
 
@@ -382,3 +469,13 @@ ready until the Qt-enabled build and smoke evidence exist.
 - Blocking the GUI thread during file, network, or expensive domain work.
 - Linking all Qt modules rather than the required target-local components.
 - Claiming a polished interface without keyboard and accessibility verification.
+- Treating layout-container usage as proof of alignment, balance, or responsive
+  quality without defining and reviewing geometry invariants.
+- Stretching a wide panel while leaving primary controls pinned to one edge and
+  accidental dead space on the other.
+- Letting header actions, dividers, content cards, grids, or footers drift from
+  their intended shared alignment lines.
+- Leaving status text, hints, icons, focus rings, or overlays clipped, detached
+  from their owning region, or too close to a viewport edge.
+- Calling a UI polished after inspecting only one viewport, appearance mode, or
+  content state.

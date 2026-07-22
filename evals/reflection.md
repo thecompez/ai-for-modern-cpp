@@ -235,3 +235,33 @@ verified before the final file is delivered.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `GUI-022`, `TST-007`, `VER-008`,
 `VER-009`, `REP-008`.
+
+## EVAL-REF-012 — Visually Compiled But Poorly Aligned UI
+
+**Conversation pattern**
+
+```text
+Agent: The Qt target builds and the screen uses layouts and design tokens, so
+the UI is complete.
+Human: The rendered screen has asymmetric dead space, drifting header actions,
+detached footer content, and weak alignment. Details and composition were not
+reviewed across sizes.
+```
+
+**Required reflection**
+
+- Generalize the correction into a layout-contract rule rather than encoding
+  one screenshot's pixel values.
+- Require shared alignment anchors, a spacing scale, repeated-control metrics,
+  safe insets, bounded task widths, and explicit region growth behavior.
+- Define compact, standard, and wide compositions so responsiveness is more
+  than container stretching.
+- Add a rendered visual acceptance matrix across viewport, appearance, and
+  representative content states.
+- Add geometry tests for critical invariants where reliable while retaining
+  human visual review for optical quality.
+- Synchronize canonical rules, Qt/testing guides, workflows, review, patterns,
+  evals, and machine-checkable knowledge assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-023` through `GUI-026`,
+`TST-008`, `VER-010`, `REP-009`.
