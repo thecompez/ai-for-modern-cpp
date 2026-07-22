@@ -89,7 +89,13 @@ For Qt Quick targets:
   the QML target with `target_include_directories`;
 - copy `cmake/AimcppProjectChecks.cmake` and run
   `aimcpp_reject_final_qml_creatable_types` on every project-owned QML
-  registration header before QML module registration.
+  registration header before QML module registration;
+- when controls replace visual delegates, define one customizable Qt Quick
+  Controls style and select it in the composition root before QML loads;
+- use the same minimum Qt version and effective Controls style for the
+  application, strict QML lint, interaction tests, screenshots, and packaging;
+- provide a strict `qmllint` target with zero project warnings and a
+  warning-fatal runtime interaction test.
 
 Qt's generated type registration source may include a MOC adapter by basename.
 If `src/presentation/app_view_model.hpp` is not on the target include path, the
@@ -110,6 +116,13 @@ The final verification configuration must leave every requested product option
 enabled and build the default `all` target. Building only a core library or test
 target does not exercise Qt-generated MOC, registration, resource, and QML cache
 sources and cannot validate the graphical application.
+
+The copy-ready implementation is in `PROJECT_CMAKE_BASELINE.md`. Its style
+compile definition, `QQuickStyle::setStyle` ordering, strict lint target, and
+warning-fatal smoke environment form one contract. Do not remove one piece and
+fall back to the workstation's native style. The smoke executable must
+understand `--smoke-test`, reach explicit readiness, and exercise primary-path
+lazy QML; a fixed timer is not sufficient evidence.
 
 ## Configure Failure Workflow
 

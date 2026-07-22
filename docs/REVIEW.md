@@ -118,6 +118,21 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   space, edge-pinned task content, clipping, and unbounded stretching.
 - [ ] `GUI-026`: Rendered screenshots passed a detail review across required
   sizes, appearance modes, and representative content states.
+- [ ] `GUI-027`: Every QML API is valid on the exact instantiated type and
+  declared minimum Qt version; strict lint and runtime creation both pass.
+- [ ] `GUI-028`: The Controls style strategy is explicit; custom delegates use
+  a supported customizable style selected before QML loads, or native controls
+  stay within their documented customization surface.
+- [ ] `GUI-029`: Geometry dependencies are acyclic, especially across
+  ScrollView/editor content and implicit-size boundaries; no binding loop is
+  accepted.
+- [ ] `GUI-030`: Primary labels, translated text, popup/delegate rows, RTL or
+  bilingual content, icons, indicators, focus rings, and hit targets remain
+  readable, contained, and aligned.
+- [ ] `GUI-031`: Fonts are system-resolved or bundled/licensed with verified
+  fallbacks; no missing-font substitution warning remains.
+- [ ] `GUI-032`: Strict lint and warning-fatal runtime interaction cover lazy
+  controls and the primary flow; a timer-only launch is not the smoke gate.
 
 ## Build And Tests
 
@@ -141,6 +156,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `BLD-015`: Generated Qt projects run the baseline presentation preflight
   for every QML registration header without treating it as a substitute for a
   full Qt build.
+- [ ] `BLD-016`: The minimum Qt version and selected customizable Controls style
+  are explicit and identical across application, lint, tests, screenshots, and
+  packaging.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
@@ -148,6 +166,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   QML/GUI smoke coverage for a Qt product.
 - [ ] `TST-008`: Critical containment, non-overlap, breakpoint, repeated-size,
   and alignment invariants have deterministic QML checks where practical.
+- [ ] `TST-009`: Strict `qmllint` allows zero project warnings and warning-fatal
+  runtime tests instantiate popups, dialogs, delegates, editors, and responsive
+  branches used by the primary flow.
 - [ ] `VER-001`: Configure, build, and tests have separate results.
 - [ ] `VER-003`: Exact commands and pass/fail counts are present.
 - [ ] `VER-006`: Final diff and `git diff --check` were inspected.
@@ -157,6 +178,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   before a generated archive was labeled final.
 - [ ] `VER-010`: Exact visual-review viewport sizes, appearance modes, content
   states, screenshots, and interaction paths are recorded.
+- [ ] `VER-011`: Qt version, effective Controls style, strict lint command and
+  warning count, runtime command, and project-owned warning count are recorded.
 
 ## Knowledge Consistency
 
@@ -173,6 +196,8 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 
 - [ ] `REP-001`: Files changed are listed.
 - [ ] `REP-002`: What and why are explained.
+- [ ] `REP-010`: Qt reports name the style/version, lint result, runtime warning
+  result, and interactions that instantiated lazy UI components.
 - [ ] `REP-003`: Configure/build evidence is exact.
 - [ ] `REP-004`: Test count and result are exact.
 - [ ] `REP-005`: Known limitations are explicit.

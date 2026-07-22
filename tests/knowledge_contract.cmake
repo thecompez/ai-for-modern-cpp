@@ -114,21 +114,31 @@ foreach(ruleId IN ITEMS
     GUI-024
     GUI-025
     GUI-026
+    GUI-027
+    GUI-028
+    GUI-029
+    GUI-030
+    GUI-031
+    GUI-032
     BLD-004
     BLD-005
     BLD-009
     BLD-013
     BLD-014
     BLD-015
+    BLD-016
     VER-002
     VER-007
     VER-008
     VER-009
     VER-010
+    VER-011
     TST-007
     TST-008
+    TST-009
     REP-008
     REP-009
+    REP-010
 )
     assert_file_contains("AGENTS.md" "${ruleId}")
 endforeach()
@@ -146,17 +156,27 @@ foreach(reviewRule IN ITEMS
     GUI-024
     GUI-025
     GUI-026
+    GUI-027
+    GUI-028
+    GUI-029
+    GUI-030
+    GUI-031
+    GUI-032
     BLD-005
     BLD-013
     BLD-014
     BLD-015
+    BLD-016
     TST-007
     TST-008
+    TST-009
     VER-008
     VER-009
     VER-010
+    VER-011
     REP-008
     REP-009
+    REP-010
 )
     assert_file_contains("docs/REVIEW.md" "${reviewRule}")
 endforeach()
@@ -288,6 +308,9 @@ foreach(toolchainGuideText IN ITEMS
     "src/presentation"
     "default `all` target"
     "aimcpp_reject_final_qml_creatable_types"
+    "customizable Qt Quick"
+    "strict `qmllint`"
+    "warning-fatal runtime"
 )
     assert_file_contains("docs/agent/CMAKE_AND_TOOLCHAINS.md" "${toolchainGuideText}")
 endforeach()
@@ -305,6 +328,11 @@ foreach(baselineText IN ITEMS
     "NOT VERIFIED"
     "AimcppProjectChecks.cmake"
     "aimcpp_reject_final_qml_creatable_types"
+    "MY_APP_QT_QUICK_CONTROLS_STYLE"
+    "MyApp_qmllint_strict"
+    "--max-warnings 0"
+    "QT_FATAL_WARNINGS=1"
+    "--smoke-test"
 )
     assert_file_contains("docs/agent/PROJECT_CMAKE_BASELINE.md" "${baselineText}")
 endforeach()
@@ -327,13 +355,19 @@ foreach(qtGuideText IN ITEMS
     "*_qmltyperegistrations.cpp"
     "must not be declared `final`"
     "full default target"
-    "GUI startup smoke"
+    "QML creation/interaction smoke check"
     "Layout Contract"
     "Alignment And Rhythm Audit"
     "Content Balance And Empty Space"
     "Visual Acceptance Matrix"
     "minimum, standard, and wide"
     "aimcpp_reject_final_qml_creatable_types"
+    "Qt Quick Controls Style Contract"
+    "Exact QML API Compatibility"
+    "Acyclic Geometry And Scrollable Content"
+    "Content-Safe Controls, Popups, And Dialogs"
+    "Portable Typography"
+    "fixed-delay launch"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
@@ -345,6 +379,11 @@ foreach(failureText IN ITEMS
     "*_qmltyperegistrations.cpp"
     "base is marked `final`"
     "Partial Success Is Not Product Success"
+    "non-existent property"
+    "does not support customization"
+    "Binding loop detected"
+    "missing font family"
+    "A Window That Opens Can Still Fail Verification"
 )
     assert_file_contains("docs/agent/COMMON_FAILURES.md" "${failureText}")
 endforeach()
@@ -369,6 +408,10 @@ foreach(qtWorkflow IN ITEMS
     assert_file_contains("${qtWorkflow}" "minimum, standard, and wide")
     assert_file_contains("${qtWorkflow}" "accidental dead space")
     assert_file_contains("${qtWorkflow}" "aimcpp_reject_final_qml_creatable_types")
+    assert_file_contains("${qtWorkflow}" "strict `qmllint`")
+    assert_file_contains("${qtWorkflow}" "Controls style")
+    assert_file_contains("${qtWorkflow}" "binding loops")
+    assert_file_contains("${qtWorkflow}" "timer-only")
 endforeach()
 
 foreach(verificationWorkflow IN ITEMS
@@ -417,6 +460,9 @@ foreach(readmeText IN ITEMS
     "START PROJECT"
     "What should the project be called?"
     "exact repository commit SHA"
+    "Explicit Qt Quick Controls style selection"
+    "zero project warnings"
+    "fixed timer"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -432,11 +478,15 @@ assert_file_contains("evals/reflection.md" "EVAL-REF-010")
 assert_file_contains("evals/reflection.md" "EVAL-REF-011")
 assert_file_contains("evals/reflection.md" "EVAL-REF-012")
 assert_file_contains("evals/reflection.md" "EVAL-REF-013")
+assert_file_contains("evals/reflection.md" "EVAL-REF-014")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-009")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-010")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-011")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-012")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-013")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-014")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-015")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-016")
 
 foreach(evalId IN ITEMS
     EVAL-INI-001

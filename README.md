@@ -147,6 +147,9 @@ The reference implementation demonstrates and enforces:
 - Rendered visual acceptance across representative sizes, appearance modes, and
   content states, with clipping, alignment, balance, typography, contrast, and
   accidental dead space reviewed before a UI is called polished.
+- Explicit Qt Quick Controls style selection for custom controls, exact-type
+  QML API validation, acyclic geometry, portable fonts, content-safe actions
+  and popups, strict lint, and warning-fatal runtime interaction checks.
 - Optional CLI adapters for automation, tests, or headless use share the same
   application and domain modules rather than duplicating behavior.
 - Full-product verification: every requested surface must be enabled, built,
@@ -196,8 +199,14 @@ A QObject created from QML through `QML_ELEMENT` is not declared `final`,
 because Qt generates a registration wrapper derived from it. Final delivery
 uses a clean Qt-enabled build, compiles all generated QML/MOC/resource sources,
 links the graphical executable, runs all tests, and exercises a deterministic
-QML or GUI smoke flow. If Qt is unavailable, the GUI is reported as
-`NOT VERIFIED`; the archive is not described as final.
+QML or GUI interaction flow. Custom Controls use an explicitly selected
+customizable style instead of an accidental native default. Strict `qmllint`
+allows zero project warnings, and runtime verification fails on component-load
+errors, unsupported customization, binding loops, invalid properties, missing
+fonts, clipped content, or truncated primary actions. The smoke path reaches an
+explicit ready state and opens primary-path lazy controls; a fixed timer alone
+is insufficient. If Qt is unavailable, the GUI is reported as `NOT VERIFIED`;
+the archive is not described as final.
 
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).

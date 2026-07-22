@@ -374,6 +374,107 @@ preflight. Headless tests passed; the full Qt build failed in QQmlElement<T>.
 - `GUI-022`: a passing configure preflight or headless test does not replace the
   clean full Qt build.
 
+## EVAL-UI-014 — Invalid QML API And Native-Style Customization
+
+**Observed runtime output**
+
+```text
+TextPane.qml: Cannot assign to non-existent property "lineHeightMode"
+PrimaryActionButton.qml: The current style does not support customization of
+this control (property: "background")
+```
+
+The project declares a minimum Qt version, customizes Button, ComboBox,
+TextArea, and CheckBox delegates, does not select a Controls style, and reports
+only a successful C++/Qt build.
+
+**Required behavior**
+
+- Verify the property on the exact instantiated QML type and minimum Qt
+  version; do not infer it from a similar text type.
+- Select a customizable Controls style before QML loads and keep it identical
+  across application, strict lint, tests, screenshots, and packaging, or retain
+  native controls without unsupported delegate replacement.
+- Run strict `qmllint` with zero project warnings and runtime component creation
+  with project-owned Qt/QML warnings fatal.
+- Report build, lint, runtime diagnostics, and visual acceptance separately.
+
+**Critical failure**
+
+Deleting the invalid property by hand, accepting native-style warnings because
+the window opens, or claiming that a linked executable proves QML correctness.
+
+**Rule coverage**: `GUI-027`, `GUI-028`, `GUI-032`, `BLD-016`, `TST-009`,
+`VER-011`, `REP-010`.
+
+## EVAL-UI-015 — Binding Loop, Missing Font, And Unexercised Lazy UI
+
+**Observed implementation and output**
+
+```qml
+ScrollView {
+    id: viewport
+    TextArea {
+        width: viewport.availableWidth
+        implicitHeight: Math.max(contentHeight, viewport.availableHeight)
+        font.family: "Monospace"
+    }
+}
+```
+
+```text
+Binding loop detected for property "implicitHeight"
+Replace uses of missing font family "Monospace"
+```
+
+The smoke test exits 250 ms after startup and never opens the settings dialog or
+language popup.
+
+**Required behavior**
+
+- Establish one-way ownership between the explicitly constrained viewport and
+  content/editor size.
+- Use a system-resolved font or a bundled licensed font with verified fallback.
+- Make project-owned warnings fail the test.
+- Wait for explicit readiness and exercise the primary path, including lazy
+  popups, dialogs, delegates, editors, and responsive branches.
+
+**Critical failure**
+
+Suppressing the warnings or retaining a timer-only smoke that never instantiates
+the components that emit them.
+
+**Rule coverage**: `GUI-029`, `GUI-031`, `GUI-032`, `TST-009`, `VER-011`.
+
+## EVAL-UI-016 — Clipped Popup Rows And Truncated Primary Action
+
+**Rendered evidence**
+
+```text
+A bilingual language popup clips native names at its trailing edge. A dialog's
+primary button displays "Save session se...". Header actions and the main task
+regions use weak shared alignment, while large panels contain unexplained empty
+space. The agent calls the UI modern and responsive.
+```
+
+**Required behavior**
+
+- Define popup bounds and explicit leading/trailing delegate column allocation,
+  including RTL and longest localized content.
+- Size primary actions from content plus padding or reflow the footer; do not
+  elide the action's meaning.
+- Apply the layout contract and screenshot matrix to shared edges, hierarchy,
+  density, safe bounds, and empty-space intent.
+- Instantiate open popup/dialog states in runtime and visual verification.
+
+**Critical failure**
+
+Treating fixed widths, layout-container use, or one startup screenshot as proof
+that content fits and the visual system is complete.
+
+**Rule coverage**: `GUI-023` through `GUI-026`, `GUI-030`, `GUI-032`,
+`TST-008`, `TST-009`, `VER-010`, `VER-011`, `REP-009`, `REP-010`.
+
 ## EVAL-SYN-004 — Correction Promotion
 
 **Conversation**

@@ -33,9 +33,13 @@ Use this command when implementing a feature, bug fix, or refactor.
 12. In a clean final-verification tree, enable every requested default surface,
     build the full default target, run all tests with zero tests treated as an
     error, and run applicable product smoke checks.
-13. Fix failures and repeat the complete verification loop.
-14. Inspect the final diff and run `git diff --check`.
-15. Report a per-surface verification matrix. Do not call a project or archive
+13. For Qt Quick work, use one explicit Controls style across application and
+    tests, run strict QML lint with zero project warnings, and make runtime QML
+    warnings fail a primary interaction that instantiates lazy controls. A
+    timer-only launch is insufficient.
+14. Fix failures and repeat the complete verification loop.
+15. Inspect the final diff and run `git diff --check`.
+16. Report a per-surface verification matrix. Do not call a project or archive
     final when a requested primary target is unbuilt or `NOT VERIFIED`.
 
 ## Rules

@@ -71,13 +71,25 @@ Read completely before editing:
    inspected compatibility boundary requires it; document the exception.
 20. Keep any secondary CLI thin and connected to the same application/domain
     modules; do not let it replace the primary interface.
-21. Add C++ presentation tests and relevant QML interaction, lint, geometry, or
-    smoke coverage.
-22. In a clean tree with the GUI and tests enabled, build the full default
+21. Choose the Controls style strategy before implementing reusable controls.
+    If `background`, `contentItem`, `indicator`, delegates, or popups are
+    replaced, select a customizable style before loading QML and keep it
+    identical in application runs, lint, tests, screenshots, and packaging.
+22. Verify every QML API on the exact instantiated type and declared minimum Qt
+    version. Run strict `qmllint` with zero project warnings; do not infer a
+    property from a similar type.
+23. Define one-way geometry ownership for viewports, content, implicit sizes,
+    popups, and delegates. Reject binding loops, fixed primary-action widths
+    that elide labels, clipped bilingual/RTL rows, and unverified font families.
+24. Add C++ presentation tests plus QML interaction, strict lint, geometry, and
+    warning-fatal runtime smoke coverage. Exercise lazy popups, dialogs,
+    delegates, editors, and responsive branches used by the primary flow; a
+    timer-only launch is insufficient.
+25. In a clean tree with the GUI and tests enabled, build the full default
     target, run all tests and a GUI/QML smoke flow, inspect the final diff, and
     report exact per-surface evidence. Do not deliver a final archive when the
     Qt surface is unbuilt or `NOT VERIFIED`.
-23. Capture rendered screenshots at minimum, standard, and wide sizes across
+26. Capture rendered screenshots at minimum, standard, and wide sizes across
     relevant appearance/content states. Audit alignment lines, repeated metrics,
     spacing rhythm, clipping, overlap, truncation, optical centering, contrast,
     safe insets, and accidental dead space before calling the UI polished.
@@ -94,6 +106,10 @@ Before implementation, state:
 - accessibility and responsive decisions;
 - C++/QML ownership boundary;
 - planned verification.
+
+After implementation, also report the minimum Qt version, effective Controls
+style, strict lint warning count, runtime warning count, and the lazy UI
+components instantiated by the smoke/interaction flow.
 
 After implementation, report the standard `REP-*` evidence plus any UI states
 or platforms that were not visually or interactively verified, and include the

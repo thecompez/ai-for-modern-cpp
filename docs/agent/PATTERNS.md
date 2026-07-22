@@ -281,6 +281,124 @@ the first failure. A nested `QML_ELEMENT` header must also be reachable through
 the owning target's include directories so generated registration code can
 include it by basename.
 
+## Qt Quick Controls Style Selection
+
+**Correct for product-owned custom controls**
+
+```cpp
+QQuickStyle::setStyle(QStringLiteral("Basic"));
+QQmlApplicationEngine engine;
+```
+
+```qml
+Button {
+    contentItem: Text { text: control.text }
+    background: Rectangle { radius: theme.controlRadius }
+}
+```
+
+**Incorrect**
+
+```qml
+// The host silently selects macOS/Windows native style.
+Button {
+    contentItem: Text { text: control.text }
+    background: Rectangle { radius: 12 }
+}
+```
+
+The incorrect form makes a platform default part of the component architecture.
+Native styles may reject these replacements at runtime. Select one customizable
+style before QML loads and use it in tests and packaging, or retain the native
+style and its supported customization surface.
+
+## Exact QML Type Contract
+
+**Correct**
+
+```text
+Declared minimum: Qt 6.6
+Exact instantiated type: TextArea
+Verified members: TextArea/TextEdit inherited-member documentation for Qt 6.6
+Strict qmllint: 0 warnings
+Runtime component creation: PASS
+```
+
+**Incorrect**
+
+```text
+Text has the desired property, so assign it to TextArea and remove it manually
+if the generated project fails on the user's Qt SDK.
+```
+
+Visual similarity does not establish QML inheritance or minimum-version
+availability. Preserve the intended behavior through an API verified on the
+exact type.
+
+## Acyclic Scrollable Editor Geometry
+
+**Correct when the viewport has an explicit layout-owned height**
+
+```qml
+ScrollView {
+    id: viewport
+    clip: true
+
+    TextArea {
+        width: viewport.availableWidth
+        height: Math.max(contentHeight, viewport.height)
+    }
+}
+```
+
+**Incorrect**
+
+```qml
+ScrollView {
+    id: viewport
+
+    TextArea {
+        width: viewport.availableWidth
+        implicitHeight: Math.max(contentHeight, viewport.availableHeight)
+    }
+}
+```
+
+The incorrect child derives implicit size from a viewport that can derive its
+content size from the child. Runtime binding-loop warnings fail verification.
+
+## Content-Safe Actions And Popup Rows
+
+**Correct**
+
+```qml
+Button {
+    implicitWidth: Math.max(theme.primaryActionMinimumWidth,
+                            contentItem.implicitWidth + leftPadding + rightPadding)
+    text: qsTr("Save session settings")
+}
+
+RowLayout {
+    width: ListView.view.width
+    Text { Layout.fillWidth: true; elide: Text.ElideRight }
+    Text { Layout.maximumWidth: parent.width * 0.45; elide: Text.ElideRight }
+}
+```
+
+**Incorrect**
+
+```qml
+Button {
+    width: 168
+    text: qsTr("Save session settings")
+}
+```
+
+Fixed widths are allowed only after the longest supported content and translated
+expansion have been reviewed. Primary action meaning must not disappear behind
+accidental elision; popup columns must divide available width deliberately and
+remain within safe window bounds.
+
 ## QML-Creatable Type Shape
 
 **Correct**

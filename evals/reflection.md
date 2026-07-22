@@ -290,3 +290,32 @@ Human: You should have asked me for the project name before writing code.
   knowledge-contract assertions.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `INI-001` through `INI-004`.
+
+## EVAL-REF-014 — Compiled Qt UI Still Emits Runtime Defects
+
+**Conversation pattern**
+
+```text
+Agent: The full Qt target links and the application window opens, so the modern
+Qt Quick project is ready.
+Human: Runtime reports an invalid QML property, unsupported native-style
+customization, a binding loop, and a missing font. Open popups clip labels and a
+dialog truncates its primary action.
+```
+
+**Required reflection**
+
+- Generalize exact-type/minimum-version QML API validation rather than banning
+  one property name.
+- Make Controls style selection an explicit architecture input whenever visual
+  delegates are replaced.
+- Require acyclic geometry ownership and portable font selection.
+- Add content-fit rules for primary actions, translated text, popups,
+  bilingual/RTL delegates, and focus/hit geometry.
+- Require strict QML lint plus warning-fatal runtime interaction that reaches
+  explicit readiness and opens lazy controls; reject timer-only startup proof.
+- Synchronize canonical policy, baseline, Qt/testing guides, failure catalog,
+  workflows, review, patterns, evals, and executable knowledge assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-027` through `GUI-032`,
+`BLD-016`, `TST-009`, `VER-011`, `REP-010`.

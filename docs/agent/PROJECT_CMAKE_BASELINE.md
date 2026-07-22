@@ -40,6 +40,13 @@ set_property(TARGET my_app_core PROPERTY CXX_SCAN_FOR_MODULES ON)
 if(MY_APP_BUILD_GUI)
     find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Qml QuickControls2)
 
+    set(my_app_qml_files
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/pages/HomePage.qml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/components/PrimaryActionButton.qml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ui/theme/Theme.qml"
+    )
+
     aimcpp_reject_final_qml_creatable_types(
         SOURCES
             src/presentation/app_view_model.hpp
@@ -55,14 +62,16 @@ if(MY_APP_BUILD_GUI)
         src/bootstrap/main.cpp
     )
 
+    target_compile_definitions(MyApp
+        PRIVATE
+            MY_APP_QT_QUICK_CONTROLS_STYLE=\"Basic\"
+    )
+
     qt_add_qml_module(MyApp
         URI MyApp
         VERSION 1.0
         QML_FILES
-            ui/Main.qml
-            ui/pages/HomePage.qml
-            ui/components/PrimaryActionButton.qml
-            ui/theme/Theme.qml
+            ${my_app_qml_files}
         SOURCES
             src/presentation/app_view_model.cpp
             src/presentation/app_view_model.hpp
@@ -82,6 +91,16 @@ if(MY_APP_BUILD_GUI)
     )
     target_compile_features(MyApp PRIVATE cxx_std_26)
     set_property(TARGET MyApp PROPERTY CXX_SCAN_FOR_MODULES ON)
+
+    add_custom_target(MyApp_qmllint_strict
+        COMMAND Qt6::qmllint
+            --bare
+            --max-warnings 0
+            -I "${CMAKE_CURRENT_BINARY_DIR}"
+            ${my_app_qml_files}
+        DEPENDS MyApp
+        VERBATIM
+    )
 endif()
 
 if(MY_APP_BUILD_TESTS)
@@ -93,6 +112,15 @@ if(MY_APP_BUILD_TESTS)
     set_property(TARGET my_app_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
 
     add_test(NAME app.behavior COMMAND my_app_tests)
+
+    if(MY_APP_BUILD_GUI)
+        add_test(NAME app.qml.smoke COMMAND MyApp --smoke-test)
+        set_tests_properties(app.qml.smoke PROPERTIES
+            ENVIRONMENT
+                "QT_QPA_PLATFORM=offscreen;QT_QUICK_CONTROLS_STYLE=Basic;QT_FATAL_WARNINGS=1"
+            TIMEOUT 30
+        )
+    endif()
 endif()
 ```
 
@@ -101,6 +129,11 @@ project together with this baseline. The preflight rejects the common
 `QML_ELEMENT` plus `final` contradiction during configure with a `GUI-021`
 diagnostic. Keep every project-owned QML registration header in its `SOURCES`
 list. This early check supplements, and never replaces, the clean full Qt build.
+
+`MyApp_qmllint_strict` uses `--max-warnings 0`; the generated Qt lint target by
+itself reports warnings but does not necessarily fail on them. Keep the strict
+target in the final gate. When a project needs additional QML import paths, add
+them explicitly rather than disabling a lint category.
 
 ## Required Module Source Shape
 
@@ -124,6 +157,48 @@ export namespace my::app::domain {
 Implementation units follow the same ordering with `module my.app.domain;`
 instead of `export module`. Executable `.cpp` files include minimal standard
 headers normally and then import project modules.
+
+## Required Qt Composition-Root Shape
+
+A custom Controls design uses one explicit, customizable style. Select it before
+loading any QML that imports Qt Quick Controls:
+
+```cpp
+#include <cstdlib>
+
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQuickStyle>
+#include <QString>
+
+int main(int argc, char* argv[])
+{
+    QGuiApplication application(argc, argv);
+
+    QQuickStyle::setStyle(
+        QStringLiteral(MY_APP_QT_QUICK_CONTROLS_STYLE));
+
+    QQmlApplicationEngine engine;
+    // Connect object-creation failure, compose dependencies, then load QML.
+    // The --smoke-test path must await explicit readiness and exercise the
+    // primary interaction flow before returning success.
+
+    return application.exec();
+}
+```
+
+Do not replace this with an unspecified platform default. Native macOS and
+Windows styles can reject custom `background`, `contentItem`, `indicator`,
+delegate, and popup implementations. A native-style application may instead
+avoid those replacements and use only the native style's supported surface.
+
+The smoke contract is part of the generated application: `--smoke-test` must
+fail on root-component creation failure, reach an explicit application-ready
+state, and instantiate the primary path's lazy dialogs, popups, delegates, and
+editors. Exiting successfully after a fixed timer is not sufficient. The
+`QT_FATAL_WARNINGS=1` test environment makes project-caused Qt/QML warnings
+fatal; a narrowly documented platform warning may be handled by an exact test
+allowlist, never by disabling warning checks globally.
 
 ## Why The Presentation Include Directory Is Required
 
@@ -174,11 +249,15 @@ cmake -S . -B build/verify -G Ninja \
   -DMY_APP_BUILD_GUI=ON \
   -DMY_APP_BUILD_TESTS=ON
 cmake --build build/verify --parallel --target all
+cmake --build build/verify --parallel --target MyApp_qmllint_strict
 ctest --test-dir build/verify --output-on-failure --no-tests=error
 ```
 
 The build evidence must show the Qt executable linking after generated MOC, QML
 type-registration, resource, and QML cache sources compile. A generated project
 must also provide and run an applicable QML interaction or deterministic GUI
-startup smoke test. If Qt is unavailable, the GUI is `NOT VERIFIED` and the
-archive is a draft, not a verified final deliverable.
+smoke test. Record the effective Qt version and Controls style. The strict lint
+target and runtime log must contain zero project warnings, including invalid
+properties, unsupported control customization, binding loops, and missing
+fonts. If Qt is unavailable, the GUI is `NOT VERIFIED` and the archive is a
+draft, not a verified final deliverable.

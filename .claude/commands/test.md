@@ -29,6 +29,14 @@ baselines, repeated metrics, spacing rhythm, clipping, overlap, truncation,
 optical centering, contrast, safe insets, and accidental dead space. Run
 deterministic QML geometry checks where practical.
 
+For Qt Quick, run strict `qmllint` with zero project warnings and a warning-fatal
+interaction smoke under the same explicit Controls style as the application.
+The flow must reach explicit readiness and instantiate primary-path popups,
+dialogs, delegates, editors, and responsive branches; a timer-only launch is
+insufficient. Reject invalid properties, unsupported style customization,
+binding loops, missing-font warnings, clipped popup content, and truncated
+primary actions.
+
 For CMake, module, or toolchain-policy changes, use a fresh build directory and
 verify the single supported standard-library path: project modules plus minimal
 standard headers in global module fragments.
@@ -43,6 +51,8 @@ Report:
 - Whether the `knowledge_contract` test passed.
 - A per-surface `PASS`, `FAIL`, or `NOT VERIFIED` matrix.
 - A viewport/appearance/content-state visual acceptance matrix.
+- The minimum Qt version, effective Controls style, lint/runtime warning counts,
+  and lazy components exercised by the interaction flow.
 
 Do not describe a project or archive as final while a requested primary surface
 is unbuilt or `NOT VERIFIED` because its SDK or runtime was unavailable.

@@ -16,6 +16,11 @@ only because the symptom looks familiar.
 | Qt says a QML element base is marked `final` | A `QML_ELEMENT` type is creatable from QML, but Qt's generated wrapper cannot derive from it | Generated registration stack, the adapter declaration, and baseline preflight coverage | Remove `final` from the QML-creatable QObject or choose and verify a non-creatable ownership strategy; add the header to `aimcpp_reject_final_qml_creatable_types` |
 | IDE reports a generated `.qmltypes` file is missing after CMake Generate failed | QML type generation never completed | Find the first earlier CMake failure | Fix the first Generate failure, clear stale CMake state, and regenerate |
 | Qt warns that QTP0004 is not set for QML files in extra directories | The project did not select the policy | Declared Qt minimum and order around QML registration | Guard `qt_policy(SET QTP0004 NEW)` before `qt_add_qml_module` |
+| `Cannot assign to non-existent property` or `Type ... unavailable` | The property belongs to another QML type, a newer Qt version, or a missing import | Exact instantiated type, inherited-member list, minimum Qt version, and strict `qmllint` output | Use an API supported by the exact type/version, preserve the intended behavior, and rerun lint plus component creation |
+| `The current style does not support customization of this control` | A native/default Controls style is active while QML replaces `background`, `contentItem`, `indicator`, a delegate, or a popup | Effective style, composition-root ordering, and the named control property | Select a customizable style before QML loads and use it everywhere, or remove unsupported delegate replacement for a deliberately native design |
+| `Binding loop detected for property implicitWidth/implicitHeight` | Parent viewport sizing depends on a child whose implicit size depends back on the parent's available size | Binding dependency chain and explicit/implicit size ownership | Give viewport and content a one-way geometry contract; never suppress the warning |
+| Qt reports a missing font family or spends time substituting aliases | An unbundled family name or generic alias was assumed to exist cross-platform | Effective family, bundled assets/licenses, and supported-platform runs | Use Qt/system-resolved fonts or bundle and register a licensed font with an explicit fallback |
+| Popup text or a primary action label is clipped/elided | Fixed control width or delegate width arithmetic was not tested with realistic content | Longest reference/translated labels, popup geometry, RTL/bilingual state, and screenshots | Size from content, allocate delegate columns explicitly, reflow actions, and keep overlays inside safe bounds |
 
 ## Generated QML Registration Diagnosis
 
@@ -61,3 +66,12 @@ record the core and tests as `PASS` and the Qt application as `NOT VERIFIED`.
 Do not call the application ready. Re-run a clean configuration with GUI and
 tests enabled, build the full `all` target, run all tests, and run a GUI/QML
 smoke flow before final delivery.
+
+## A Window That Opens Can Still Fail Verification
+
+A linked executable may create its root window while producing unsupported
+style warnings, binding loops, font substitutions, or defects only when a popup
+or dialog opens. Treat those diagnostics as causal project failures. Run strict
+QML lint, select the intended Controls style explicitly, make runtime warnings
+fatal in the smoke environment, and exercise lazy primary-path components. A
+timer that exits shortly after startup can miss the exact controls that fail.

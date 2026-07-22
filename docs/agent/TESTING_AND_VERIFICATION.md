@@ -11,7 +11,9 @@ reports. Canonical rules: `TST-*`, `VER-*`, and `REP-*`.
 | Build | Does the compiler and linker accept the implementation? |
 | Unit/behavior tests | Does the public behavior satisfy its contract? |
 | Product integration | Did every requested surface and generated source build? |
+| QML static contract | Does strict lint accept every exact type/property/import for the minimum Qt version with zero project warnings? |
 | Smoke/interaction | Can the primary product surface start and complete its main flow? |
+| Runtime diagnostics | Did the selected Controls style run without project-owned Qt/QML warnings? |
 | Visual acceptance | Is the rendered result aligned, balanced, unclipped, and responsive across required states? |
 | Knowledge contract | Do rules, guides, examples, and executable proof remain aligned? |
 | Diff review | Did the change stay scoped and avoid accidental damage? |
@@ -64,6 +66,13 @@ For a Qt Quick product, include all of these layers:
 - deterministic QML geometry checks for critical containment, non-overlap,
   repeated-control metrics, breakpoint selection, and alignment anchors where
   reliable.
+- strict `qmllint` with a zero project-warning budget under the declared minimum
+  Qt version and configured import paths;
+- warning-fatal runtime creation under the selected Controls style, covering
+  lazy popups, dialogs, delegates, scrollable editors, and responsive branches
+  used by the primary flow;
+- typography and content-fit checks for missing fonts, longest primary labels,
+  translated expansion, bilingual/RTL popup rows, and focus-ring containment.
 
 ## Required Commands
 
@@ -83,12 +92,16 @@ cmake -S . -B build/verify -G Ninja \
   -DMY_APP_BUILD_GUI=ON \
   -DMY_APP_BUILD_TESTS=ON
 cmake --build build/verify --parallel --target all
+cmake --build build/verify --parallel --target MyApp_qmllint_strict
 ctest --test-dir build/verify --output-on-failure --no-tests=error
 ```
 
-Then run the project's QML test or deterministic GUI smoke target. Building an
-individual core or test target is useful during iteration, but it is not the
-final product gate.
+Then run the project's QML interaction or deterministic GUI smoke target with
+the same effective Controls style as the application and project-owned Qt/QML
+warnings treated as failures. The smoke flow must await explicit readiness and
+exercise the primary path. A fixed-delay launch that never opens lazy controls
+does not verify the product. Building an individual core or test target is
+useful during iteration, but it is not the final product gate.
 
 Visual acceptance is also a final product gate. Capture the required screenshot
 matrix from the product's layout contract and inspect shared edges, baselines,
@@ -126,6 +139,8 @@ Build: PASS — 14/14 steps
 Tests: PASS — 2/2 tests
 Qt Quick target: PASS — generated registration/resources compiled and executable linked
 QML smoke: PASS — exact test or smoke command
+QML lint: PASS — exact strict command, 0 project warnings
+Qt runtime diagnostics: PASS — effective Controls style, 0 project warnings
 Visual acceptance: PASS — exact viewport/state matrix and screenshot evidence
 Warnings: none
 Unverified: Linux runner not available locally

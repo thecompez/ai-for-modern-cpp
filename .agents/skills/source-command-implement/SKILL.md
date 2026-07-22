@@ -41,9 +41,13 @@ Use this command when implementing a feature, bug fix, or refactor.
     an unbuilt GUI.
 13. Run all tests with zero discovered tests treated as an error, plus the
     applicable product startup or interaction smoke checks.
-14. Fix failures and repeat the complete verification loop.
-15. Inspect the final diff and run `git diff --check`.
-16. Report a target-by-target verification matrix. Do not label an archive
+14. For Qt Quick work, use one explicit Controls style across application and
+    tests, run strict QML lint with zero project warnings, and make runtime QML
+    warnings fail the interaction smoke. Exercise primary-path lazy controls;
+    a fixed-delay launch is insufficient.
+15. Fix failures and repeat the complete verification loop.
+16. Inspect the final diff and run `git diff --check`.
+17. Report a target-by-target verification matrix. Do not label an archive
     final while a requested primary surface is `NOT VERIFIED`.
 
 ## Rules

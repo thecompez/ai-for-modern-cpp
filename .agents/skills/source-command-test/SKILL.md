@@ -36,6 +36,15 @@ containment, overlap, clipping, shared edges, baselines, repeated metrics,
 spacing rhythm, optical centering, contrast, safe insets, and accidental dead
 space. Run deterministic QML geometry assertions where practical.
 
+Run the strict QML lint target with zero project warnings. Run the GUI/QML
+interaction smoke under the same explicit Controls style as the application,
+with project-owned Qt/QML warnings treated as failures. The flow must reach an
+explicit ready state and instantiate primary-path lazy popups, dialogs,
+delegates, editors, and responsive branches; a timer-only launch is not product
+verification. Reject invalid properties, unsupported style customization,
+binding loops, missing-font substitution, clipped popup rows, and truncated
+primary actions.
+
 When CMake, modules, standard-library integration, or toolchain policy changes,
 use a fresh build directory and verify the single supported path: project-owned
 modules plus standard headers in global module fragments.
@@ -50,6 +59,8 @@ Report:
 - Whether the `knowledge_contract` test passed.
 - A surface/target matrix with `PASS`, `FAIL`, or `NOT VERIFIED`.
 - The viewport/appearance/content-state visual acceptance matrix.
+- The minimum Qt version, effective Controls style, strict lint warning count,
+  runtime warning count, and lazy components exercised by the smoke flow.
 
 If a required SDK is unavailable, report the affected primary surface as
 `NOT VERIFIED`; do not describe the project or archive as ready or final.

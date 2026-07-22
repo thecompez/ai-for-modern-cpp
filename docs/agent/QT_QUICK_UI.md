@@ -10,6 +10,16 @@ modules, Qt policy setup, and generated-type include paths aligned.
 The default stack is Qt 6, Qt Quick, QML, and Qt Quick Controls. Qt Widgets is a
 compatibility technology, not the default for new interfaces.
 
+Primary Qt references:
+
+- Qt Quick Controls customization:
+  https://doc.qt.io/qt-6/qtquickcontrols-customize.html
+- Qt Quick Controls styles and `QQuickStyle`:
+  https://doc.qt.io/qt-6/qtquickcontrols-styles.html and
+  https://doc.qt.io/qt-6/qquickstyle.html
+- QML lint tooling:
+  https://doc.qt.io/qt-6/qtqml-tooling-qmllint.html
+
 ## Interaction Surface Selection
 
 Classify the product surface before designing screens or targets:
@@ -313,6 +323,126 @@ deliberate visual pause. Otherwise rebalance the composition.
 - Use animation to explain state changes, not delay interaction.
 - Avoid magic pixels repeated across components.
 
+### Qt Quick Controls Style Contract
+
+Choose the Controls strategy before creating reusable controls:
+
+| Strategy | Required behavior |
+|---|---|
+| Product-owned visual system | Select one customizable style such as Basic, Fusion, Imagine, Material, or Universal before loading QML; custom `background`, `contentItem`, `indicator`, delegates, and popups are then allowed and verified under that style |
+| Native platform controls | Keep the platform style and customize only its documented surface; do not replace visual delegates that the native style rejects |
+
+Do not let the workstation choose this architecture implicitly. macOS and
+Windows native styles may reject delegate replacement even when the same QML
+appears to work under another style. The application composition root, tests,
+lint environment, screenshots, and packaged application must agree on the
+effective style.
+
+For a product-owned system, select the style before any QML importing Qt Quick
+Controls is loaded:
+
+```cpp
+#include <QQuickStyle>
+
+QQuickStyle::setStyle(QStringLiteral("Basic"));
+QQmlApplicationEngine engine;
+```
+
+The full entry point still owns `QGuiApplication`, object creation failure,
+dependency composition, and smoke-test readiness. This excerpt shows ordering,
+not a complete `main` function.
+
+### Exact QML API Compatibility
+
+Validate QML against the exact instantiated type and the declared minimum Qt
+version. Similar controls do not necessarily expose the same API. A property on
+`Text` is not automatically a property on `TextEdit` or `TextArea`, and a newer
+Qt documentation page does not expand the project's minimum-version contract.
+
+Required checks:
+
+- inspect the exact type documentation and inherited-member list;
+- keep imports compatible with the declared minimum Qt version;
+- run the generated module lint target and strict `qmllint` with zero allowed
+  project warnings;
+- create every component at runtime, including lazy dialogs, popups, delegates,
+  and alternate responsive branches;
+- treat `Type ... unavailable`, `Cannot assign to non-existent property`, and
+  unresolved import/type diagnostics as causal failures.
+
+Deleting a failing property until the window opens is not verification. Confirm
+the intended typography or behavior still exists through a supported API.
+
+### Acyclic Geometry And Scrollable Content
+
+Every size relationship needs one owner. A parent may constrain a child, or a
+child's intrinsic content may inform a parent, but both directions must not be
+coupled through implicit size.
+
+**Incorrect**
+
+```qml
+ScrollView {
+    id: viewport
+
+    TextArea {
+        width: viewport.availableWidth
+        implicitHeight: Math.max(contentHeight, viewport.availableHeight)
+    }
+}
+```
+
+The viewport can derive content size from the editor while the editor derives
+its implicit size from the viewport, producing a binding loop.
+
+**Correct direction**
+
+```qml
+ScrollView {
+    id: viewport
+    clip: true
+
+    TextArea {
+        width: viewport.availableWidth
+        height: Math.max(contentHeight, viewport.height)
+        background: null
+    }
+}
+```
+
+This shape is appropriate only when the surrounding layout gives the viewport
+an explicit height. Other valid designs may let content own height and place
+the editor inside a separately constrained flickable. In either case, document
+viewport ownership, content ownership, minimums, maximums, and overflow.
+
+### Content-Safe Controls, Popups, And Dialogs
+
+- Primary, destructive, and confirmation action labels remain fully readable
+  in the reference locale. Size from content plus padding, set a justified
+  minimum, or reflow actions; do not silently elide the action meaning.
+- Test translated expansion and realistic longest labels. Fixed control widths
+  require evidence, not a convenient initial screenshot.
+- Popup width must account for both anchors and delegate content while remaining
+  inside safe window bounds. Long language names, native names, model names,
+  and RTL text must not be clipped at the trailing edge.
+- Delegate rows define how leading text, trailing text, icons, and indicators
+  divide space. Do not compute both text widths from an unstable `parent.width`
+  or rely on coincidental remaining space.
+- Dialog header, body, and footer share alignment anchors. Footer actions may
+  wrap or widen before their labels truncate.
+- Instantiate open popups, open dialogs, long editor content, empty/error/loading
+  states, and compact/wide branches during verification; closed lazy controls
+  cannot be judged from startup alone.
+
+### Portable Typography
+
+Prefer Qt's resolved application/system fonts and consistent typography tokens.
+Name a specific family only when it is bundled with a documented license or
+verified on every supported platform with a deliberate fallback. Do not assume
+that strings such as `Monospace` or `monospace` resolve to a portable family.
+For code-like content, use a verified fixed-pitch resolution strategy and test
+the resulting metrics on each supported platform.
+
 ## Accessibility And Input
 
 Every interactive flow must be usable without a mouse:
@@ -350,6 +480,11 @@ endif()
 
 qt_add_executable(MyApp
     src/bootstrap/main.cpp
+)
+
+target_compile_definitions(MyApp
+    PRIVATE
+        MY_APP_QT_QUICK_CONTROLS_STYLE="Basic"
 )
 
 qt_add_qml_module(MyApp
@@ -400,6 +535,11 @@ and never edit the generated `*_qmltyperegistrations.cpp` file.
 
 Do not link `Qt6::Widgets` unless `GUI-002` has a documented exception.
 
+The composition root must call `QQuickStyle::setStyle` with
+`MY_APP_QT_QUICK_CONTROLS_STYLE` before loading QML. Keep the compile-time
+selection, test environment, and packaged application consistent. A custom
+Controls design must not fall back silently to the host's native default style.
+
 ## Verification
 
 At minimum verify:
@@ -409,7 +549,9 @@ At minimum verify:
 3. QML component creation and primary interactions.
 4. Keyboard-only primary flow and focus visibility.
 5. Resizing, long translations, empty/error/loading states, and theme contrast.
-6. QML lint or equivalent project-provided static checks.
+6. The generated QML lint target plus strict `qmllint` with zero project
+   warnings. Verify the exact type/minimum-version API rather than assuming a
+   property exists on a similar control.
 7. Configure, build, CTest, and relevant QML test runner results separately.
 8. When a CLI adapter exists, verify it calls the shared application/domain
    behavior and does not replace graphical interaction coverage.
@@ -419,8 +561,12 @@ At minimum verify:
 10. Configure a clean build with the GUI enabled, build the full default target,
     and confirm that MOC, QML type registration, resources, QML cache sources,
     and the graphical executable all compile and link.
-11. Run a deterministic QML creation/interaction or GUI startup smoke check.
-    Core-only tests do not validate the graphical product.
+11. Run a deterministic QML creation/interaction smoke check under the selected
+    Controls style with project-owned Qt/QML warnings treated as failures. The
+    test must reach an explicit ready state and exercise the primary path,
+    including lazy popups, dialogs, delegates, or editors that path uses. A
+    fixed-delay launch does not provide this evidence. Core-only tests do not
+    validate the graphical product.
 12. Capture and inspect rendered screenshots at minimum, standard, and wide
     viewport sizes. Include light/dark modes where supported and empty,
     populated, error, focus, and long-content states that materially change the
@@ -431,6 +577,9 @@ At minimum verify:
 14. Add deterministic geometry assertions for critical containment,
     non-overlap, breakpoint, repeated-size, and alignment invariants where the
     QML test environment can measure them reliably.
+15. Confirm zero component-load errors, invalid-property diagnostics,
+    unsupported-style customization warnings, binding loops, missing-font
+    warnings, clipped popup rows, and truncated primary actions.
 
 If Qt or another required GUI dependency is unavailable, report the Qt surface
 as `NOT VERIFIED`. Do not describe the application or downloadable archive as
@@ -487,3 +636,15 @@ convenient desktop size cannot prove responsiveness or detail quality.
   from their owning region, or too close to a viewport edge.
 - Calling a UI polished after inspecting only one viewport, appearance mode, or
   content state.
+- Replacing `background`, `contentItem`, `indicator`, delegates, or popups while
+  inheriting an unspecified native Controls style.
+- Assigning a property because another text or control type exposes it without
+  checking the exact QML type and minimum Qt version.
+- Coupling a child's implicit size to a viewport size that is itself derived
+  from the child.
+- Naming an unbundled, unverified font family and accepting platform
+  substitution warnings.
+- Using fixed action or popup widths that clip primary labels, translations,
+  bilingual rows, RTL content, icons, or focus rings.
+- Passing a GUI smoke test that only waits briefly at startup, never opens lazy
+  controls, and ignores project-owned Qt/QML warnings.

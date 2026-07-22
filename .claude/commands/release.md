@@ -23,7 +23,13 @@ Use this command to prepare a release.
    screenshots across relevant appearance/content states and record the visual
    acceptance matrix. Visible alignment, overflow, density, or detail defects
    block final release.
-10. Prepare release notes.
-11. Ask for explicit human approval before tagging or publishing.
+10. For Qt Quick products, run strict QML lint with zero project warnings and a
+    warning-fatal primary interaction under the explicit Controls style.
+    Invalid APIs, unsupported customization, binding loops, missing fonts,
+    clipping, truncated actions, or a timer-only smoke block release.
+11. Record the Qt version, style, lint/runtime warning counts, and lazy
+    components exercised by the interaction flow.
+12. Prepare release notes.
+13. Ask for explicit human approval before tagging or publishing.
 
 Do not create tags or publish artifacts without explicit approval.

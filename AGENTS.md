@@ -517,6 +517,43 @@ reference.
   overlap, truncation, alignment, baselines, spacing rhythm, optical centering,
   contrast, focus, hit targets, and unintended empty space. Code inspection or
   successful compilation alone cannot justify a polished or final UI claim.
+- **GUI-027** — Every QML type, property, signal, method, enum, attached
+  property, and import MUST exist on the exact instantiated type in the
+  project's declared minimum Qt version. Agents MUST NOT infer API availability
+  from a visually similar type or from a newer Qt release. The complete QML
+  module MUST pass `qmllint` and runtime component creation before delivery.
+- **GUI-028** — A Qt Quick Controls styling strategy MUST be explicit and
+  consistent. A project that replaces `background`, `contentItem`, `indicator`,
+  delegates, or popups MUST select a customizable style such as Basic, Fusion,
+  Imagine, Material, or Universal before any Controls QML is loaded. A project
+  that intentionally uses a native style MUST keep to that style's supported
+  customization surface. Platform-default style selection is not an acceptable
+  hidden dependency for custom controls.
+- **GUI-029** — QML geometry MUST have one acyclic ownership direction.
+  `implicitWidth` or `implicitHeight` MUST NOT depend on a parent viewport's
+  available size when that viewport derives its own implicit or content size
+  from the child. Scrollable editors, popups, delegates, and layouts MUST define
+  which object owns viewport size and which owns content size, and runtime
+  binding-loop warnings are release-blocking defects.
+- **GUI-030** — Control geometry MUST be content-safe. Primary and destructive
+  action labels MUST remain fully readable in the reference locale; translated
+  text MUST reflow, grow, or use an explicitly reviewed alternate label rather
+  than accidental elision. Popup delegates, bilingual or RTL rows, icons,
+  indicators, focus rings, and hit targets MUST remain contained and aligned at
+  supported sizes. Fixed widths require evidence against realistic longest
+  content.
+- **GUI-031** — Typography MUST be portable and intentional. A font family MAY
+  be named only when it is bundled with a documented license or verified on
+  every supported platform with a fallback. Otherwise use Qt/system-resolved
+  fonts and style hints. Missing-font substitutions, inconsistent metrics, and
+  avoidable font-alias warnings MUST be fixed before delivery.
+- **GUI-032** — Qt UI verification MUST be warning-clean for project-owned QML.
+  Strict QML lint and a deterministic runtime smoke or interaction test MUST
+  fail on component-load errors, unsupported control customization, binding
+  loops, invalid properties, missing project fonts, and other project-caused Qt
+  warnings. The smoke path MUST reach an explicit ready state and exercise the
+  primary flow; merely starting the event loop for a fixed delay is
+  insufficient.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -582,6 +619,11 @@ standard-library headers in global module fragments
   registration header. A `QML_ELEMENT` type declared `final` MUST fail during
   configure with a causal diagnostic. The preflight supplements and MUST NOT
   replace the full Qt build required by `GUI-022`.
+- **BLD-016** — Generated Qt Quick projects that customize Controls MUST select
+  one supported customizable style in the composition root before loading QML,
+  and MUST use that same effective style for application runs, QML tests, lint
+  setup, screenshots, and smoke verification. The selected style and minimum Qt
+  version are build-and-test inputs, not undocumented workstation defaults.
 
 Do not use `std::views::enumerate` in portable examples unless the active
 standard library has been verified to provide it.
@@ -612,6 +654,11 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   non-overlap, breakpoint selection, repeated-control sizing, and primary
   alignment anchors. Automated geometry checks supplement rather than replace
   rendered visual review.
+- **TST-009** — Qt Quick projects MUST run strict QML lint with a zero
+  project-warning budget and a warning-fatal runtime test under the selected
+  Controls style. Tests MUST cover component creation plus enough interaction
+  and representative content to instantiate lazy popups, dialogs, delegates,
+  scrollable editors, and other primary-path components.
 - **VER-001** — Configure, build, and test are separate results and MUST be
   reported separately.
 - **VER-002** — Agents MUST stop a command chain after configure failure; later
@@ -637,6 +684,10 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
 - **VER-010** — Final Qt verification MUST record the exact viewport sizes,
   appearance modes, content states, screenshots, and interaction paths that
   were visually inspected. Any unreviewed required state is `NOT VERIFIED`.
+- **VER-011** — Final Qt evidence MUST name the minimum Qt version, effective
+  Controls style, strict `qmllint` command and warning count, runtime smoke or
+  interaction command, and project-owned Qt/QML warning count. A clean compile
+  with runtime warnings is not a clean Qt verification result.
 
 Preferred loop:
 
@@ -735,6 +786,9 @@ Every completed implementation report MUST include:
 - **REP-009** — UI reports MUST list the visual acceptance matrix and any known
   alignment, overflow, density, typography, contrast, or responsive limitation;
   a generic statement such as "responsive and polished" is not evidence.
+- **REP-010** — Qt UI reports MUST record the effective Controls style, Qt
+  version, QML lint result, runtime warning result, and the interactions that
+  instantiated popups, dialogs, delegates, editors, and other lazy components.
 
 Never report:
 
@@ -791,6 +845,16 @@ Agents MUST NOT:
 - Accept accidental dead space, drifting alignment lines, clipped peripheral
   controls, inconsistent repeated metrics, or edge-pinned task content merely
   because the QML uses layout containers.
+- Customize Qt Quick Controls while silently inheriting a native platform style
+  that rejects custom `background`, `contentItem`, `indicator`, delegate, or
+  popup implementations.
+- Use a QML property because a similar visual type exposes it, without verifying
+  the exact instantiated type and declared minimum Qt version.
+- Accept QML binding loops, missing-font substitution, unsupported-style
+  customization, component-load errors, clipped popup rows, or elided primary
+  actions because the executable still opens.
+- Treat a timer-only GUI launch as proof that lazy controls and the primary
+  interaction path are warning-free.
 - Create a top-level `qml/` dumping directory for a new Qt Quick repository
   instead of an explicit `ui/` boundary.
 - Edit generated QML type registration files or omit target-local include paths
