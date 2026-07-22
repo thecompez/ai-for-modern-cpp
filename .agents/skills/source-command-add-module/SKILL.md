@@ -15,12 +15,10 @@ Use this skill when introducing a new project-owned C++ module.
 3. Choose a dotted lowercase domain-oriented module name.
 4. Put exported declarations and Doxygen contracts in `.cppm`.
 5. Put non-trivial implementation in `.cpp`.
-6. Follow the repository's selected standard-library mode: `import std` when
-   enabled, otherwise minimal standard headers in the global module fragment.
+6. Include only the required standard headers in the global module fragment,
+   before the named module declaration. Do not use `import std`.
 7. Register the interface with `FILE_SET CXX_MODULES`.
-8. If standard-library detection changes, prepare the verified experimental
-   gate and metadata before `project()`, then inspect detected capability and
-   select `CXX_MODULE_STD` afterward.
+8. Enable target module scanning with `CXX_SCAN_FOR_MODULES`.
 9. Link consumers to the owning CMake target.
 10. Add public-behavior tests.
 11. Configure, build, test, inspect the diff, and report exact evidence.

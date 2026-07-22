@@ -155,7 +155,7 @@ qml/
 
 ```text
 Qt policy QTP0004 is not set for extra directories containing QML files.
-The CXX_MODULE_STD property requires toolchain support.
+CMake Generate step failed.
 MyApp.qmltypes does not exist.
 ```
 
@@ -163,7 +163,7 @@ MyApp.qmltypes does not exist.
 
 - Treat the CMake Generate failure as causal and the missing generated
   `.qmltypes` file as a cascading IDE symptom.
-- Fix the first toolchain failure and regenerate before diagnosing QML type
+- Fix the first Generate failure and regenerate before diagnosing QML type
   registration.
 - When the QML module has extra directories, select QTP0004 `NEW` before
   `qt_add_qml_module`.
@@ -171,7 +171,29 @@ MyApp.qmltypes does not exist.
   version may predate the policy; do not raise the minimum solely to silence a
   warning.
 
-**Rule coverage**: `GUI-012`, `GUI-019`, `BLD-014`, `VER-001`, `VER-002`.
+**Rule coverage**: `GUI-012`, `GUI-019`, `VER-001`, `VER-002`.
+
+## EVAL-UI-009 — Nested QML Element Header Is Not Found
+
+**Observed build output**
+
+```text
+generated/MyApp_qmltyperegistrations.cpp: use of undeclared identifier
+'AppViewModel'
+```
+
+The adapter is listed under `SOURCES` but lives at
+`src/presentation/app_view_model.hpp`.
+
+**Required behavior**
+
+- Inspect the generated source and recognize its basename include.
+- Add `src/presentation` to the QML target with
+  `target_include_directories(... PRIVATE ...)`.
+- Keep the adapter nested at the presentation boundary.
+- Never edit the generated registration source.
+
+**Rule coverage**: `GUI-005`, `GUI-006`, `GUI-012`, `GUI-020`.
 
 ## EVAL-SYN-001 — Lowercase Enum Cases
 

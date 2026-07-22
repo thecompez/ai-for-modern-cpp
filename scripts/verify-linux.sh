@@ -6,12 +6,9 @@ scriptDirectory="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repositoryRoot="$(cd -- "${scriptDirectory}/.." && pwd)"
 buildDirectory="${AIMCPP_BUILD_DIRECTORY:-${repositoryRoot}/build/linux-gcc-debug}"
 compilerExecutable="${CXX:-g++}"
-stdlibMode="${AIMCPP_STDLIB_MODE:-AUTO}"
 
 if [[ -n "${AIMCPP_CMAKE:-}" ]]; then
     cmakeExecutable="${AIMCPP_CMAKE}"
-elif [[ -x "${repositoryRoot}/.tools/cmake/bin/cmake" ]]; then
-    cmakeExecutable="${repositoryRoot}/.tools/cmake/bin/cmake"
 else
     cmakeExecutable="$(command -v cmake)"
 fi
@@ -31,8 +28,7 @@ ninja --version
     -B "${buildDirectory}" \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_CXX_COMPILER="${compilerExecutable}" \
-    -DAIMCPP_STDLIB_MODE="${stdlibMode}"
+    -DCMAKE_CXX_COMPILER="${compilerExecutable}"
 
 "${cmakeExecutable}" --build "${buildDirectory}" --parallel
 

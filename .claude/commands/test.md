@@ -17,10 +17,9 @@ ctest --test-dir build --output-on-failure --no-tests=error
 
 If presets exist, prefer the repository presets.
 
-For CMake, module, or toolchain-policy changes, verify fresh `IMPORT_STD` and
-`HEADERS` builds separately; `AUTO` does not prove both source paths.
-Use a fresh CMake configuration when pre-`project()` compiler-detection inputs
-change so the previous capability cache cannot mask the result.
+For CMake, module, or toolchain-policy changes, use a fresh build directory and
+verify the single supported standard-library path: project modules plus minimal
+standard headers in global module fragments.
 
 Report:
 

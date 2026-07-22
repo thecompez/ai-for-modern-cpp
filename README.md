@@ -76,7 +76,7 @@ evals/                     Agent behavior scenarios and scoring rubric
 src/                       Executable module-based proof of the rules
 tests/                     Behavior tests and knowledge-contract checks
 .github/workflows/ci.yml   macOS and Linux verification
-CMakeLists.txt             CMake module and standard-library mode integration
+CMakeLists.txt             Project-module and standard-header integration
 ```
 
 Start with [`AGENTS.md`](AGENTS.md), then use the routing table in that file.
@@ -89,9 +89,9 @@ The reference implementation demonstrates and enforces:
 
 - C++26 as the primary path, with modern C++20+ policy for derived work.
 - C++ modules by default.
-- `import std` when the effective toolchain supports it, with a
-  global-module-fragment standard-header fallback that preserves `.cppm`
-  project modules.
+- Minimal standard-library headers in global module fragments; experimental
+  `import std` is deliberately excluded while `.cppm` project modules remain
+  mandatory.
 - Declaration in `.cppm` and non-trivial implementation in `.cpp`.
 - Dotted lowercase module identities and matching namespaces.
 - PascalCase enum-class enumerators and `m_`-prefixed private members.
@@ -147,7 +147,9 @@ verifies the C++/QML boundary. See
 When QML uses responsibility-based subdirectories, generated projects select
 QTP0004 through a minimum-version-compatible guard before QML module
 registration. A missing `.qmltypes` file after an earlier failed CMake Generate
-step is treated as a cascading symptom.
+step is treated as a cascading symptom. Nested `QML_ELEMENT` adapter headers are
+also added to the owning target's include path so generated registration code
+can compile them by basename.
 
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).
@@ -156,15 +158,9 @@ The copy-ready CMake shape for generated Qt Quick projects is documented in
 
 ## Build The Executable Proof
 
-The active compiler, standard library, CMake version, generator, and standard
-library module metadata determine whether `AUTO` selects `import std` or the
-standard-header compatibility path. Project-owned C++ modules are mandatory in
-both modes.
-
-`import std` discovery is two-phase: the verified experimental gate and active
-toolchain metadata are prepared before `project()` enables C++, then the
-detected `CMAKE_CXX_COMPILER_IMPORT_STD` capability selects module-std behavior
-afterward. Reordering those inputs requires a fresh CMake configuration.
+The build has one deterministic architecture: project-owned C++ modules plus
+minimal standard-library headers. It does not configure experimental standard
+modules, metadata JSON files, UUID gates, or delivery-mode switches.
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -175,30 +171,13 @@ ctest --test-dir build --output-on-failure --no-tests=error
 Expected configure evidence includes:
 
 ```text
-AIMCPP_STDLIB_MODE=AUTO
-AIMCPP_STDLIB_INTEGRATION=IMPORT_STD
-AIMCPP_USE_IMPORT_STD=ON
+AIMCPP_PROJECT_MODULES=ON
+AIMCPP_STANDARD_LIBRARY=HEADERS
 ```
 
-On a toolchain without effective standard-library module support, expected
-evidence is:
-
-```text
-AIMCPP_STDLIB_MODE=AUTO
-AIMCPP_STDLIB_INTEGRATION=HEADERS
-AIMCPP_USE_IMPORT_STD=OFF
-```
-
-That result changes only standard-library delivery. The build still compiles
-the `.cppm` interface through `FILE_SET CXX_MODULES` and consumers still import
-the project module. No project-owned `.h` or `.hpp` fallback is created.
-
-The two source paths can be forced independently:
-
-```bash
-cmake -S . -B build/import-std -G Ninja -DAIMCPP_STDLIB_MODE=IMPORT_STD
-cmake -S . -B build/headers -G Ninja -DAIMCPP_STDLIB_MODE=HEADERS
-```
+The build compiles `.cppm` interfaces through `FILE_SET CXX_MODULES`, consumers
+import project modules, and standard headers remain in global module fragments.
+No project-owned `.h` or `.hpp` fallback is created.
 
 ## Executable Reference Layout
 
@@ -212,8 +191,8 @@ tests/knowledge_contract.cmake               Knowledge architecture regression t
 
 The reference demonstrates `std::expected`, `std::optional`, `std::span`,
 concepts, ranges, `constexpr`, `consteval`, `std::chrono`, `std::format`, and
-`std::println` in both standard-library modes without turning the module
-interface into an implementation dumping ground.
+`std::println` without turning the module interface into an implementation
+dumping ground.
 
 ## Rule-Driven Review
 
@@ -236,44 +215,29 @@ secrets. See [`docs/MCP.md`](docs/MCP.md).
 
 ## Portability Notes
 
-- The preferred `import std` path is Clang 22+; GCC 15.x uses it only when the
-  compiler, libstdc++, CMake, Ninja, and module metadata agree.
-- Toolchains that support project C++ modules but not `import std` use minimal
-  standard headers in global module fragments.
-- Do not assume C compatibility globals are exported by `import std`.
+- Project-owned modules use minimal standard headers in global module
+  fragments on every toolchain.
+- No standard-library module metadata or experimental CMake gate is required.
 - Avoid `std::views::enumerate` in portable examples until the active standard
   library is verified to provide it.
 
 ## Linux GCC Build
 
-The verified GNU `import std` path is GCC 15.x, CMake 4.0+, Ninja 1.11+, and the
-matching libstdc++ development package. CMake 3.31 does not support GCC
-`import std`, but `AUTO` can retain project modules and select standard-library
-headers.
-
-On Ubuntu 25.10, install a repository-local pinned CMake without replacing the
-system package:
+GCC 15.x, packaged CMake 3.30/3.31, and Ninja can build the project modules
+without standard-library module metadata. On Ubuntu 25.10:
 
 ```bash
 sudo apt update
-sudo apt install --yes g++ ninja-build python3-venv
-bash scripts/bootstrap-linux-cmake.sh
-.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
+sudo apt install --yes cmake g++ ninja-build
+bash scripts/verify-linux.sh
 ```
 
-Fedora 43 also packages CMake 3.31, so use the same repository-local bootstrap:
+On Fedora 43:
 
 ```bash
-sudo dnf install --assumeyes gcc-c++ ninja-build python3 python3-pip
-bash scripts/bootstrap-linux-cmake.sh
-.tools/cmake/bin/cmake -E remove_directory build/linux-gcc-debug
-AIMCPP_STDLIB_MODE=IMPORT_STD bash scripts/verify-linux.sh
+sudo dnf install --assumeyes cmake gcc-c++ ninja-build
+bash scripts/verify-linux.sh
 ```
-
-The configure step validates every `libstdc++.modules.json` source. Broken
-distribution-relative paths are repaired into generated metadata under the
-build directory; files under `/usr` are never modified.
 
 ## License
 

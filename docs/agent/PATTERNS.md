@@ -11,16 +11,10 @@ never be copied into production code.
 // project_name.cppm
 module;
 
-#if !APP_USE_IMPORT_STD
 #include <string>
 #include <string_view>
-#endif
 
 export module project.name;
-
-#if APP_USE_IMPORT_STD
-import std;
-#endif
 
 export namespace project::name {
 
@@ -43,18 +37,12 @@ private:
 // project_name.cpp
 module;
 
-#if !APP_USE_IMPORT_STD
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-#endif
 
 module project.name;
-
-#if APP_USE_IMPORT_STD
-import std;
-#endif
 
 namespace project::name {
 
@@ -74,9 +62,8 @@ std::string_view ProjectName::value() const noexcept
 }
 ```
 
-The standard-library path is conditional; the project module is not. Fallback
-headers stay in the global module fragment between `module;` and the named
-module declaration.
+Standard headers stay in the global module fragment between `module;` and the
+named module declaration. The project module remains the public boundary.
 
 **Incorrect**
 
@@ -92,7 +79,7 @@ private:
 
 Violations: `MOD-002`, `MOD-003`, `MOD-006`, and `NAM-005`.
 
-**Incorrect fallback placement**
+**Incorrect standard-header placement**
 
 ```cpp
 export module project.name;
@@ -275,6 +262,7 @@ if(QT_KNOWN_POLICY_QTP0004)
     qt_policy(SET QTP0004 NEW)
 endif()
 qt_add_qml_module(MyApp URI MyApp QML_FILES ui/Main.qml)
+target_include_directories(MyApp PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/presentation")
 ```
 
 **Incorrect for a new UI without an exception**
@@ -289,7 +277,9 @@ The incorrect form violates `GUI-001`, `GUI-002`, and `GUI-012`.
 When QML files occupy extra directories, the guarded QTP0004 selection must
 precede `qt_add_qml_module`. A missing generated `.qmltypes` file after an
 earlier failed Generate step is not evidence that QML registration itself is
-the first failure.
+the first failure. A nested `QML_ELEMENT` header must also be reachable through
+the owning target's include directories so generated registration code can
+include it by basename.
 
 ## Qt Quick Repository And Experience Shape
 
@@ -375,23 +365,20 @@ auto applicationRule() -> Result
 
 ## CMake Module Registration
 
-**Correct import-std detection order**
+**Correct project-module configuration**
 
 ```cmake
-# Verified version-scoped gate and validated metadata are prepared here.
-set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<verified-version-specific-gate>")
-set(CMAKE_CXX_STDLIB_MODULES_JSON "<validated-active-toolchain-metadata>")
-
 project(MyApp LANGUAGES CXX)
 
-if(26 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD)
-    set(CMAKE_CXX_MODULE_STD ON)
-else()
-    set(CMAKE_CXX_MODULE_STD OFF)
-endif()
+add_library(project_core)
+target_sources(project_core
+    PUBLIC FILE_SET CXX_MODULES FILES src/project/project.cppm
+    PRIVATE src/project/project.cpp
+)
+set_property(TARGET project_core PROPERTY CXX_SCAN_FOR_MODULES ON)
 ```
 
-**Incorrect import-std detection order**
+**Incorrect experimental standard-library configuration**
 
 ```cmake
 project(MyApp LANGUAGES CXX)
@@ -399,10 +386,9 @@ set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<gate-set-too-late>")
 set(CMAKE_CXX_MODULE_STD ON)
 ```
 
-The incorrect form asks CMake to use a capability that was not enabled during
-compiler detection. Later metadata or a target property cannot repair that
-ordering; recreate the CMake configuration after moving phase-one inputs before
-`project()`.
+The incorrect form adds an experimental standard-library module path that the
+repository does not support. Remove the gate and `CMAKE_CXX_MODULE_STD`, use
+standard headers in global module fragments, and preserve project modules.
 
 **Correct**
 

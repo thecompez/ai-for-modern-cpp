@@ -26,7 +26,9 @@ and application behavior in modern C++ modules. Keep new QML, tokens, and
 visual assets under the top-level `ui/` boundary. For QML subdirectories, set
 QTP0004 `NEW` behind `QT_KNOWN_POLICY_QTP0004` before module registration, and
 treat missing generated `.qmltypes` after failed CMake generation as a
-cascading symptom. Do not introduce Qt Widgets
+cascading symptom. Add directories containing nested `QML_ELEMENT` adapter
+headers as target-local private include directories, and never edit generated
+`*_qmltyperegistrations.cpp` files. Do not introduce Qt Widgets
 without an explicit user request or inspected compatibility requirement.
 For a generated project, begin with `PROJECT_CMAKE_BASELINE.md` instead of
 assembling the CMake file from partial snippets.

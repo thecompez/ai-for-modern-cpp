@@ -1,227 +1,144 @@
 # Generated Project CMake Baseline
 
 Use this baseline when creating a new module-based C++ project, especially a
-Qt Quick application. It combines the two ordering constraints that generated
-projects must not split or reorder:
+Qt Quick application. It intentionally supports project-owned C++ modules while
+using standard-library headers. Experimental standard-library modules, metadata,
+gates, and mode switches are not part of the generated project.
 
-1. Prepare experimental `import std` detection inputs before C++ is enabled.
-2. Consume the detected capability and register Qt/QML targets afterward.
-
-The repository root `CMakeLists.txt` is the executable proof for the
-standard-library portion. Copy `cmake/AimcppImportStd.cmake` into the generated
-project's `cmake/` directory; it contains the validated GNU metadata preparation
-used by that proof.
-
-## Phase One: Before `project()`
+## Complete Baseline
 
 ```cmake
-cmake_minimum_required(VERSION 3.31)
-
-set(APP_STDLIB_MODE "AUTO" CACHE STRING
-    "Standard-library mode: AUTO, IMPORT_STD, or HEADERS"
-)
-set_property(CACHE APP_STDLIB_MODE PROPERTY STRINGS AUTO IMPORT_STD HEADERS)
-string(TOUPPER "${APP_STDLIB_MODE}" APP_STDLIB_MODE)
-
-if(NOT APP_STDLIB_MODE STREQUAL "AUTO"
-    AND NOT APP_STDLIB_MODE STREQUAL "IMPORT_STD"
-    AND NOT APP_STDLIB_MODE STREQUAL "HEADERS"
-)
-    message(FATAL_ERROR
-        "APP_STDLIB_MODE must be AUTO, IMPORT_STD, or HEADERS. "
-        "Observed value: '${APP_STDLIB_MODE}'"
-    )
-endif()
-
-set(APP_IMPORT_STD_PROBE_ENABLED OFF)
-set(APP_IMPORT_STD_PROBE_REASON "")
-
-if(NOT APP_STDLIB_MODE STREQUAL "HEADERS")
-    if(CMAKE_VERSION VERSION_LESS "3.31.8")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "0e5b6991-d74f-4b3d-a41c-cf096e0b2508"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    elseif(CMAKE_VERSION VERSION_LESS "4.0.0")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "d0edc3af-4c50-42ea-a356-e2862fe7a444"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    elseif(CMAKE_VERSION VERSION_LESS "4.0.3")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "a9e1cf81-9932-4810-974b-6eccaf14e457"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    elseif(CMAKE_VERSION VERSION_LESS "4.3.0")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "d0edc3af-4c50-42ea-a356-e2862fe7a444"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    elseif(CMAKE_VERSION VERSION_LESS "4.4.0")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "451f2fe2-a8a2-47c3-bc32-94786d8fc91b"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    elseif(CMAKE_VERSION VERSION_LESS "4.5.0")
-        set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-            "f35a9ac6-8463-4d38-8eec-5d6008153e7d"
-        )
-        set(APP_IMPORT_STD_PROBE_ENABLED ON)
-    else()
-        set(APP_IMPORT_STD_PROBE_REASON
-            "CMake ${CMAKE_VERSION} has no verified import-std gate."
-        )
-    endif()
-endif()
-
-set(CMAKE_CXX_SCAN_FOR_MODULES ON)
-
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AimcppImportStd.cmake")
-
-if(APP_IMPORT_STD_PROBE_ENABLED)
-    aimcpp_prepare_gnu_import_std(
-        APP_GNU_STDLIB_MODULES_JSON
-        APP_GNU_IMPORT_STD_FAILURE
-    )
-
-    if(APP_GNU_IMPORT_STD_FAILURE)
-        set(APP_IMPORT_STD_PROBE_REASON "${APP_GNU_IMPORT_STD_FAILURE}")
-        set(APP_IMPORT_STD_PROBE_ENABLED OFF)
-        unset(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD)
-        unset(CMAKE_CXX_STDLIB_MODULES_JSON)
-        unset(CMAKE_CXX_STDLIB_MODULES_JSON CACHE)
-    elseif(APP_GNU_STDLIB_MODULES_JSON)
-        set(CMAKE_CXX_STDLIB_MODULES_JSON
-            "${APP_GNU_STDLIB_MODULES_JSON}"
-        )
-    endif()
-endif()
-
-# Associate Homebrew libc++ metadata only with the active Homebrew compiler.
-if(APP_IMPORT_STD_PROBE_ENABLED AND APPLE AND CMAKE_CXX_COMPILER)
-    execute_process(
-        COMMAND brew --prefix llvm
-        OUTPUT_VARIABLE APP_HOMEBREW_LLVM_PREFIX
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET
-    )
-
-    if(APP_HOMEBREW_LLVM_PREFIX)
-        file(REAL_PATH
-            "${APP_HOMEBREW_LLVM_PREFIX}"
-            APP_HOMEBREW_LLVM_REAL_PREFIX
-        )
-        file(REAL_PATH "${CMAKE_CXX_COMPILER}" APP_ACTIVE_CXX_COMPILER)
-        string(FIND
-            "${APP_ACTIVE_CXX_COMPILER}"
-            "${APP_HOMEBREW_LLVM_REAL_PREFIX}/"
-            APP_HOMEBREW_COMPILER_POSITION
-        )
-
-        if(APP_HOMEBREW_COMPILER_POSITION EQUAL 0
-            AND EXISTS
-                "${APP_HOMEBREW_LLVM_REAL_PREFIX}/lib/c++/libc++.modules.json"
-        )
-            set(CMAKE_CXX_STDLIB_MODULES_JSON
-                "${APP_HOMEBREW_LLVM_REAL_PREFIX}/lib/c++/libc++.modules.json"
-            )
-        endif()
-    endif()
-endif()
+cmake_minimum_required(VERSION 3.30)
 
 project(MyApp VERSION 0.1.0 LANGUAGES CXX)
-```
 
-Do not move `CMAKE_EXPERIMENTAL_CXX_IMPORT_STD`, validated metadata, or module
-scanning below `project()`. CMake discovers the capability while enabling C++.
+option(MY_APP_BUILD_GUI "Build the Qt Quick application" ON)
+option(MY_APP_BUILD_TESTS "Build tests" ON)
 
-## Phase Two: After `project()`
+set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-```cmake
-set(APP_USE_IMPORT_STD OFF)
-
-if(APP_IMPORT_STD_PROBE_ENABLED
-    AND (26 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD
-        OR 23 IN_LIST CMAKE_CXX_COMPILER_IMPORT_STD)
-)
-    set(APP_USE_IMPORT_STD ON)
-endif()
-
-if(APP_STDLIB_MODE STREQUAL "IMPORT_STD" AND NOT APP_USE_IMPORT_STD)
-    message(FATAL_ERROR
-        "IMPORT_STD was requested, but the effective toolchain does not "
-        "advertise support. "
-        "CMAKE_CXX_COMPILER_IMPORT_STD='${CMAKE_CXX_COMPILER_IMPORT_STD}'. "
-        "Probe detail: ${APP_IMPORT_STD_PROBE_REASON}"
-    )
-endif()
-
-set(CMAKE_CXX_MODULE_STD ${APP_USE_IMPORT_STD})
-
-add_library(app_core)
-target_compile_features(app_core PUBLIC cxx_std_26)
-target_compile_definitions(
-    app_core
-    PUBLIC APP_USE_IMPORT_STD=$<BOOL:${APP_USE_IMPORT_STD}>
-)
-target_sources(
-    app_core
+add_library(my_app_core)
+target_compile_features(my_app_core PUBLIC cxx_std_26)
+target_sources(my_app_core
     PUBLIC
         FILE_SET CXX_MODULES
-        FILES src/application/app.cppm
+        FILES
+            src/domain/app_domain.cppm
+            src/application/app.cppm
     PRIVATE
+        src/domain/app_domain.cpp
         src/application/app.cpp
 )
-set_property(TARGET app_core PROPERTY CXX_MODULE_STD ${APP_USE_IMPORT_STD})
-set_property(TARGET app_core PROPERTY CXX_SCAN_FOR_MODULES ON)
-```
+set_property(TARGET my_app_core PROPERTY CXX_SCAN_FOR_MODULES ON)
 
-`CMAKE_CXX_COMPILER_IMPORT_STD` is read-only evidence produced by CMake. Do not
-populate it manually from a compiler version or the existence of a JSON file.
+if(MY_APP_BUILD_GUI)
+    find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Qml QuickControls2)
 
-## Qt Quick Registration
+    if(QT_KNOWN_POLICY_QTP0004)
+        qt_policy(SET QTP0004 NEW)
+    endif()
 
-```cmake
-find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Qml QuickControls2)
+    qt_standard_project_setup(REQUIRES 6.6)
 
-if(QT_KNOWN_POLICY_QTP0004)
-    qt_policy(SET QTP0004 NEW)
+    qt_add_executable(MyApp
+        src/bootstrap/main.cpp
+    )
+
+    qt_add_qml_module(MyApp
+        URI MyApp
+        VERSION 1.0
+        QML_FILES
+            ui/Main.qml
+            ui/pages/HomePage.qml
+            ui/components/PrimaryActionButton.qml
+            ui/theme/Theme.qml
+        SOURCES
+            src/presentation/app_view_model.cpp
+            src/presentation/app_view_model.hpp
+    )
+
+    target_include_directories(MyApp
+        PRIVATE
+            "${CMAKE_CURRENT_SOURCE_DIR}/src/presentation"
+    )
+
+    target_link_libraries(MyApp
+        PRIVATE
+            my_app_core
+            Qt6::Quick
+            Qt6::Qml
+            Qt6::QuickControls2
+    )
+    target_compile_features(MyApp PRIVATE cxx_std_26)
+    set_property(TARGET MyApp PROPERTY CXX_SCAN_FOR_MODULES ON)
 endif()
 
-qt_standard_project_setup(REQUIRES 6.6)
+if(MY_APP_BUILD_TESTS)
+    enable_testing()
 
-qt_add_executable(MyApp
-    src/bootstrap/main.cpp
-    src/presentation/app_view_model.cpp
-    src/presentation/app_view_model.hpp
-)
+    add_executable(my_app_tests tests/app_tests.cpp)
+    target_link_libraries(my_app_tests PRIVATE my_app_core)
+    target_compile_features(my_app_tests PRIVATE cxx_std_26)
+    set_property(TARGET my_app_tests PROPERTY CXX_SCAN_FOR_MODULES ON)
 
-qt_add_qml_module(MyApp
-    URI MyApp
-    VERSION 1.0
-    QML_FILES
-        ui/Main.qml
-        ui/pages/HomePage.qml
-        ui/components/PrimaryActionButton.qml
-        ui/theme/Theme.qml
-)
-
-target_link_libraries(MyApp
-    PRIVATE
-        app_core
-        Qt6::Quick
-        Qt6::Qml
-        Qt6::QuickControls2
-)
+    add_test(NAME app.behavior COMMAND my_app_tests)
+endif()
 ```
 
-The guarded QTP0004 selection must precede `qt_add_qml_module`. It supports
-QML files in responsibility-based subdirectories without pretending the
-project requires a newer Qt release than its declared minimum.
+## Required Module Source Shape
 
-## Regeneration Rule
+Every module unit that needs the standard library uses the global module
+fragment:
 
-After changing anything in phase one, recreate the CMake configuration. In Qt
-Creator, use **Build > Clear CMake Configuration**, then configure again. A
-missing generated `.qmltypes` file after a failed Generate step is a cascading
-symptom; diagnose the first CMake error first.
+```cpp
+module;
+
+#include <expected>
+#include <string>
+#include <string_view>
+
+export module my.app.domain;
+
+export namespace my::app::domain {
+// Exported declarations.
+}
+```
+
+Implementation units follow the same ordering with `module my.app.domain;`
+instead of `export module`. Executable `.cpp` files include minimal standard
+headers normally and then import project modules.
+
+## Why The Presentation Include Directory Is Required
+
+Qt's QML type registrar may generate code shaped like this:
+
+```cpp
+#if __has_include(<app_view_model.hpp>)
+#include <app_view_model.hpp>
+#endif
+
+qmlRegisterTypesAndRevisions<AppViewModel>("MyApp", 1);
+```
+
+The generated source lives in the build directory and has lost the original
+header path. `target_include_directories(MyApp ... src/presentation)` makes the
+basename include resolvable. Without it, metadata generation can succeed while
+compilation fails because `AppViewModel` is undeclared.
+
+Do not edit the generated registration source. Do not move the adapter into the
+repository root. Keep the responsibility-oriented layout and expose the nested
+directory only to the owning QML target.
+
+## Qt Policy And Regeneration
+
+The guarded QTP0004 selection must precede `qt_add_qml_module`. It supports QML
+files in responsibility-based subdirectories without requiring a newer Qt
+version solely for the policy.
+
+When migrating a project that previously used experimental standard-library
+modules, clear its build directory or use **Build > Clear CMake Configuration**
+in Qt Creator. Generated `.qmltypes` files are expected only after a successful
+configure and Generate step.

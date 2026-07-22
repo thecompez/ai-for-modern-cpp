@@ -48,18 +48,21 @@ Read completely before editing:
 10. Place new QML, design tokens, and visual assets under the top-level `ui/`
     boundary, using responsibility-based subdirectories only when needed.
 11. For a generated project, start from `PROJECT_CMAKE_BASELINE.md`; do not
-    reconstruct import-std and Qt ordering from partial snippets.
+    reconstruct module and Qt integration from partial snippets.
 12. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
 13. For QML subdirectories, select QTP0004 `NEW` behind
     `QT_KNOWN_POLICY_QTP0004` before `qt_add_qml_module`. Treat missing generated
     `.qmltypes` after a failed CMake Generate step as a cascading symptom.
-14. Do not introduce Qt Widgets unless the user explicitly requests it or an
+14. Add every directory containing a nested `QML_ELEMENT` adapter header as a
+    target-local private include directory. Never patch generated
+    `*_qmltyperegistrations.cpp` files.
+15. Do not introduce Qt Widgets unless the user explicitly requests it or an
    inspected compatibility boundary requires it; document the exception.
-15. Keep any secondary CLI thin and connected to the same application/domain
+16. Keep any secondary CLI thin and connected to the same application/domain
     modules; do not let it replace the primary interface.
-16. Add C++ presentation tests and relevant QML interaction, lint, or smoke
+17. Add C++ presentation tests and relevant QML interaction, lint, or smoke
     coverage.
-17. Configure, build, test with zero-tests-as-error, inspect the final diff, and
+18. Configure, build, test with zero-tests-as-error, inspect the final diff, and
     report exact evidence.
 
 ## Output

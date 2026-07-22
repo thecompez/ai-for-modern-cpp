@@ -30,13 +30,13 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `MOD-003`: Non-trivial implementation is in `.cpp`.
 - [ ] `MOD-004`: No I/O, platform branch, or large algorithm leaked into an exported interface.
 - [ ] `MOD-006`: No unjustified `.h` file was introduced.
-- [ ] `MOD-009`: Project-owned `.cppm` modules remain mandatory in every
-  standard-library mode.
-- [ ] `MOD-010`: `import std` is preferred when supported and standard headers
-  are used only as the documented compatibility path.
-- [ ] `MOD-011`: Fallback standard headers are in the global module fragment.
-- [ ] `MOD-012`: No project-owned header fallback or duplicate source tree was
-  introduced.
+- [ ] `MOD-009`: Project-owned boundaries remain `.cppm` modules.
+- [ ] `MOD-010`: Standard-library dependencies use minimal standard headers;
+  experimental `import std;` is absent.
+- [ ] `MOD-011`: Standard headers in module units are in the global module
+  fragment.
+- [ ] `MOD-012`: Standard headers did not become an excuse for project-owned
+  header fallback or a duplicate source tree.
 
 ## Naming And API
 
@@ -94,24 +94,29 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `GUI-019`: QTP0004 is selected with a minimum-version-compatible guard
   before QML module registration, and missing generated `.qmltypes` diagnostics
   are not mistaken for an earlier Generate failure.
+- [ ] `GUI-020`: Nested `QML_ELEMENT` adapter headers are reachable through the
+  owning QML target's include directories; generated registration files are not
+  edited.
 
 ## Build And Tests
 
 - [ ] `BLD-002`: Module interfaces are registered in `CXX_MODULES` file sets.
 - [ ] `BLD-003`: CMake changes are target-local.
-- [ ] `BLD-005`: `import std` support uses observed toolchain capability.
+- [ ] `BLD-004`: Project module targets enable `CXX_SCAN_FOR_MODULES` without
+  enabling standard-library modules.
+- [ ] `BLD-005`: No experimental standard-library module gate, capability probe,
+  or metadata path remains.
 - [ ] `BLD-008`: Neither language level nor project module architecture was
   silently downgraded.
-- [ ] `BLD-010`: Pre-4.0 CMake selects standard headers for GCC in `AUTO` and is
-  rejected only by strict `IMPORT_STD` mode.
-- [ ] `BLD-011`: Every GNU metadata source resolves or is repaired only in the build tree.
+- [ ] `BLD-010`: Toolchain guidance verifies project modules and does not
+  require newer CMake solely for standard-library modules.
+- [ ] `BLD-011`: No libc++ or libstdc++ module metadata is located or rewritten.
 - [ ] `BLD-012`: Compiler-major support is backed by a full CI build, not version assumptions.
-- [ ] `BLD-013`: `AUTO`, `IMPORT_STD`, and `HEADERS` are explicit and both
-  effective source paths have CI coverage.
-- [ ] `BLD-014`: Experimental gates and compiler-detection metadata precede
-  C++ enablement; detected capability is inspected and `CXX_MODULE_STD` is
-  selected only afterward. Generated Qt Quick/C++ projects preserve the
-  combined `PROJECT_CMAKE_BASELINE.md` ordering.
+- [ ] `BLD-013`: Standard-library integration has one deterministic header path
+  and no delivery-mode option.
+- [ ] `BLD-014`: Generated Qt Quick/C++ projects preserve the combined baseline:
+  module file sets, scanning, standard headers, Qt policy, and nested adapter
+  include paths.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.

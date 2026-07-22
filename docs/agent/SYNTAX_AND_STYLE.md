@@ -151,8 +151,8 @@ std::cerr << "Operation failed: " << error.message() << '\n';
 Use `std::format` when formatted text must be stored or passed to another API.
 A third-party or legacy boundary that accepts only `std::ostream` may use
 stream insertion locally, but the boundary and reason must be explicit. Do not
-assume C globals such as `stdout` or `stderr` are available through
-`import std`.
+use C globals such as `stdout` or `stderr` when a standard C++ output facility
+expresses the operation.
 
 ## Initialization And Mutability
 

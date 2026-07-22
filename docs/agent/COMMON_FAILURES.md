@@ -5,23 +5,31 @@ only because the symptom looks familiar.
 
 | Symptom | Likely cause | Evidence | Correct direction |
 |---|---|---|---|
-| `CMAKE_CXX_COMPILER_IMPORT_STD=''` | Effective toolchain not recognized for `import std` | CMake/compiler/library/metadata versions and selected mode | Use `AUTO` header compatibility or fix the toolchain for strict `IMPORT_STD` |
-| `CXX_MODULE_STD` says experimental support was not enabled when detecting the toolchain | The import-std gate or metadata was set after `project()`/`enable_language(CXX)`, or compiler detection is stale | Compare the first `project()` position with gate/metadata setup and inspect the build-tree compiler cache | Move detection inputs before C++ enablement, consume capability afterward, then regenerate from a fresh CMake configuration |
-| `module 'std' not found` | Source imports `std` but CMake did not build/provide its BMI | Missing `__cmake_cxx_std_*` target or metadata | Fix module integration and regenerate |
-| `libc++.modules.json: File not found` | Compiler returned a basename or stale cache path | Inspect configured metadata path | Associate metadata with the canonical active compiler |
 | `build.ninja: No such file` | Configure failed before generation | Earlier CMake error | Fix configure; do not diagnose Ninja separately |
 | `No tests were found` after configure failure | No valid test build tree exists | Missing generated test files | Fix configure/build first |
-| GCC 15 installed but import list empty | CMake too old or libstdc++ metadata/package mismatch | CMake version and JSON path/content | Use supported CMake and matching libstdc++ |
-| Ubuntu GCC 15 with CMake 3.31 | CMake predates GNU `import std` integration | `cmake --version` is 3.31 even though metadata exists | Use `AUTO` headers, or bootstrap CMake 4.3.4 for strict `IMPORT_STD` |
-| Fedora 43 GCC 15 with CMake 3.31 | Fedora's packaged CMake predates GNU `import std` integration | Configure reports `AIMCPP_USE_IMPORT_STD=OFF` | Verify `AUTO`, or bootstrap CMake 4.3.4 for strict `IMPORT_STD` |
-| Metadata exists but `std.cc` is missing | Distribution JSON contains a broken relative source path | Resolve each JSON `source-path` from the metadata directory | Use build-tree repaired metadata; never edit `/usr` |
-| GCC 16 configure passes but module collation fails | CMake 4.3 scanner is incompatible with the newer GCC module form | `CXX_MODULES` output “does not provide a module interface” | Use verified GCC 15.x or a CMake release verified for GCC 16 |
-| Module dependency cycle after source changes | Real import cycle or stale dynamic dependency state | Scanner output and module graph | Fix graph; regenerate cleanly if scanner state is stale |
-| Works with `opt/llvm`, fails with `Cellar/llvm` | Path identity comparison used symlink spelling | Canonical compiler and prefix paths | Compare real paths, not display paths |
-| Standard header is included after `export module` | Textual declarations entered the named module purview | Inspect ordering around `module;` and the named declaration | Move fallback includes into the global module fragment |
-| Fallback build cannot find a standard name | Compatibility include set is incomplete | First compiler error and the owning source unit | Add the minimal owning standard header to that unit's global fragment |
-| IDE reports a generated `.qmltypes` file is missing after CMake Generate failed | QML type generation never completed | Find the first earlier CMake failure and inspect whether the QML target was generated | Fix the first Generate failure, clear stale CMake state, and regenerate before investigating QML metadata |
-| Qt warns that QTP0004 is not set for QML files in extra directories | The project has responsibility-based QML subdirectories but did not select the policy | Declared minimum Qt version and order around `find_package`/`qt_add_qml_module` | Guard `qt_policy(SET QTP0004 NEW)` with `QT_KNOWN_POLICY_QTP0004` before registering the QML module |
+| Imported project module was not found | Producer is not registered in `FILE_SET CXX_MODULES`, consumer is not linked, or scanning is disabled | Target sources, links, and `CXX_SCAN_FOR_MODULES` | Restore target-based module registration and dependency edges |
+| Module dependency cycle after source changes | Real import cycle or stale dynamic dependency state | Scanner output and module graph | Fix the graph; regenerate cleanly if scanner state is stale |
+| Standard header is included after `export module` | Textual declarations entered the named module purview | Ordering around `module;` and the named declaration | Move the standard header into the global module fragment |
+| Build still asks for `libc++.modules.json` or `libstdc++.modules.json` | Legacy experimental standard-library module configuration remains in CMake cache or sources | Search for import-std gates, metadata variables, and `CXX_MODULE_STD` | Remove the obsolete configuration and recreate the build directory |
+| `module 'std' not found` | Legacy source still contains `import std;` | First compiler failure and source search | Replace it with minimal standard headers; preserve project modules |
+| Generated QML registration reports a project type is undeclared | Qt generated a basename header include, but the nested presentation directory is not on the target include path | Inspect `*_qmltyperegistrations.cpp` and the failing compile command | Add the adapter directory with target-local `target_include_directories` |
+| IDE reports a generated `.qmltypes` file is missing after CMake Generate failed | QML type generation never completed | Find the first earlier CMake failure | Fix the first Generate failure, clear stale CMake state, and regenerate |
+| Qt warns that QTP0004 is not set for QML files in extra directories | The project did not select the policy | Declared Qt minimum and order around QML registration | Guard `qt_policy(SET QTP0004 NEW)` before `qt_add_qml_module` |
+
+## Generated QML Registration Diagnosis
+
+Qt registration code commonly uses a conditional basename include:
+
+```cpp
+#if __has_include(<app_view_model.hpp>)
+#include <app_view_model.hpp>
+#endif
+```
+
+If compilation later says `AppViewModel` is undeclared, do not add a namespace
+guess and do not edit the generated file first. Compare the include with the
+compile command. When `-I.../src/presentation` is absent, add that directory to
+the owning QML target and regenerate.
 
 ## Diagnosis Discipline
 
@@ -29,8 +37,7 @@ only because the symptom looks familiar.
 2. Record exact tool versions and selected paths.
 3. Separate observed facts from inference.
 4. Prefer the smallest read-only check that can falsify the hypothesis.
-5. Keep project-owned modules unchanged; only standard-library delivery may
-   switch to the documented compatibility path.
+5. Preserve project-owned modules while repairing build integration.
 
 ## Escalation Evidence
 
@@ -41,8 +48,6 @@ cat /etc/os-release
 cmake --version
 ninja --version
 c++ --version
-c++ -print-file-name=libstdc++.modules.json
-realpath "$(c++ -print-file-name=libstdc++.modules.json)"
 ```
 
 Never request tokens, unrelated environment dumps, or broad private filesystem

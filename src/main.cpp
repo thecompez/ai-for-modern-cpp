@@ -1,13 +1,9 @@
-#if AIMCPP_USE_IMPORT_STD
-import std;
-#else
 #include <chrono>
 #include <cstddef>
 #include <format>
 #include <print>
 #include <span>
 #include <string>
-#endif
 
 import modern.cpp.agent;
 

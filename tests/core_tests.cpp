@@ -1,13 +1,9 @@
-#if AIMCPP_USE_IMPORT_STD
-import std;
-#else
 #include <exception>
 #include <print>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
-#endif
 
 import modern.cpp.agent;
 

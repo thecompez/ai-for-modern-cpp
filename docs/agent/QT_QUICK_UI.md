@@ -4,8 +4,8 @@ Use this guide for any new or modified Qt graphical interface. Canonical rules:
 `GUI-*`, plus `ARC-*`, `NAM-*`, `SYN-*`, `RES-*`, and `TST-*`.
 
 Generated projects should begin with the combined ordering in
-[`PROJECT_CMAKE_BASELINE.md`](PROJECT_CMAKE_BASELINE.md), which keeps
-`import std` detection and Qt policy setup in their required phases.
+[`PROJECT_CMAKE_BASELINE.md`](PROJECT_CMAKE_BASELINE.md), which keeps project
+modules, Qt policy setup, and generated-type include paths aligned.
 
 The default stack is Qt 6, Qt Quick, QML, and Qt Quick Controls. Qt Widgets is a
 compatibility technology, not the default for new interfaces.
@@ -251,8 +251,6 @@ endif()
 
 qt_add_executable(MyApp
     src/bootstrap/main.cpp
-    src/presentation/app_view_model.cpp
-    src/presentation/app_view_model.hpp
 )
 
 qt_add_qml_module(MyApp
@@ -264,6 +262,14 @@ qt_add_qml_module(MyApp
         ui/components/PrimaryActionButton.qml
         ui/components/StatusPanel.qml
         ui/theme/Theme.qml
+    SOURCES
+        src/presentation/app_view_model.cpp
+        src/presentation/app_view_model.hpp
+)
+
+target_include_directories(MyApp
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/presentation"
 )
 
 target_link_libraries(MyApp
@@ -286,6 +292,12 @@ CMake Generate/build workflow. If generation first fails for an unrelated
 toolchain property, a missing `.qmltypes` diagnostic from the IDE is a
 cascading symptom. Fix the first CMake failure, clear the stale CMake
 configuration, and regenerate before diagnosing QML registration.
+
+Qt-generated QML registration code may include a `QML_ELEMENT` adapter header
+by basename. When that header lives under `src/presentation/`, add the directory
+to the QML target with `target_include_directories`. Register the adapter under
+the `SOURCES` section of `qt_add_qml_module`, keep the include path target-local,
+and never edit the generated `*_qmltyperegistrations.cpp` file.
 
 Do not link `Qt6::Widgets` unless `GUI-002` has a documented exception.
 
@@ -324,6 +336,8 @@ At minimum verify:
   release solely to avoid a guarded policy check.
 - Diagnosing a missing generated `.qmltypes` file before fixing an earlier
   failed CMake Generate step.
+- Omitting the target-local include directory for a nested `QML_ELEMENT` header
+  or editing generated QML type registration source to compensate.
 - Blocking the GUI thread during file, network, or expensive domain work.
 - Linking all Qt modules rather than the required target-local components.
 - Claiming a polished interface without keyboard and accessibility verification.

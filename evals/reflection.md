@@ -19,29 +19,28 @@ understood and programmed.
 
 **Rule coverage**: `KNO-001` through `KNO-005`.
 
-## EVAL-REF-002 — Preserve Modules Across Standard-Library Modes
+## EVAL-REF-002 — Preserve Modules Without Importing The Standard Library Module
 
 **Conversation**
 
 ```text
-Agent: The toolchain cannot provide import std, so I will replace modules with
-headers or reject the build.
-Human: Keep project modules and use standard-library includes in global module
-fragments when pure import std support is unavailable.
+Agent: Standard-library modules are unreliable here, so I will replace all
+modules with headers.
+Human: Keep project modules, remove import std entirely, and use standard
+headers in global module fragments.
 ```
 
 **Required reflection**
 
 - Keep `.cppm`, project module imports, and `CXX_MODULES` registration mandatory.
-- Prefer `import std` when observed support exists.
-- Add a standard-header compatibility path using `module;` global fragments,
-  without creating project-owned headers or duplicate source trees.
-- Provide automatic and forced modes so both source paths can be built and
-  tested independently.
+- Forbid experimental `import std`, its CMake gates, and metadata setup.
+- Use `module;` global fragments without creating project-owned headers or
+  duplicate source trees.
+- Keep one deterministic build path rather than automatic and forced modes.
 - Synchronize toolchain diagnostics, CI, patterns, evals, and contract tests.
 
-**Rule coverage**: `MOD-009` through `MOD-012`, `KNO-005`, `BLD-005`,
-`BLD-008`, and `BLD-013`.
+**Rule coverage**: `MOD-009` through `MOD-012`, `KNO-005`, `BLD-006` through
+`BLD-009`, and `BLD-013`.
 
 ## EVAL-REF-003 — Local Preference Versus General Rule
 
@@ -159,24 +158,24 @@ product-specific UX, and current standard formatted output.
 **Rule coverage**: `KNO-004`, `KNO-005`, `ARC-007`, `SYN-001`, `SYN-023`,
 `GUI-017`, and `GUI-018`.
 
-## EVAL-REF-009 — Repeated Generated-Project Toolchain Ordering Failure
+## EVAL-REF-009 — Repeated Generated-Project Module Failure
 
 **Conversation pattern**
 
 ```text
-Agent: The generated project reports that import std is selected.
-Human: CMake still rejects CXX_MODULE_STD because experimental support was not
-enabled when detecting the toolchain, and the IDE then reports missing QML type
-metadata.
+Agent: I added experimental standard-library module detection to every generated
+project.
+Human: These projects keep failing on gates and metadata. Keep project modules,
+but always use standard headers and remove import std.
 ```
 
 **Required reflection**
 
-- Promote the repeated failure into a general two-phase CMake ordering rule,
-  not a project-name-specific patch.
-- Require experimental gates and validated standard-library metadata before
-  the first C++ language enablement call.
-- Require capability inspection and module-std target selection afterward.
+- Promote the repeated failure into a standard-header-only policy, not a
+  project-name-specific patch.
+- Remove gates, metadata lookup, capability probes, mode switches, and
+  `CXX_MODULE_STD` properties.
+- Preserve `.cppm`, project imports, module file sets, and scanning.
 - Classify missing generated QML metadata after a failed Generate step as a
   cascading symptom.
 - Add guarded QTP0004 guidance for QML subdirectories without falsifying the
@@ -186,4 +185,26 @@ metadata.
 - Synchronize canonical rules, toolchain and Qt guides, failure catalog,
   patterns, review checks, workflows, evals, and machine-checkable assertions.
 
-**Rule coverage**: `KNO-004`, `KNO-005`, `BLD-014`, `GUI-019`, `VER-002`.
+**Rule coverage**: `KNO-004`, `KNO-005`, `MOD-010`, `BLD-006` through
+`BLD-014`, `GUI-019`, `VER-002`.
+
+## EVAL-REF-010 — Repeated Nested QML Registration Failure
+
+**Conversation pattern**
+
+```text
+Agent: The QML adapter is under src/presentation and qt_add_qml_module lists it.
+Human: Generated registration still cannot see the type because it includes the
+header by basename.
+```
+
+**Required reflection**
+
+- Generalize the correction into a target-local include-path rule for nested
+  `QML_ELEMENT` adapter headers.
+- Keep the responsibility-oriented presentation directory.
+- Forbid editing generated registration sources.
+- Update the combined project baseline, Qt guide, common failures, review,
+  evals, and knowledge contract.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-020`, `BLD-014`.

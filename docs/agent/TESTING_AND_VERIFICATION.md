@@ -40,23 +40,13 @@ git diff --check
 ```
 
 Use a fresh build directory when changing compilers, standard libraries, CMake
-major versions, or module metadata.
+major versions, module scanning, or when removing legacy experimental
+standard-library module configuration.
 
-Changes to module or standard-library integration must verify both source
-paths explicitly:
-
-```bash
-cmake -S . -B build/import-std -G Ninja -DAIMCPP_STDLIB_MODE=IMPORT_STD
-cmake --build build/import-std --parallel
-ctest --test-dir build/import-std --output-on-failure --no-tests=error
-
-cmake -S . -B build/headers -G Ninja -DAIMCPP_STDLIB_MODE=HEADERS
-cmake --build build/headers --parallel
-ctest --test-dir build/headers --output-on-failure --no-tests=error
-```
-
-`AUTO` is the product default, but a single `AUTO` build proves only the path
-selected on that machine.
+There is one standard-library source path: minimal standard headers. Module
+changes must verify that `.cppm` interfaces are scanned, built, and imported by
+consumers. Do not create parallel builds for obsolete standard-library delivery
+modes.
 
 ## Failure Classification
 
@@ -75,9 +65,9 @@ Only the configure failure is the root cause in this sequence.
 
 ```text
 Configure: PASS — exact command
-Build: PASS — 20/20 steps
+Build: PASS — 14/14 steps
 Tests: PASS — 2/2 tests
-Warnings: two upstream libc++ experimental module warnings
+Warnings: none
 Unverified: Linux runner not available locally
 ```
 

@@ -1,30 +1,32 @@
 # Toolchain And Build Scenarios
 
-## EVAL-TCH-001 — GCC 15 With Old CMake
+## EVAL-TCH-001 — Legacy Import-Std Configuration
 
 **Prompt evidence**
 
 ```text
-GCC 15.2
-Ninja 1.12
-CMake 3.31.6
-libstdc++.modules.json exists
-CMAKE_CXX_COMPILER_IMPORT_STD=''
+CMake reports CXX_MODULE_STD toolchain support is unavailable.
+The project still defines an experimental import-std gate and metadata path.
 ```
 
 **Required behavior**
 
-- Diagnose the compatibility unit, not GCC alone.
-- Identify that file existence is insufficient.
-- Verify whether the active CMake release implements GCC `import std`.
-- In `AUTO`, retain project `.cppm` modules and select standard-library headers
-  through global module fragments.
-- Offer CMake 4.x and `IMPORT_STD` mode when strict standard-library module
-  verification is desired.
+- Remove the standard-library module gate, metadata lookup, capability probe,
+  and `CXX_MODULE_STD` property.
+- Preserve project-owned `.cppm` files, project module imports, and
+  `FILE_SET CXX_MODULES` registration.
+- Replace `import std;` with the smallest required standard headers in each
+  module unit's global module fragment.
+- Reconfigure in a fresh build directory, then build and test.
 
-**Rule coverage**: `BLD-005` through `BLD-010`, `MOD-009` through `MOD-012`.
+**Critical failure**
 
-## EVAL-TCH-002 — Metadata Basename
+Replacing project modules with project-owned headers or keeping two conditional
+standard-library source paths.
+
+**Rule coverage**: `MOD-009` through `MOD-012`, `BLD-004` through `BLD-009`.
+
+## EVAL-TCH-002 — Legacy Metadata Basename
 
 **Prompt evidence**
 
@@ -36,22 +38,23 @@ Compiler=/opt/homebrew/Cellar/llvm/22.1.8/bin/clang++
 
 **Required behavior**
 
-- Resolve the active compiler and Homebrew LLVM prefix canonically.
-- Select the matching absolute metadata path.
-- Handle stale CMake compiler cache that reloads the invalid basename.
-- Reconfigure, build, and test using the user's actual kit.
+- Identify the metadata setting as obsolete under the repository policy.
+- Remove it instead of searching the machine for another JSON file.
+- Verify that standard headers and project modules build with the active kit.
+- Explain that a stale CMake cache can retain the removed setting and use a
+  fresh build directory or clear the IDE's CMake configuration.
 
 **Forbidden behavior**
 
 - Selecting the first metadata file found anywhere on the machine.
-- Telling the user to delete all build state before testing a safe cache repair.
+- Editing compiler installation metadata.
 
 ## EVAL-TCH-003 — Configure Failure Cascade
 
 **Prompt evidence**
 
 ```text
-CMake fatal error: import std unsupported
+CMake fatal error
 ninja: build.ninja missing
 CTest: no tests found
 ```
@@ -60,152 +63,119 @@ CTest: no tests found
 
 - Identify configure as the root failure.
 - Explain why generation, build, and tests did not occur.
-- Provide commands joined so later steps run only after success.
+- Stop the command chain after configure failure.
+- Re-run configure, build, and tests as distinct verified results.
 
 **Rule coverage**: `VER-001`, `VER-002`, `TST-006`.
 
-## EVAL-TCH-004 — Unsupported Standard-Library Module Toolchain
+## EVAL-TCH-004 — Standard Headers In A Module Unit
 
-**Prompt**
+**Proposed source**
 
-```text
-AppleClang cannot import std. Add standard-library includes so the example builds.
+```cpp
+export module my.app.domain;
+
+#include <string>
 ```
 
 **Required behavior**
 
-- Preserve project-owned `.cppm` modules, module imports, and CMake module file
-  sets.
-- In `AUTO`, select minimal standard-library headers in each module unit's
-  global module fragment.
-- Keep `IMPORT_STD` available as an explicit strict mode with a useful failure.
-- Build and test the forced `HEADERS` mode instead of assuming it works.
+- Move textual standard headers into a global module fragment.
+- Preserve the named project module.
+- Include only headers used by that unit.
+
+**Correct shape**
+
+```cpp
+module;
+
+#include <string>
+
+export module my.app.domain;
+```
 
 **Critical failure**
 
-Replacing project modules with `.h`/`.hpp`, duplicating declarations, or placing
-standard headers inside the named module purview.
+Moving the exported declarations to `.h`/`.hpp` or retaining textual includes
+inside the named module purview.
 
-## EVAL-TCH-005 — Ubuntu GCC 15 With CMake 3.31
-
-**Observed environment**
-
-```text
-Ubuntu 25.10
-GCC 15.2
-CMake 3.31.6
-Ninja 1.12
-libstdc++.modules.json exists
-CMAKE_CXX_COMPILER_IMPORT_STD=''
-```
-
-**Required diagnosis**
-
-- Identify CMake 3.31 as older than GNU `import std` support.
-- Do not claim that manually passing the JSON can add missing CMake behavior.
-- Verify `AUTO` with project modules and standard-library headers.
-- When strict `import std` is required, install repository-local CMake 4.x,
-  clean that build tree, and retry with `AIMCPP_STDLIB_MODE=IMPORT_STD`.
-
-**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-010`, `BLD-013`, `MOD-009`
-through `MOD-012`.
-
-## EVAL-TCH-006 — Broken GNU Metadata Source Path
+## EVAL-TCH-005 — Ubuntu Or Fedora Packaged Toolchain
 
 **Observed environment**
 
 ```text
-g++ -print-file-name=libstdc++.modules.json returns an existing file.
-The JSON source-path for std.cc does not exist relative to that file.
+GCC 15.x
+CMake 3.30 or 3.31
+Ninja 1.11+
 ```
 
 **Required behavior**
 
-- Validate every metadata module source, not only the JSON file.
-- Locate the matching compiler-major module sources.
-- Generate corrected metadata in the build tree with absolute source paths.
-- Never edit system compiler files.
-- If matching sources are not installed, select header compatibility in `AUTO`
-  and fail clearly in strict `IMPORT_STD` mode.
+- Use the packaged CMake directly; do not install a private CMake solely for
+  standard-library modules.
+- Configure project-owned module scanning and standard headers.
+- Build all targets and run all discovered tests.
+- Report Linux as verified only for the exact environment that actually ran.
 
-**Rule coverage**: `BLD-006`, `BLD-011`, `SEC-005`.
+**Rule coverage**: `BLD-005`, `BLD-009`, `BLD-010`, `BLD-012`, `VER-001`.
 
-## EVAL-TCH-007 — Unverified New Compiler Major
-
-**Observed output**
-
-```text
-GCC 16.1 and CMake 4.3 configure successfully.
-CMake module collation says std.cc does not provide a module interface.
-```
-
-**Required behavior**
-
-- Treat configure capability as necessary but insufficient evidence.
-- Keep GCC 16 out of the supported matrix for that CMake release.
-- Use the verified header compatibility mode without labeling GCC 16 an
-  `import std` toolchain, or recommend GCC 15.x/a newer proven CMake for strict
-  mode.
-- Record configure, build, and test results separately.
-
-**Rule coverage**: `BLD-005`, `BLD-012`, `VER-001`.
-
-## EVAL-TCH-008 — Fedora GCC 15 CI Uses Packaged CMake 3.31
-
-**Observed environment**
-
-```text
-Fedora 43 container
-GCC 15.2
-CMake 3.31.11
-Ninja 1.13
-AUTO reports AIMCPP_USE_IMPORT_STD=OFF.
-```
-
-**Required behavior**
-
-- Verify the system CMake/GCC combination through the standard-header module
-  path.
-- In a separate strict job, install pinned repository-local CMake and run
-  `IMPORT_STD` verification.
-- Keep both jobs independent and report which standard-library path each used.
-- Run configure, build, and all discovered tests in both paths.
-
-**Rule coverage**: `BLD-006`, `BLD-010`, `BLD-013`, `MOD-009` through
-`MOD-012`, `VER-001`.
-
-## EVAL-TCH-009 — Import-Std Gate Enabled After Project
-
-**Proposed CMake shape**
-
-```cmake
-project(MyApp LANGUAGES CXX)
-
-set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<version-specific-gate>")
-set(CMAKE_CXX_MODULE_STD ON)
-```
+## EVAL-TCH-006 — Missing Project Module Dependency
 
 **Observed failure**
 
 ```text
-The CXX_MODULE_STD property requires toolchain support, but experimental
-import std support was not enabled when detecting the toolchain.
+module 'my.app.domain' not found
 ```
 
 **Required behavior**
 
-- Identify `project()` as the point at which CMake enabled C++ and performed
-  compiler capability detection.
-- Move the verified version-scoped gate and validated active-toolchain metadata
-  before the first C++ enablement call.
-- Inspect `CMAKE_CXX_COMPILER_IMPORT_STD` only after language enablement, then
-  select `CMAKE_CXX_MODULE_STD` from that observed capability.
-- Do not manually populate the capability list or infer it from compiler
-  version or metadata existence.
-- Clear the prior CMake configuration and verify configure, build, and tests as
-  separate results.
-- For a generated Qt Quick/C++ project, begin from
-  `PROJECT_CMAKE_BASELINE.md` rather than reconstructing the two phases from
-  partial examples.
+- Confirm that the producer `.cppm` is registered with `FILE_SET CXX_MODULES`.
+- Confirm module scanning is enabled on the relevant targets.
+- Link the consumer target to the producer target so CMake can order module
+  compilation and provide BMI dependencies.
+- Do not add textual includes as a workaround.
 
-**Rule coverage**: `BLD-005`, `BLD-006`, `BLD-009`, `BLD-014`, `VER-001`.
+**Rule coverage**: `BLD-001` through `BLD-005`, `MOD-001` through `MOD-003`.
+
+## EVAL-TCH-007 — Generated QML Registration Cannot See A Nested Type
+
+**Observed generated source**
+
+```cpp
+#if __has_include(<app_view_model.hpp>)
+#include <app_view_model.hpp>
+#endif
+
+qmlRegisterTypesAndRevisions<AppViewModel>("MyApp", 1);
+```
+
+The real header is `src/presentation/app_view_model.hpp`, and compilation says
+`AppViewModel` is undeclared.
+
+**Required behavior**
+
+- Diagnose the failed basename include as the cause of the undeclared type.
+- Add `src/presentation` as a target-local private include directory on the QML
+  target.
+- Keep the header as an isolated Qt/MOC adapter at the presentation boundary.
+- Do not edit `*_qmltyperegistrations.cpp` or move the adapter to the root.
+- Regenerate, build, and test.
+
+**Rule coverage**: `GUI-005`, `GUI-006`, `GUI-012`, `GUI-020`, `BLD-014`.
+
+## EVAL-TCH-008 — Missing QML Types After Generate Failure
+
+**Observed output**
+
+```text
+CMake Generate step failed.
+MyApp.qmltypes does not exist.
+```
+
+**Required behavior**
+
+- Diagnose the first CMake Generate failure before QML tooling symptoms.
+- Regenerate only after the causal CMake or compile configuration is fixed.
+- Treat a missing generated `.qmltypes` file as a cascading symptom.
+
+**Rule coverage**: `GUI-019`, `VER-001`, `VER-002`.

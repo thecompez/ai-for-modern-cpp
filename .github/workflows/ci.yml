@@ -6,23 +6,21 @@ on:
 
 jobs:
   macos:
-    name: macOS import std
+    name: macOS Clang project modules
     runs-on: macos-15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install LLVM and Ninja
-        run: |
-          brew install llvm ninja
+      - name: Install toolchain
+        run: brew install cmake llvm ninja
 
       - name: Configure
         run: |
           cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_CXX_COMPILER="$(brew --prefix llvm)/bin/clang++" \
-            -DAIMCPP_STDLIB_MODE=IMPORT_STD
+            -DCMAKE_CXX_COMPILER="$(brew --prefix llvm)/bin/clang++"
 
       - name: Build
         run: cmake --build build --parallel
@@ -31,61 +29,48 @@ jobs:
         run: ctest --test-dir build --output-on-failure --no-tests=error
 
   linux-fedora:
-    name: Fedora 43 GCC 15 modules
+    name: Fedora 43 GCC project modules
     runs-on: ubuntu-latest
     container: fedora:43
 
     steps:
-      - name: Install base toolchain
+      - name: Install toolchain
         run: |
           dnf install --assumeyes \
             gcc-c++ \
             git \
             cmake \
-            ninja-build \
-            python3 \
-            python3-pip
+            ninja-build
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify system-CMake automatic header fallback
-        env:
-          AIMCPP_BUILD_DIRECTORY: ${{ github.workspace }}/build/fedora-headers
-          AIMCPP_CMAKE: /usr/bin/cmake
-          AIMCPP_STDLIB_MODE: AUTO
-        run: bash scripts/verify-linux.sh
-
-      - name: Install supported CMake
-        run: bash scripts/bootstrap-linux-cmake.sh
-
       - name: Configure, build, and test
         env:
-          AIMCPP_STDLIB_MODE: IMPORT_STD
+          AIMCPP_BUILD_DIRECTORY: ${{ github.workspace }}/build/fedora
+          AIMCPP_CMAKE: /usr/bin/cmake
         run: bash scripts/verify-linux.sh
 
   linux-ubuntu:
-    name: Ubuntu 25.10 GCC 15 repaired metadata
+    name: Ubuntu 25.10 GCC project modules
     runs-on: ubuntu-latest
     container: ubuntu:25.10
 
     steps:
-      - name: Install base toolchain
+      - name: Install toolchain
         run: |
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install --yes \
+            cmake \
             g++ \
             git \
-            ninja-build \
-            python3-venv
+            ninja-build
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install supported CMake
-        run: bash scripts/bootstrap-linux-cmake.sh
-
       - name: Configure, build, and test
         env:
-          AIMCPP_STDLIB_MODE: IMPORT_STD
+          AIMCPP_BUILD_DIRECTORY: ${{ github.workspace }}/build/ubuntu
+          AIMCPP_CMAKE: /usr/bin/cmake
         run: bash scripts/verify-linux.sh

@@ -73,7 +73,7 @@ After reading this file, read only the guides required for the task.
 | Select the interface for an unspecified user-facing interactive application | `docs/agent/QT_QUICK_UI.md` and `docs/agent/ARCHITECTURE.md` |
 | Design or implement a Qt graphical interface | `docs/agent/QT_QUICK_UI.md`, `docs/agent/ARCHITECTURE.md`, and `docs/agent/NAMING.md` |
 | Generate a new Qt Quick/C++ project baseline | `docs/agent/PROJECT_CMAKE_BASELINE.md`, `docs/agent/QT_QUICK_UI.md`, and `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
-| Change CMake, compilers, modules, or `import std` | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
+| Change CMake, compilers, modules, or standard-library integration | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
 | Diagnose a known build or module failure | `docs/agent/COMMON_FAILURES.md` |
 | Learn approved and forbidden code shapes | `docs/agent/PATTERNS.md` |
@@ -163,20 +163,20 @@ derived repositories.
   compatibility boundaries; it is not the default project architecture.
 - **MOD-008** — Any header boundary MUST be isolated, documented, and kept out
   of domain logic.
-- **MOD-009** — Project-owned production boundaries MUST remain C++ modules in
-  every standard-library integration mode. Lack of `import std` support MUST
-  NOT cause a fallback to project headers or classic header/source architecture.
-- **MOD-010** — `import std;` SHOULD be selected when the effective toolchain
-  advertises and successfully builds it. Otherwise, the standard library MAY be
-  provided by textual standard headers while project-owned `.cppm` modules,
-  module imports, and CMake module file sets remain intact.
-- **MOD-011** — In a module unit, standard-library fallback headers MUST appear
+- **MOD-009** — Project-owned production boundaries MUST use C++ modules.
+  Standard-library integration MUST NOT cause a fallback to project headers or
+  classic header/source architecture.
+- **MOD-010** — Project code MUST NOT use the experimental `import std;` path.
+  Standard-library declarations MUST come from the minimal owning standard
+  headers while project-owned `.cppm` modules, module imports, and CMake module
+  file sets remain intact.
+- **MOD-011** — In a module unit, standard-library headers MUST appear
   in the global module fragment after `module;` and before the named module
   declaration. They MUST NOT be textually included inside the named module
   purview.
-- **MOD-012** — Standard-library header fallback does not authorize new
-  project-owned `.h` or `.hpp` files. It is a toolchain compatibility mechanism,
-  not a second project architecture.
+- **MOD-012** — Standard-library headers do not authorize new project-owned
+  `.h` or `.hpp` files. Standard headers and project headers are distinct
+  architectural concerns.
 
 Preferred layout:
 
@@ -457,6 +457,12 @@ reference.
   `qt_add_qml_module`. The policy check MUST remain compatible with the declared
   minimum Qt version. Missing generated `.qmltypes` after a failed CMake
   Generate step is a cascading symptom, not an independent root cause.
+- **GUI-020** — Every project-owned header referenced by Qt-generated QML type
+  registration code MUST be reachable through a target-local include directory.
+  A `QML_ELEMENT` adapter stored under `src/presentation/` MUST add that
+  directory to the QML target; agents MUST NOT edit generated
+  `*_qmltyperegistrations.cpp` files or move adapters into the repository root
+  merely to satisfy generated includes.
 
 See `docs/agent/QT_QUICK_UI.md`.
 
@@ -467,11 +473,12 @@ See `docs/agent/QT_QUICK_UI.md`.
 Primary path:
 
 ```text
-Clang 22+ or verified GCC 15.x
-CMake 4.3+
+Clang 22+ or GCC 15+
+CMake 3.30+
 Ninja 1.11+
 C++26
-import std when supported; global-fragment standard headers otherwise
+project-owned C++ modules
+standard-library headers in global module fragments
 ```
 
 - **BLD-001** — Use target-based modern CMake.
@@ -479,52 +486,43 @@ import std when supported; global-fragment standard headers otherwise
   `target_sources(... FILE_SET CXX_MODULES ...)`.
 - **BLD-003** — Use target-local compile features, definitions, include paths,
   and options; do not mutate global compiler flags casually.
-- **BLD-004** — `CMAKE_CXX_MODULE_STD` and `CMAKE_CXX_SCAN_FOR_MODULES` MUST be
-  enabled for targets that use `import std`.
-- **BLD-005** — `CMAKE_CXX_COMPILER_IMPORT_STD` is authoritative when selecting
-  the `import std` path. Compiler version claims alone are not proof of support;
-  an empty capability list selects the standard-header compatibility path in
-  automatic mode.
-- **BLD-006** — Toolchain, standard-library metadata, CMake, and generator form
-  one compatibility unit and MUST be diagnosed together.
+- **BLD-004** — `CXX_SCAN_FOR_MODULES` MUST be enabled for targets that produce
+  or consume project-owned modules. `CMAKE_CXX_MODULE_STD` is not part of the
+  supported build path.
+- **BLD-005** — CMake MUST NOT probe, enable, or configure experimental
+  standard-library modules. `CMAKE_CXX_COMPILER_IMPORT_STD`,
+  `CMAKE_CXX_STDLIB_MODULES_JSON`, and experimental import-std gates MUST NOT
+  influence project configuration.
+- **BLD-006** — Compiler, CMake, generator, selected language standard, and
+  project-module dependency scanning form one compatibility unit and MUST be
+  diagnosed together.
 - **BLD-007** — Unsupported toolchains MUST fail at configure time with the
   observed values and a useful remediation direction.
 - **BLD-008** — Agents MUST NOT silently downgrade the language standard or
-  project-owned module architecture to obtain a green build. Selecting the
-  documented standard-header compatibility path for an unsupported
-  `import std` toolchain is not a module downgrade.
-- **BLD-009** — CMake experimental gates MUST be version-scoped and verified
-  against the active CMake release. An unknown gate MUST select header
-  compatibility in automatic mode and fail only when strict `import std` was
-  explicitly requested.
-- **BLD-010** — GCC `import std` requires CMake 4.0 or newer. With CMake 3.30 or
-  3.31, automatic mode MUST retain project modules and select standard-library
-  headers; strict `import std` mode MUST reject the combination clearly.
-- **BLD-011** — A GNU standard-library metadata file is usable only when every
-  listed module source resolves to an existing file. A build-tree repair MAY
-  replace broken distribution-relative paths; system metadata MUST NOT be
-  edited. Unusable metadata selects header compatibility in automatic mode.
+  project-owned module architecture to obtain a green build. Standard-library
+  headers in a global module fragment are the primary architecture, not a
+  downgrade or fallback.
+- **BLD-009** — Import-std UUID gates, standard-library module metadata repair,
+  and conditional standard-library modes are forbidden. Generated projects
+  MUST use one deterministic standard-header path.
+- **BLD-010** — CMake 3.30+ with Ninja and a compiler that supports the selected
+  language standard MAY build project-owned modules without standard-library
+  module metadata. Diagnostics MUST discuss project-module scanning rather than
+  recommend a newer CMake solely for `import std`.
+- **BLD-011** — Builds MUST NOT locate, validate, rewrite, or cache
+  `libc++.modules.json` or `libstdc++.modules.json`. Those files are outside the
+  supported standard-header architecture.
 - **BLD-012** — A newer compiler major version is not automatically supported.
-  Each compiler/CMake/standard-library combination MUST pass configure, build,
-  and tests before becoming a supported `import std` path; the independently
-  verified standard-header module path MAY remain supported.
-- **BLD-013** — Standard-library integration MUST expose `AUTO`, `IMPORT_STD`,
-  and `HEADERS` modes. CI MUST exercise both effective source paths, and
-  configure output MUST report the requested mode and selected result.
-- **BLD-014** — `import std` detection MUST follow CMake's two-phase ordering.
-  The version-scoped experimental gate and any standard-library metadata needed
-  for compiler detection MUST be configured before the first `project()` or
-  `enable_language(CXX)` call. Only after C++ is enabled may a project inspect
-  `CMAKE_CXX_COMPILER_IMPORT_STD` and select `CMAKE_CXX_MODULE_STD` or target
-  `CXX_MODULE_STD`. Capability MUST NOT be invented from a metadata file,
-  compiler version, or stale cache entry. Generated Qt Quick/C++ projects MUST
-  begin from the combined baseline in
-  `docs/agent/PROJECT_CMAKE_BASELINE.md` rather than assembling these phases
-  from unrelated snippets.
-
-Do not assume C compatibility globals such as `stderr`, `stdin`, or `stdout`
-are exported by `import std`. Prefer standard C++ facilities or isolate C
-interop behind a compatibility boundary.
+  Each compiler/CMake/generator combination MUST pass configure, build, and
+  tests before becoming a supported project-module toolchain.
+- **BLD-013** — Standard-library integration MUST have one mode: minimal
+  standard headers. Build options and compile definitions that switch between
+  standard-library delivery mechanisms are forbidden.
+- **BLD-014** — Generated Qt Quick/C++ projects MUST begin from
+  `docs/agent/PROJECT_CMAKE_BASELINE.md`. The baseline MUST register `.cppm`
+  files through `FILE_SET CXX_MODULES`, enable target-local module scanning,
+  use standard headers, guard required Qt policies, and expose nested
+  presentation headers to generated QML registration code.
 
 Do not use `std::views::enumerate` in portable examples unless the active
 standard library has been verified to provide it.
@@ -669,9 +667,11 @@ Agents MUST NOT:
 - Invent build, test, review, or tool results.
 - Hide failures or present cascading errors as independent root causes.
 - Replace modules with classic include architecture.
-- Treat standard-library header compatibility as permission to replace `.cppm`
+- Treat standard-library headers as permission to replace `.cppm`
   modules or create project-owned headers.
-- Place fallback standard-library includes inside a named module purview rather
+- Use `import std;`, experimental import-std CMake gates, or standard-library
+  module metadata in project code or generated build files.
+- Place standard-library headers inside a named module purview rather
   than its global module fragment.
 - Add legacy project headers without a justified boundary.
 - Add raw ownership, manual cleanup, or global mutable state casually.
@@ -693,6 +693,8 @@ Agents MUST NOT:
   interaction rationale, or verified UX states.
 - Create a top-level `qml/` dumping directory for a new Qt Quick repository
   instead of an explicit `ui/` boundary.
+- Edit generated QML type registration files or omit target-local include paths
+  for nested `QML_ELEMENT` presentation adapters.
 - Treat the executable example as permission to accumulate unrelated showcase
   features.
 - Turn human corrections into noisy one-off rules; generalize only durable

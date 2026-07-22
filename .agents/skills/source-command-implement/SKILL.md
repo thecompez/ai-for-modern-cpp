@@ -26,13 +26,13 @@ Use this command when implementing a feature, bug fix, or refactor.
 5. Inspect existing module boundaries, tests, working tree, and current diff.
 6. Make the smallest correct change.
 7. Preserve `.cppm` declaration and `.cpp` implementation separation.
-8. Preserve project modules in both standard-library modes; place fallback
-   standard headers only in global module fragments.
+8. Preserve project modules. Put required standard headers in each module
+   unit's global module fragment. Do not add experimental standard-library
+   module setup.
 9. Use C++20+ features appropriately, choose return syntax for readability,
    and prefer `std::print` or `std::println` for ordinary formatted output.
-10. For `import std` CMake work, put verified gate/metadata inputs before the
-    first C++ language enablement and consume `CMAKE_CXX_COMPILER_IMPORT_STD`
-    only afterward; recreate stale compiler-detection state after reordering.
+10. Keep CMake on the deterministic standard-header path: register `.cppm`
+    files with `FILE_SET CXX_MODULES` and enable target module scanning.
 11. Build.
 12. Run tests with zero discovered tests treated as an error.
 13. Fix failures and repeat verification.

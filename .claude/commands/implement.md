@@ -20,13 +20,13 @@ Use this command when implementing a feature, bug fix, or refactor.
 5. Inspect existing module boundaries, tests, and the current diff.
 6. Make the smallest correct change.
 7. Preserve `.cppm` declaration and `.cpp` implementation separation.
-8. Preserve project modules in both standard-library modes and keep fallback
-   standard headers in global module fragments.
+8. Preserve project modules. Put required standard headers in each module
+   unit's global module fragment. Do not add experimental standard-library
+   module setup.
 9. Choose return syntax for readability and use `std::print` or `std::println`
    for ordinary formatted console output.
-10. For import-std CMake work, prepare the verified gate and metadata before
-    C++ language enablement, inspect detected capability afterward, and
-    recreate stale compiler-detection state after reordering.
+10. Register `.cppm` files with `FILE_SET CXX_MODULES` and enable target module
+    scanning.
 11. Build and run tests with zero tests treated as an error.
 12. Fix failures and repeat verification.
 13. Inspect the final diff and run `git diff --check`.

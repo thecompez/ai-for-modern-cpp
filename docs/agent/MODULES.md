@@ -10,8 +10,24 @@ or module-related review. Canonical rules: `MOD-*` and `BLD-*`.
 | `.cppm` | Exported declarations, concepts, lightweight templates, small compile-time values |
 | `.cpp` module implementation | Non-trivial algorithms, mutation, I/O, private behavior |
 | `.cpp` executable | Composition, startup, top-level error translation |
-| `.hpp` | Explicit third-party, ABI, C API, or textual compatibility boundary only |
+| `.hpp` | Explicit third-party, ABI, C API, or Qt MOC compatibility boundary only |
 | `.h` | Forbidden unless required by an external ecosystem |
+
+## Standard Library Policy
+
+Project-owned C++ modules are required. Experimental standard-library modules
+are not part of the supported architecture.
+
+- Use minimal standard headers for every standard-library dependency.
+- In `.cppm` and named-module implementation units, place those headers in the
+  global module fragment between `module;` and the named module declaration.
+- Never write `import std;`.
+- Never introduce a compile definition that switches between `import std` and
+  headers.
+- Do not replace `.cppm` files with project headers.
+
+This keeps module ownership and dependency scanning while avoiding experimental
+standard-library metadata, compiler gates, and toolchain-specific BMIs.
 
 ## Interface Test
 
@@ -32,16 +48,10 @@ Move code to `.cpp` when it:
 ```cpp
 module;
 
-#if !APP_USE_IMPORT_STD
 #include <string>
 #include <string_view>
-#endif
 
 export module project.identity;
-
-#if APP_USE_IMPORT_STD
-import std;
-#endif
 
 export namespace project::identity {
 
@@ -63,18 +73,12 @@ private:
 ```cpp
 module;
 
-#if !APP_USE_IMPORT_STD
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-#endif
 
 module project.identity;
-
-#if APP_USE_IMPORT_STD
-import std;
-#endif
 
 namespace project::identity {
 
@@ -94,21 +98,12 @@ std::string_view UserId::value() const noexcept
 }
 ```
 
-`module;` begins the global module fragment. Standard-library headers belong
-there when the effective toolchain cannot provide `import std`; including them
-after `export module project.identity;` would attach declarations to the named
-module purview and is forbidden. When `APP_USE_IMPORT_STD` is true, the fragment
-is empty and the named module imports `std` normally.
+`module;` begins the global module fragment. Including a standard header after
+`export module project.identity;` or `module project.identity;` would place its
+declarations in the named module purview and is forbidden.
 
-The compatibility macro is a target-provided build decision, not a
-source-by-source preference. Every producer and consumer of a module must see
-the same value. Ordinary non-module `.cpp` entry points may conditionally
-choose `import std;` or the minimal standard headers directly, but project
-modules and their CMake `CXX_MODULES` registration do not change.
-
-This fallback applies only to standard-library delivery. It does not authorize
-project-owned headers, duplicate declarations, or a parallel legacy source
-tree.
+Ordinary non-module `.cpp` entry points include the minimal standard headers at
+the top of the translation unit, then import project modules.
 
 ## CMake Registration
 
@@ -121,6 +116,8 @@ target_sources(project_identity
     PRIVATE
         src/project/identity.cpp
 )
+
+set_property(TARGET project_identity PROPERTY CXX_SCAN_FOR_MODULES ON)
 ```
 
 The interface belongs in a `CXX_MODULES` file set. The implementation is a
@@ -136,6 +133,8 @@ entry point. Do not create a facade merely to hide unclear dependency design.
 1. Does the module own one recognizable responsibility?
 2. Can an importer understand the public contract without the implementation?
 3. Are heavyweight operations outside the interface?
-4. Does the namespace mirror the dotted module identity?
-5. Is the interface registered in the CMake module file set?
-6. Do tests consume the public module instead of implementation files?
+4. Are standard headers in the global module fragment?
+5. Is `import std;` absent?
+6. Does the namespace mirror the dotted module identity?
+7. Is the interface registered in the CMake module file set?
+8. Do tests consume the public module instead of implementation files?
