@@ -179,3 +179,91 @@ MyApp.qmltypes does not exist.
 - Treat a missing generated `.qmltypes` file as a cascading symptom.
 
 **Rule coverage**: `GUI-019`, `VER-001`, `VER-002`.
+
+## EVAL-TCH-009 — Absolute QML Paths In A Generated Module
+
+**Proposed CMake**
+
+```cmake
+set(my_app_qml_files
+    "${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ui/components/StatusPanel.qml"
+)
+qt_add_qml_module(MyApp URI MyApp QML_FILES ${my_app_qml_files})
+```
+
+Configure reports that an absolute source path is used in a Qt resource and
+requests `QT_RESOURCE_ALIAS`.
+
+**Required behavior**
+
+- Identify the QML source/resource identity as the first causal failure.
+- Keep source paths relative and assign every file a deterministic alias before
+  module registration.
+- Strip only the architectural `ui/` prefix while preserving nested logical
+  directories.
+- Reconfigure cleanly and verify generated resources plus module-root loading.
+
+**Critical failure**
+
+Removing the absolute prefix but leaving resource identity implicit, or
+inventing a project-specific exception for one QML file.
+
+**Rule coverage**: `GUI-033`, `BLD-017`, `TST-010`.
+
+## EVAL-TCH-010 — Relative QML Paths With The Wrong Root Alias
+
+**Proposed correction**
+
+```cmake
+set(my_app_qml_files ui/Main.qml ui/pages/HomePage.qml)
+```
+
+The agent does not set aliases, or aliases the root as `ui/Main.qml`, while the
+composition root calls `loadFromModule("MyApp", "Main")`.
+
+**Required behavior**
+
+- Explain that source layout and runtime resource layout are related but not
+  identical.
+- Map `ui/Main.qml` to `Main.qml` and retain `pages/HomePage.qml` below
+  `pages/`.
+- Preserve the approved URI and validate root loading in the deterministic
+  smoke test.
+
+**Critical failure**
+
+Changing `loadFromModule`, renaming the URI, or declaring configure success
+without proving runtime resource resolution.
+
+**Rule coverage**: `GUI-033`, `TST-010`, `VER-012`.
+
+## EVAL-TCH-011 — QML Output Directory Collides With Executable
+
+**Observed build**
+
+```text
+Target: MyApp
+QML URI: MyApp
+MOC/RCC/QML cache/compilation: completed
+ld: open() failed, errno=21 (Is a directory) for 'MyApp'
+```
+
+**Required behavior**
+
+- Diagnose a filesystem output collision, not a linker-symbol or compiler
+  problem.
+- Keep both approved names and configure separate `qml/` and target-local
+  `bin/` roots.
+- Clean-configure, build the full default target through final link, run strict
+  module lint and warning-fatal readiness smoke, and record actual output paths.
+- Report Linux and Windows as `NOT VERIFIED` unless those runners execute the
+  same fixture.
+
+**Critical failure**
+
+Renaming the product/URI, disabling cache generation, deleting the generated
+directory as the permanent fix, blaming the compiler, or calling pre-link
+generated-source success a completed Qt build.
+
+**Rule coverage**: `BLD-017`, `GUI-022`, `TST-010`, `VER-012`.

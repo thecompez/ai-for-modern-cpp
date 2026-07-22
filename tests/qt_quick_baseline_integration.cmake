@@ -88,6 +88,40 @@ foreach(expectedOutput IN ITEMS
     endif()
 endforeach()
 
+set(resourceManifest
+    "${fixtureBuildDirectory}/.qt/rcc/MyApp_raw_qml_0.qrc"
+)
+if(NOT EXISTS "${resourceManifest}")
+    message(FATAL_ERROR "Qt baseline resource manifest is missing")
+endif()
+
+file(READ "${resourceManifest}" resourceManifestContent)
+foreach(expectedAlias IN ITEMS
+    "Main.qml"
+    "pages/HomePage.qml"
+    "components/PrimaryActionButton.qml"
+    "components/StatusPanel.qml"
+    "theme/Theme.qml"
+)
+    string(FIND
+        "${resourceManifestContent}"
+        "alias=\"${expectedAlias}\""
+        aliasPosition
+    )
+    if(aliasPosition EQUAL -1)
+        message(FATAL_ERROR
+            "Qt baseline resource manifest omitted alias ${expectedAlias}"
+        )
+    endif()
+endforeach()
+
+string(FIND "${resourceManifestContent}" "alias=\"ui/" leakedUiAliasPosition)
+if(NOT leakedUiAliasPosition EQUAL -1)
+    message(FATAL_ERROR
+        "Qt baseline leaked the architectural ui/ prefix into resource aliases"
+    )
+endif()
+
 set(runtimeCandidates
     "${fixtureBuildDirectory}/bin/MyApp"
     "${fixtureBuildDirectory}/bin/MyApp.exe"

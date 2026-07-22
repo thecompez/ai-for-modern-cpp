@@ -45,6 +45,11 @@ verification. Reject invalid properties, unsupported style customization,
 binding loops, missing-font substitution, clipped popup rows, and truncated
 primary actions.
 
+For a generated Qt baseline, verify that source-relative QML files have aliases
+that remove only `ui/`, that module-root `Main` loads, and that a same-name
+target/URI fully links with QML artifacts under `qml/` and runtime output under
+`bin/`. Record the actual executable, `qmldir`, and `.qmltypes` paths.
+
 When CMake, modules, standard-library integration, or toolchain policy changes,
 use a fresh build directory and verify the single supported path: project-owned
 modules plus standard headers in global module fragments.

@@ -37,6 +37,12 @@ insufficient. Reject invalid properties, unsupported style customization,
 binding loops, missing-font warnings, clipped popup content, and truncated
 primary actions.
 
+For generated Qt Quick baselines, verify a same-named executable target and QML
+URI in a clean non-bundle layout. Confirm deterministic aliases omit only the
+top-level `ui/` boundary, the executable links under `bin/`, the QML module is
+generated under `qml/`, and `qmldir` plus `.qmltypes` exist before reporting GUI
+success. Run strict lint against that actual QML output root.
+
 For CMake, module, or toolchain-policy changes, use a fresh build directory and
 verify the single supported standard-library path: project modules plus minimal
 standard headers in global module fragments.
@@ -53,6 +59,7 @@ Report:
 - A viewport/appearance/content-state visual acceptance matrix.
 - The minimum Qt version, effective Controls style, lint/runtime warning counts,
   and lazy components exercised by the interaction flow.
+- The linked executable, `qmldir`, and `.qmltypes` output paths.
 
 Do not describe a project or archive as final while a requested primary surface
 is unbuilt or `NOT VERIFIED` because its SDK or runtime was unavailable.

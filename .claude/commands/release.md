@@ -29,7 +29,10 @@ Use this command to prepare a release.
     clipping, truncated actions, or a timer-only smoke block release.
 11. Record the Qt version, style, lint/runtime warning counts, and lazy
     components exercised by the interaction flow.
-12. Prepare release notes.
-13. Ask for explicit human approval before tagging or publishing.
+12. For generated Qt Quick products, record the linked executable path and the
+    generated `qmldir` and `.qmltypes` paths, and confirm the QML and runtime
+    output roots cannot collide when the target and URI share a name.
+13. Prepare release notes.
+14. Ask for explicit human approval before tagging or publishing.
 
 Do not create tags or publish artifacts without explicit approval.

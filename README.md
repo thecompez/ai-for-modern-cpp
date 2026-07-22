@@ -195,6 +195,17 @@ step is treated as a cascading symptom. Nested `QML_ELEMENT` adapter headers are
 also added to the owning target's include path so generated registration code
 can compile them by basename.
 
+Generated QML sources remain project-relative and receive deterministic
+resource aliases: the architectural `ui/` prefix is removed from the runtime
+module namespace while `pages/`, `components/`, and `theme/` remain intact.
+The root alias stays `Main.qml`, so `loadFromModule` resolves it from the module
+root. QML metadata is generated under a dedicated `qml/` tree and executables
+under a target-local `bin/` tree, allowing the executable target and QML URI to
+share the human-approved application name without a directory/file collision.
+The repository includes a same-name `MyApp` Qt integration fixture that fully
+links, runs strict module lint, loads the root component, and verifies the
+produced paths when Qt 6.6 or newer is available.
+
 A QObject created from QML through `QML_ELEMENT` is not declared `final`,
 because Qt generates a registration wrapper derived from it. Final delivery
 uses a clean Qt-enabled build, compiles all generated QML/MOC/resource sources,

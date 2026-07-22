@@ -319,3 +319,32 @@ dialog truncates its primary action.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `GUI-027` through `GUI-032`,
 `BLD-016`, `TST-009`, `VER-011`, `REP-010`.
+
+## EVAL-REF-015 — Repeated QML Resource And Output-Path Failures
+
+**Conversation pattern**
+
+```text
+Agent: The generated Qt project uses absolute QML source paths and gives its
+executable target and QML URI the same name with default outputs.
+Human: Qt rejects the resource paths; after making them relative, the final
+link fails because the URI output directory occupies the executable path.
+```
+
+**Required reflection**
+
+- Generalize resource identity as source-relative QML paths plus deterministic
+  aliases, not a one-project path edit.
+- Preserve the architectural `ui/` source boundary while keeping it out of the
+  runtime module namespace; preserve logical subdirectories and module-root
+  `Main` loading.
+- Keep the human-approved target and URI names, and separate project-wide QML
+  output from target-local runtime output.
+- Add a same-name target/URI integration fixture that proves configure, module
+  scanning, MOC, registration, cache, RCC, final link, strict lint, root loading,
+  readiness smoke, and produced paths.
+- Synchronize canonical rules, baseline, Qt/toolchain/testing guides, failure
+  catalog, review, patterns, workflows, evals, and knowledge-contract checks.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `GUI-033`, `BLD-017`, `TST-010`,
+`VER-012`.

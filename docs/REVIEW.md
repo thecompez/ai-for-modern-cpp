@@ -133,6 +133,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   fallbacks; no missing-font substitution warning remains.
 - [ ] `GUI-032`: Strict lint and warning-fatal runtime interaction cover lazy
   controls and the primary flow; a timer-only launch is not the smoke gate.
+- [ ] `GUI-033`: QML sources are project-relative and receive deterministic
+  aliases before module registration; `ui/` is removed from resource identity,
+  logical subdirectories remain, and module-root `Main` still loads.
 
 ## Build And Tests
 
@@ -159,6 +162,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `BLD-016`: The minimum Qt version and selected customizable Controls style
   are explicit and identical across application, lint, tests, screenshots, and
   packaging.
+- [ ] `BLD-017`: QML module artifacts and runtime targets use separate output
+  roots; identical executable and URI names are supported, and strict lint uses
+  the configured QML root with minimum-version-compatible options.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.
@@ -169,6 +175,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `TST-009`: Strict `qmllint` allows zero project warnings and warning-fatal
   runtime tests instantiate popups, dialogs, delegates, editors, and responsive
   branches used by the primary flow.
+- [ ] `TST-010`: The same-name target/URI fixture clean-configures, fully links,
+  lints the generated module, loads `Main`, passes warning-fatal readiness
+  smoke, and verifies `bin/` plus `qml/<URI>/` outputs when Qt is available.
 - [ ] `VER-001`: Configure, build, and tests have separate results.
 - [ ] `VER-003`: Exact commands and pass/fail counts are present.
 - [ ] `VER-006`: Final diff and `git diff --check` were inspected.
@@ -180,6 +189,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   states, screenshots, and interaction paths are recorded.
 - [ ] `VER-011`: Qt version, effective Controls style, strict lint command and
   warning count, runtime command, and project-owned warning count are recorded.
+- [ ] `VER-012`: The actual runtime target, `qmldir`, and `.qmltypes` paths are
+  recorded after final linking; earlier generated-source success is not treated
+  as a successful GUI build.
 
 ## Knowledge Consistency
 

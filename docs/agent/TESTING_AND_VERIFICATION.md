@@ -73,6 +73,10 @@ For a Qt Quick product, include all of these layers:
   used by the primary flow;
 - typography and content-fit checks for missing fonts, longest primary labels,
   translated expansion, bilingual/RTL popup rows, and focus-ring containment.
+- generated QML resource aliases and output roots, including a fixture whose
+  executable target and URI have the same name, whose architectural `ui/`
+  prefix is absent from runtime aliases, and whose nested logical directories
+  remain intact.
 
 ## Required Commands
 
@@ -102,6 +106,22 @@ warnings treated as failures. The smoke flow must await explicit readiness and
 exercise the primary path. A fixed-delay launch that never opens lazy controls
 does not verify the product. Building an individual core or test target is
 useful during iteration, but it is not the final product gate.
+
+For the canonical generated-project fixture, also verify actual filesystem
+outputs after the final link:
+
+```text
+build/verify/bin/MyApp               # .exe or bundle-internal target as applicable
+build/verify/qml/MyApp/qmldir
+build/verify/qml/MyApp/MyApp.qmltypes
+```
+
+The fixture deliberately uses `MyApp` for both executable target and QML URI.
+It must clean-configure, build the full default target, compile project modules,
+MOC, registration, RCC, and QML cache sources, link the executable, run strict
+module lint, and load module-root `Main` in a warning-fatal readiness smoke. If
+Qt is unavailable, record this fixture as `NOT VERIFIED`; do not infer it from
+the repository's non-Qt core tests.
 
 Visual acceptance is also a final product gate. Capture the required screenshot
 matrix from the product's layout contract and inspect shared edges, baselines,
@@ -141,6 +161,7 @@ Qt Quick target: PASS — generated registration/resources compiled and executab
 QML smoke: PASS — exact test or smoke command
 QML lint: PASS — exact strict command, 0 project warnings
 Qt runtime diagnostics: PASS — effective Controls style, 0 project warnings
+Generated outputs: PASS — runtime path + QML qmldir/.qmltypes paths
 Visual acceptance: PASS — exact viewport/state matrix and screenshot evidence
 Warnings: none
 Unverified: Linux runner not available locally

@@ -45,6 +45,9 @@ Use this command when implementing a feature, bug fix, or refactor.
     tests, run strict QML lint with zero project warnings, and make runtime QML
     warnings fail the interaction smoke. Exercise primary-path lazy controls;
     a fixed-delay launch is insufficient.
+    For generated projects, verify deterministic QML resource aliases and
+    distinct QML/runtime output roots; preserve identical approved target and
+    URI names and record the final linked target plus `qmldir`/`.qmltypes` paths.
 15. Fix failures and repeat the complete verification loop.
 16. Inspect the final diff and run `git diff --check`.
 17. Report a target-by-target verification matrix. Do not label an archive

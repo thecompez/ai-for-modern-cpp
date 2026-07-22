@@ -86,6 +86,20 @@ set(requiredSurfaces
     scripts/verify-linux.sh
     cmake/AimcppProjectChecks.cmake
     tests/project_checks.cmake
+    tests/qt_quick_baseline_integration.cmake
+    tests/fixtures/qt_quick_baseline/CMakeLists.txt
+    tests/fixtures/qt_quick_baseline/cmake/AimcppProjectChecks.cmake
+    tests/fixtures/qt_quick_baseline/src/domain/app_domain.cppm
+    tests/fixtures/qt_quick_baseline/src/domain/app_domain.cpp
+    tests/fixtures/qt_quick_baseline/src/presentation/app_view_model.hpp
+    tests/fixtures/qt_quick_baseline/src/presentation/app_view_model.cpp
+    tests/fixtures/qt_quick_baseline/src/bootstrap/main.cpp
+    tests/fixtures/qt_quick_baseline/tests/app_tests.cpp
+    tests/fixtures/qt_quick_baseline/ui/Main.qml
+    tests/fixtures/qt_quick_baseline/ui/pages/HomePage.qml
+    tests/fixtures/qt_quick_baseline/ui/components/PrimaryActionButton.qml
+    tests/fixtures/qt_quick_baseline/ui/components/StatusPanel.qml
+    tests/fixtures/qt_quick_baseline/ui/theme/Theme.qml
 )
 
 foreach(surface IN LISTS requiredSurfaces)
@@ -120,6 +134,7 @@ foreach(ruleId IN ITEMS
     GUI-030
     GUI-031
     GUI-032
+    GUI-033
     BLD-004
     BLD-005
     BLD-009
@@ -127,15 +142,18 @@ foreach(ruleId IN ITEMS
     BLD-014
     BLD-015
     BLD-016
+    BLD-017
     VER-002
     VER-007
     VER-008
     VER-009
     VER-010
     VER-011
+    VER-012
     TST-007
     TST-008
     TST-009
+    TST-010
     REP-008
     REP-009
     REP-010
@@ -162,18 +180,22 @@ foreach(reviewRule IN ITEMS
     GUI-030
     GUI-031
     GUI-032
+    GUI-033
     BLD-005
     BLD-013
     BLD-014
     BLD-015
     BLD-016
+    BLD-017
     TST-007
     TST-008
     TST-009
+    TST-010
     VER-008
     VER-009
     VER-010
     VER-011
+    VER-012
     REP-008
     REP-009
     REP-010
@@ -223,6 +245,43 @@ foreach(source IN LISTS productionSources)
     assert_file_not_contains("${source}" "import std")
     assert_file_not_contains("${source}" "AIMCPP_USE_IMPORT_STD")
 endforeach()
+
+set(qtFixtureSources
+    tests/fixtures/qt_quick_baseline/src/domain/app_domain.cppm
+    tests/fixtures/qt_quick_baseline/src/domain/app_domain.cpp
+    tests/fixtures/qt_quick_baseline/src/presentation/app_view_model.cpp
+    tests/fixtures/qt_quick_baseline/src/bootstrap/main.cpp
+    tests/fixtures/qt_quick_baseline/tests/app_tests.cpp
+)
+
+foreach(source IN LISTS qtFixtureSources)
+    assert_file_not_contains("${source}" "import std")
+endforeach()
+
+assert_text_before(
+    "tests/fixtures/qt_quick_baseline/src/domain/app_domain.cppm"
+    "module;"
+    "#include <"
+)
+assert_text_before(
+    "tests/fixtures/qt_quick_baseline/src/domain/app_domain.cppm"
+    "#include <"
+    "export module my.app.domain;"
+)
+
+file(SHA256
+    "${AIMCPP_SOURCE_DIR}/cmake/AimcppProjectChecks.cmake"
+    projectChecksHash
+)
+file(SHA256
+    "${AIMCPP_SOURCE_DIR}/tests/fixtures/qt_quick_baseline/cmake/AimcppProjectChecks.cmake"
+    fixtureProjectChecksHash
+)
+if(NOT projectChecksHash STREQUAL fixtureProjectChecksHash)
+    message(FATAL_ERROR
+        "The generated Qt fixture must keep AimcppProjectChecks.cmake synchronized"
+    )
+endif()
 
 assert_text_before(
     "src/modern_cpp_agent/modern_cpp_agent.cppm"
@@ -311,6 +370,9 @@ foreach(toolchainGuideText IN ITEMS
     "customizable Qt Quick"
     "strict `qmllint`"
     "warning-fatal runtime"
+    "QT_RESOURCE_ALIAS"
+    "QT_QML_OUTPUT_DIRECTORY"
+    "RUNTIME_OUTPUT_DIRECTORY"
 )
     assert_file_contains("docs/agent/CMAKE_AND_TOOLCHAINS.md" "${toolchainGuideText}")
 endforeach()
@@ -333,9 +395,48 @@ foreach(baselineText IN ITEMS
     "--max-warnings 0"
     "QT_FATAL_WARNINGS=1"
     "--smoke-test"
+    "QT_RESOURCE_ALIAS"
+    "QT_QML_OUTPUT_DIRECTORY"
+    "RUNTIME_OUTPUT_DIRECTORY"
+    "WORKING_DIRECTORY"
+    "-M MyApp"
 )
     assert_file_contains("docs/agent/PROJECT_CMAKE_BASELINE.md" "${baselineText}")
 endforeach()
+
+assert_file_not_contains(
+    "docs/agent/PROJECT_CMAKE_BASELINE.md"
+    "\"\${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml\""
+)
+
+foreach(relativeQmlPath IN ITEMS
+    "ui/Main.qml"
+    "ui/pages/HomePage.qml"
+    "ui/components/PrimaryActionButton.qml"
+    "ui/components/StatusPanel.qml"
+    "ui/theme/Theme.qml"
+)
+    assert_file_contains(
+        "docs/agent/PROJECT_CMAKE_BASELINE.md"
+        "${relativeQmlPath}"
+    )
+endforeach()
+
+assert_text_before(
+    "docs/agent/PROJECT_CMAKE_BASELINE.md"
+    "QT_RESOURCE_ALIAS"
+    "qt_add_qml_module(MyApp"
+)
+assert_text_before(
+    "docs/agent/PROJECT_CMAKE_BASELINE.md"
+    "set(QT_QML_OUTPUT_DIRECTORY"
+    "qt_add_qml_module(MyApp"
+)
+assert_text_before(
+    "docs/agent/PROJECT_CMAKE_BASELINE.md"
+    "qt_add_executable(MyApp"
+    "RUNTIME_OUTPUT_DIRECTORY"
+)
 
 assert_text_before(
     "docs/agent/PROJECT_CMAKE_BASELINE.md"
@@ -368,6 +469,10 @@ foreach(qtGuideText IN ITEMS
     "Content-Safe Controls, Popups, And Dialogs"
     "Portable Typography"
     "fixed-delay launch"
+    "QT_RESOURCE_ALIAS"
+    "QT_QML_OUTPUT_DIRECTORY"
+    "RUNTIME_OUTPUT_DIRECTORY"
+    "-M MyApp"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
@@ -384,6 +489,10 @@ foreach(failureText IN ITEMS
     "Binding loop detected"
     "missing font family"
     "A Window That Opens Can Still Fail Verification"
+    "specified with an absolute path and is used in a Qt resource"
+    "Please set the QT_RESOURCE_ALIAS property"
+    "errno=21 (Is a directory)"
+    "output-path collision"
 )
     assert_file_contains("docs/agent/COMMON_FAILURES.md" "${failureText}")
 endforeach()
@@ -412,6 +521,9 @@ foreach(qtWorkflow IN ITEMS
     assert_file_contains("${qtWorkflow}" "Controls style")
     assert_file_contains("${qtWorkflow}" "binding loops")
     assert_file_contains("${qtWorkflow}" "timer-only")
+    assert_file_contains("${qtWorkflow}" "QT_RESOURCE_ALIAS")
+    assert_file_contains("${qtWorkflow}" "QT_QML_OUTPUT_DIRECTORY")
+    assert_file_contains("${qtWorkflow}" "RUNTIME_OUTPUT_DIRECTORY")
 endforeach()
 
 foreach(verificationWorkflow IN ITEMS
@@ -424,6 +536,8 @@ foreach(verificationWorkflow IN ITEMS
 )
     assert_file_contains("${verificationWorkflow}" "full default")
     assert_file_contains("${verificationWorkflow}" "NOT VERIFIED")
+    assert_file_contains("${verificationWorkflow}" "qmldir")
+    assert_file_contains("${verificationWorkflow}" ".qmltypes")
 endforeach()
 
 foreach(visualWorkflow IN ITEMS
@@ -463,6 +577,9 @@ foreach(readmeText IN ITEMS
     "Explicit Qt Quick Controls style selection"
     "zero project warnings"
     "fixed timer"
+    "Generated QML sources remain project-relative"
+    "receive deterministic"
+    "same-name `MyApp` Qt integration fixture"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -471,6 +588,9 @@ foreach(evalId IN ITEMS
     EVAL-TCH-001
     EVAL-TCH-007
     EVAL-TCH-008
+    EVAL-TCH-009
+    EVAL-TCH-010
+    EVAL-TCH-011
 )
     assert_file_contains("evals/toolchains.md" "${evalId}")
 endforeach()
@@ -479,6 +599,7 @@ assert_file_contains("evals/reflection.md" "EVAL-REF-011")
 assert_file_contains("evals/reflection.md" "EVAL-REF-012")
 assert_file_contains("evals/reflection.md" "EVAL-REF-013")
 assert_file_contains("evals/reflection.md" "EVAL-REF-014")
+assert_file_contains("evals/reflection.md" "EVAL-REF-015")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-009")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-010")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-011")
@@ -497,6 +618,67 @@ foreach(evalId IN ITEMS
     assert_file_contains("evals/project_initiation.md" "${evalId}")
 endforeach()
 
+assert_file_contains("CMakeLists.txt" "NAME qt_quick_baseline_integration")
+
+foreach(fixtureText IN ITEMS
+    "project(MyApp"
+    "FILE_SET CXX_MODULES"
+    "CXX_SCAN_FOR_MODULES ON"
+    "QT_RESOURCE_ALIAS"
+    "QT_QML_OUTPUT_DIRECTORY"
+    "RUNTIME_OUTPUT_DIRECTORY"
+    "qt_add_qml_module(MyApp"
+    "URI MyApp"
+    "loadFromModule(QStringLiteral(\"MyApp\"), QStringLiteral(\"Main\"))"
+    "MyApp_qmllint_strict"
+    "-M MyApp"
+    "QT_FATAL_WARNINGS=1"
+)
+    if(fixtureText MATCHES "loadFromModule")
+        assert_file_contains(
+            "tests/fixtures/qt_quick_baseline/src/bootstrap/main.cpp"
+            "${fixtureText}"
+        )
+    elseif(fixtureText STREQUAL "QT_FATAL_WARNINGS=1")
+        assert_file_contains(
+            "tests/fixtures/qt_quick_baseline/CMakeLists.txt"
+            "${fixtureText}"
+        )
+    else()
+        assert_file_contains(
+            "tests/fixtures/qt_quick_baseline/CMakeLists.txt"
+            "${fixtureText}"
+        )
+    endif()
+endforeach()
+
+assert_file_not_contains(
+    "tests/fixtures/qt_quick_baseline/CMakeLists.txt"
+    "\"\${CMAKE_CURRENT_SOURCE_DIR}/ui/Main.qml\""
+)
+assert_text_before(
+    "tests/fixtures/qt_quick_baseline/CMakeLists.txt"
+    "QT_RESOURCE_ALIAS"
+    "qt_add_qml_module(MyApp"
+)
+
+foreach(integrationText IN ITEMS
+    "qml/MyApp/qmldir"
+    "qml/MyApp/MyApp.qmltypes"
+    "bin/MyApp"
+    "foreach(expectedAlias IN ITEMS"
+    "Main.qml"
+    "leakedUiAliasPosition"
+    "Qt baseline full build"
+    "Qt baseline strict QML lint"
+    "Qt baseline CTest"
+)
+    assert_file_contains(
+        "tests/qt_quick_baseline_integration.cmake"
+        "${integrationText}"
+    )
+endforeach()
+
 foreach(preflightText IN ITEMS
     "aimcpp_reject_final_qml_creatable_types"
     "GUI-021"
@@ -507,5 +689,5 @@ foreach(preflightText IN ITEMS
 endforeach()
 
 message(STATUS
-    "Knowledge contract verified: project initiation, project modules, Qt preflight, full-product evidence, and visual acceptance remain synchronized."
+    "Knowledge contract verified: project initiation, modules, deterministic QML resources, separated outputs, full-product evidence, and visual acceptance remain synchronized."
 )

@@ -59,6 +59,11 @@ Read completely before editing:
 15. For QML subdirectories, select QTP0004 `NEW` behind
     `QT_KNOWN_POLICY_QTP0004` before `qt_add_qml_module`. Treat missing generated
     `.qmltypes` after a failed CMake Generate step as a cascading symptom.
+    Keep QML paths source-relative, assign deterministic `QT_RESOURCE_ALIAS`
+    values that remove only the architectural `ui/` prefix, and preserve
+    module-root `Main` plus logical subdirectories. Separate the project-wide
+    `QT_QML_OUTPUT_DIRECTORY` from each target-local
+    `RUNTIME_OUTPUT_DIRECTORY` so identical target and URI names remain valid.
 16. Add every directory containing a nested `QML_ELEMENT` adapter header as a
     target-local private include directory. Never patch generated
     `*_qmltyperegistrations.cpp` files.
@@ -85,10 +90,13 @@ Read completely before editing:
     warning-fatal runtime smoke coverage. Exercise lazy popups, dialogs,
     delegates, editors, and responsive branches used by the primary flow; a
     timer-only launch is insufficient.
+    Lint the generated module from its configured QML output root with options
+    supported by the declared minimum Qt version.
 25. In a clean tree with the GUI and tests enabled, build the full default
     target, run all tests and a GUI/QML smoke flow, inspect the final diff, and
     report exact per-surface evidence. Do not deliver a final archive when the
     Qt surface is unbuilt or `NOT VERIFIED`.
+    Record the linked runtime target, generated `qmldir`, and `.qmltypes` paths.
 26. Capture rendered screenshots at minimum, standard, and wide sizes across
     relevant appearance/content states. Audit alignment lines, repeated metrics,
     spacing rhythm, clipping, overlap, truncation, optical centering, contrast,

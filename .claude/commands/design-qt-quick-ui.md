@@ -43,6 +43,13 @@ Qt Widgets without an explicit user request or inspected compatibility
 requirement.
 For a generated project, begin with `PROJECT_CMAKE_BASELINE.md` instead of
 assembling the CMake file from partial snippets.
+Keep generated QML file lists source-relative, assign deterministic
+`QT_RESOURCE_ALIAS` values that remove only the architectural `ui/` prefix,
+and keep logical subdirectories intact. Separate `QT_QML_OUTPUT_DIRECTORY`
+from each executable's `RUNTIME_OUTPUT_DIRECTORY` so an approved target and
+QML URI may share a name without a directory/file collision. Strict lint must
+resolve the built module from the configured QML output root using options
+supported by the declared minimum Qt version.
 Keep any secondary CLI thin, connected to the shared application/domain modules,
 and subordinate to the primary interface.
 
@@ -68,4 +75,5 @@ baselines, repeated metrics, spacing, clipping, overlap, optical centering,
 contrast, safe insets, and accidental dead space. An unbuilt or visually
 unreviewed Qt target blocks a final archive. Report the minimum Qt version,
 effective Controls style, strict lint warning count, runtime warning count, and
-the lazy components exercised by the smoke flow.
+the lazy components exercised by the smoke flow. Also report the linked runtime
+path plus the generated `qmldir` and `.qmltypes` paths.

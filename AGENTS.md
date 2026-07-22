@@ -878,6 +878,14 @@ Agents MUST NOT:
   interaction path are warning-free.
 - Create a top-level `qml/` dumping directory for a new Qt Quick repository
   instead of an explicit `ui/` boundary.
+- Pass absolute project QML paths to `qt_add_qml_module` without an explicit,
+  verified resource-alias contract, or leak the architectural `ui/` prefix
+  into the runtime module namespace.
+- Allow a URI-derived QML output directory and an executable output file to
+  resolve to the same path; preserve approved target/URI names and separate
+  their output roots instead of renaming the product as a workaround.
+- Report QML scanning, MOC, RCC, type registration, or cache compilation as a
+  successful Qt build when the final executable did not link.
 - Edit generated QML type registration files or omit target-local include paths
   for nested `QML_ELEMENT` presentation adapters.
 - Treat the executable example as permission to accumulate unrelated showcase
