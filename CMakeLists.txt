@@ -51,6 +51,18 @@ if(AIMCPP_BUILD_TESTS)
     )
 
     set_tests_properties(knowledge_contract PROPERTIES LABELS knowledge)
+
+    add_test(
+        NAME project_checks
+        COMMAND
+            ${CMAKE_COMMAND}
+            "-DAIMCPP_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+            "-DAIMCPP_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+            -P
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/project_checks.cmake"
+    )
+
+    set_tests_properties(project_checks PROPERTIES LABELS knowledge)
 endif()
 
 message(STATUS "CMAKE_VERSION=${CMAKE_VERSION}")

@@ -12,6 +12,9 @@ cmake_minimum_required(VERSION 3.30)
 
 project(MyApp VERSION 0.1.0 LANGUAGES CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(AimcppProjectChecks)
+
 option(MY_APP_BUILD_GUI "Build the Qt Quick application" ON)
 option(MY_APP_BUILD_TESTS "Build tests" ON)
 
@@ -36,6 +39,11 @@ set_property(TARGET my_app_core PROPERTY CXX_SCAN_FOR_MODULES ON)
 
 if(MY_APP_BUILD_GUI)
     find_package(Qt6 6.6 REQUIRED COMPONENTS Quick Qml QuickControls2)
+
+    aimcpp_reject_final_qml_creatable_types(
+        SOURCES
+            src/presentation/app_view_model.hpp
+    )
 
     if(QT_KNOWN_POLICY_QTP0004)
         qt_policy(SET QTP0004 NEW)
@@ -87,6 +95,12 @@ if(MY_APP_BUILD_TESTS)
     add_test(NAME app.behavior COMMAND my_app_tests)
 endif()
 ```
+
+Copy `cmake/AimcppProjectChecks.cmake` from this repository into the generated
+project together with this baseline. The preflight rejects the common
+`QML_ELEMENT` plus `final` contradiction during configure with a `GUI-021`
+diagnostic. Keep every project-owned QML registration header in its `SOURCES`
+list. This early check supplements, and never replaces, the clean full Qt build.
 
 ## Required Module Source Shape
 

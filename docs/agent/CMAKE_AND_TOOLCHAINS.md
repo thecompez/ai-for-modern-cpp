@@ -86,7 +86,10 @@ For Qt Quick targets:
 - guard QTP0004 before QML module registration;
 - link target-local `Qt6::Quick`, `Qt6::Qml`, and Qt Quick Controls dependencies;
 - add every nested directory containing a project-owned `QML_ELEMENT` header to
-  the QML target with `target_include_directories`.
+  the QML target with `target_include_directories`;
+- copy `cmake/AimcppProjectChecks.cmake` and run
+  `aimcpp_reject_final_qml_creatable_types` on every project-owned QML
+  registration header before QML module registration.
 
 Qt's generated type registration source may include a MOC adapter by basename.
 If `src/presentation/app_view_model.hpp` is not on the target include path, the

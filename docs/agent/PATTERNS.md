@@ -305,6 +305,11 @@ Qt generates a wrapper derived from a QML-creatable type. The incorrect form
 fails in generated QML type-registration code even when core targets and
 headless tests pass.
 
+Generated projects also run the baseline
+`aimcpp_reject_final_qml_creatable_types` configure preflight over every QML
+registration header. Passing that check is not a substitute for compiling the
+generated Qt registration code and linking the complete graphical target.
+
 ## Full-Product Verification
 
 **Correct**

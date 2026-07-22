@@ -14,6 +14,14 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 
 ## Scope And Discovery
 
+- [ ] `INI-001`: New product or project creation began only after the human
+  approved an unambiguous project name.
+- [ ] `INI-002`: No files or technical identities were created while the name
+  was unresolved.
+- [ ] `INI-003`: Named requests and established repositories were not blocked
+  by a redundant question, and placeholders were not treated as approval.
+- [ ] `INI-004`: External use of this repository records the exact revision and
+  routed guides actually read.
 - [ ] `SCP-001`: The owning subsystem and existing behavior were inspected.
 - [ ] `SCP-002`: Unrelated human changes were preserved.
 - [ ] `SCP-003`: The diff is the smallest coherent complete change.
@@ -130,6 +138,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `BLD-014`: Generated Qt Quick/C++ projects preserve the combined baseline:
   module file sets, scanning, standard headers, Qt policy, and nested adapter
   include paths.
+- [ ] `BLD-015`: Generated Qt projects run the baseline presentation preflight
+  for every QML registration header without treating it as a substitute for a
+  full Qt build.
 - [ ] `TST-001`: Behavior changes have relevant tests.
 - [ ] `TST-003`: Invalid, boundary, and failure paths are covered where relevant.
 - [ ] `TST-006`: Zero discovered tests are not reported as success.

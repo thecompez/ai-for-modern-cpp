@@ -25,6 +25,7 @@ and update the guide in the same change when authorized.
 
 | Question | Read |
 |---|---|
+| May I start creating this new project yet? | `START_PROJECT.md` before every other guide |
 | Where should this behavior live? | `ARCHITECTURE.md` |
 | Is this declaration or implementation? | `MODULES.md` |
 | What should this symbol be called? | `NAMING.md` |
@@ -43,13 +44,15 @@ and update the guide in the same change when authorized.
 
 Before editing:
 
-1. Identify the requested outcome.
-2. Inspect the working tree and current diff.
-3. Identify the owning subsystem.
-4. Select the guides from the routing map.
-5. Read the selected guides completely.
-6. Inspect the relevant source, CMake target, and tests.
-7. State any assumption that materially affects the design.
+1. For a new product or project, pass the project-name gate in
+   `START_PROJECT.md`; if the name is missing, ask and stop before writing.
+2. Identify the requested outcome.
+3. Inspect the working tree and current diff.
+4. Identify the owning subsystem.
+5. Select the guides from the routing map.
+6. Read the selected guides completely.
+7. Inspect the relevant source, CMake target, and tests.
+8. State any assumption that materially affects the design.
 
 After editing:
 

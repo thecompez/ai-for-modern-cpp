@@ -349,6 +349,31 @@ Result parse_value(const char* text) {
 **Rule coverage**: `NAM-004`, `SYN-001`, `SYN-005`, `SYN-006`, `SYN-011`,
 `SYN-015`, `API-002`, and `ERR-001`.
 
+## EVAL-UI-013 — Missing QML Creatable-Type Preflight
+
+**Generated project shape**
+
+```cpp
+class AppViewModel final : public QObject {
+    Q_OBJECT
+    QML_ELEMENT
+};
+```
+
+```text
+The generated project copied the CMake baseline but omitted its presentation
+preflight. Headless tests passed; the full Qt build failed in QQmlElement<T>.
+```
+
+**Expected findings**
+
+- `GUI-021`: remove `final` from the QML-creatable QObject or use a verified
+  non-creatable registration strategy.
+- `BLD-015`: copy `cmake/AimcppProjectChecks.cmake` and list every QML
+  registration header in `aimcpp_reject_final_qml_creatable_types`.
+- `GUI-022`: a passing configure preflight or headless test does not replace the
+  clean full Qt build.
+
 ## EVAL-SYN-004 — Correction Promotion
 
 **Conversation**

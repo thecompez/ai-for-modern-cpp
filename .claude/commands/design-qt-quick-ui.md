@@ -2,6 +2,7 @@
 
 Read `AGENTS.md` and then completely read:
 
+- `docs/agent/START_PROJECT.md` when creating a new product or project
 - `docs/agent/QT_QUICK_UI.md`
 - `docs/agent/PROJECT_CMAKE_BASELINE.md`
 - `docs/agent/ARCHITECTURE.md`
@@ -11,8 +12,10 @@ Read `AGENTS.md` and then completely read:
 - `docs/agent/ERRORS_AND_RESOURCES.md`
 - `docs/agent/TESTING_AND_VERIFICATION.md`
 
-Inspect the existing UI, CMake targets, tests, and current diff. Before editing,
-classify the product surface: preserve explicit CLI, service, library, daemon,
+For a new product, if the human-approved project name is missing, ask for it
+and stop before writing code or selecting identifiers. Then inspect the
+existing UI, CMake targets, tests, and current diff. Before editing, classify
+the product surface: preserve explicit CLI, service, library, daemon,
 and headless scopes, but use Qt Quick as the primary interface for an
 unspecified user-facing interactive application under `GUI-015`. Then
 define the audience, user flows, all screen states, product-specific visual
@@ -31,10 +34,13 @@ QTP0004 `NEW` behind `QT_KNOWN_POLICY_QTP0004` before module registration, and
 treat missing generated `.qmltypes` after failed CMake generation as a
 cascading symptom. Add directories containing nested `QML_ELEMENT` adapter
 headers as target-local private include directories, and never edit generated
-`*_qmltyperegistrations.cpp` files. A QML-creatable `QML_ELEMENT` QObject must not be `final`,
-because Qt's generated registration wrapper derives from it. Do
-not introduce Qt Widgets
-without an explicit user request or inspected compatibility requirement.
+`*_qmltyperegistrations.cpp` files. Copy the baseline
+`cmake/AimcppProjectChecks.cmake` into generated projects and run
+`aimcpp_reject_final_qml_creatable_types` over every project-owned QML
+registration header. A QML-creatable `QML_ELEMENT` QObject must not be `final`,
+because Qt's generated registration wrapper derives from it. Do not introduce
+Qt Widgets without an explicit user request or inspected compatibility
+requirement.
 For a generated project, begin with `PROJECT_CMAKE_BASELINE.md` instead of
 assembling the CMake file from partial snippets.
 Keep any secondary CLI thin, connected to the shared application/domain modules,

@@ -10,29 +10,32 @@ Use this command when implementing a feature, bug fix, or refactor.
 ## Required Process
 
 1. Read `AGENTS.md`.
-2. Classify the product surface. An unspecified user-facing interactive
+2. For a new product or project, read `docs/agent/START_PROJECT.md`. If its
+   human-approved name is missing, ask for it and stop before writing code or
+   selecting identifiers.
+3. Classify the product surface. An unspecified user-facing interactive
    application uses Qt Quick as its primary interface under `GUI-015`; do not
    silently choose CLI-only.
-3. Read the task guides selected by the routing table.
+4. Read the task guides selected by the routing table.
    For a generated Qt Quick/C++ project, begin with
    `docs/agent/PROJECT_CMAKE_BASELINE.md`.
-4. Understand the smallest subsystem that owns the requested behavior.
-5. Inspect existing module boundaries, tests, and the current diff.
-6. Make the smallest correct change.
-7. Preserve `.cppm` declaration and `.cpp` implementation separation.
-8. Preserve project modules. Put required standard headers in each module
+5. Understand the smallest subsystem that owns the requested behavior.
+6. Inspect existing module boundaries, tests, and the current diff.
+7. Make the smallest correct change.
+8. Preserve `.cppm` declaration and `.cpp` implementation separation.
+9. Preserve project modules. Put required standard headers in each module
    unit's global module fragment. Do not add experimental standard-library
    module setup.
-9. Choose return syntax for readability and use `std::print` or `std::println`
+10. Choose return syntax for readability and use `std::print` or `std::println`
    for ordinary formatted console output.
-10. Register `.cppm` files with `FILE_SET CXX_MODULES` and enable target module
+11. Register `.cppm` files with `FILE_SET CXX_MODULES` and enable target module
     scanning.
-11. In a clean final-verification tree, enable every requested default surface,
+12. In a clean final-verification tree, enable every requested default surface,
     build the full default target, run all tests with zero tests treated as an
     error, and run applicable product smoke checks.
-12. Fix failures and repeat the complete verification loop.
-13. Inspect the final diff and run `git diff --check`.
-14. Report a per-surface verification matrix. Do not call a project or archive
+13. Fix failures and repeat the complete verification loop.
+14. Inspect the final diff and run `git diff --check`.
+15. Report a per-surface verification matrix. Do not call a project or archive
     final when a requested primary target is unbuilt or `NOT VERIFIED`.
 
 ## Rules

@@ -265,3 +265,28 @@ reviewed across sizes.
 
 **Rule coverage**: `KNO-004`, `KNO-005`, `GUI-023` through `GUI-026`,
 `TST-008`, `VER-010`, `REP-009`.
+
+## EVAL-REF-013 — Agent Invented The Product Name
+
+**Conversation pattern**
+
+```text
+Human: Build my product idea using the repository rules.
+Agent: I created a project named MyApp and used it for the CMake target, module
+prefix, QML URI, and bundle identity.
+Human: You should have asked me for the project name before writing code.
+```
+
+**Required reflection**
+
+- Generalize the correction into a blocking initiation gate for every new
+  product, application, service, library, tool, repository, or idea.
+- Permit read-only discovery and requirements discussion while forbidding
+  writes and identifier selection until the human approves a name.
+- Avoid redundant questions when the request or existing repository already
+  establishes the name.
+- Provide equivalent Codex, Claude Code, and universal GPT entry points.
+- Add review checks, positive and negative eval scenarios, and executable
+  knowledge-contract assertions.
+
+**Rule coverage**: `KNO-004`, `KNO-005`, `INI-001` through `INI-004`.

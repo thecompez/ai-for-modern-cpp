@@ -53,6 +53,29 @@ explaining a decision or reporting a violation.
 - **KNO-005** — Policy changes MUST update every affected knowledge surface:
   canonical rules, task guide, review checklist, examples, and evals.
 
+### Project Initiation Gate
+
+- **INI-001** — Before creating a new product, application, service, library,
+  tool, repository, or implementing an idea, an agent MUST establish a
+  human-approved project name. If the request does not provide an unambiguous
+  name, the agent MUST ask for it as a blocking question and wait for the
+  answer before writing code or creating project files.
+- **INI-002** — While the project name is unresolved, an agent MUST NOT
+  initialize a repository, generate an archive, create or edit production
+  files, or invent CMake project names, target names, module prefixes, QML
+  URIs, bundle identifiers, package identifiers, namespaces, or branding.
+  Read-only discovery and requirements discussion MAY continue.
+- **INI-003** — An explicit name in the request or an established name in an
+  existing repository satisfies the gate. Agents MUST NOT ask again without a
+  concrete naming conflict, and MUST NOT substitute placeholders such as
+  `MyApp`, a feature description, or an invented marketing name for human
+  approval.
+- **INI-004** — When this repository is used as an external engineering
+  authority, the agent MUST identify the exact repository revision it read and
+  the routed guides it applied. A link or citation alone is not evidence that
+  the current contract was loaded. If the required revision or guides cannot be
+  read, implementation MUST stop and the limitation MUST be reported.
+
 The knowledge architecture is described in
 [`docs/agent/README.md`](docs/agent/README.md).
 
@@ -64,6 +87,7 @@ After reading this file, read only the guides required for the task.
 
 | Task | Required guide |
 |---|---|
+| Start a new product, project, repository, or idea implementation | `docs/agent/START_PROJECT.md` before every other routed guide |
 | Understand repository structure or introduce a subsystem | `docs/agent/ARCHITECTURE.md` |
 | Add or change a C++ module | `docs/agent/MODULES.md`, `docs/agent/NAMING.md`, and `docs/agent/SYNTAX_AND_STYLE.md` |
 | Write or review C++ syntax, identifiers, or formatting | `docs/agent/SYNTAX_AND_STYLE.md` and `docs/agent/NAMING.md` |
@@ -91,6 +115,7 @@ Every implementation task MUST follow this loop:
 
 ```text
 Read the request and applicable rules
+Pass the project initiation gate when creating a new product or project
 Inspect the current diff and working tree
 Locate the owning subsystem and module boundary
 Read the relevant implementation and tests
@@ -552,6 +577,11 @@ standard-library headers in global module fragments
   files through `FILE_SET CXX_MODULES`, enable target-local module scanning,
   use standard headers, guard required Qt policies, and expose nested
   presentation headers to generated QML registration code.
+- **BLD-015** — Generated Qt Quick projects MUST copy and run the baseline's
+  deterministic presentation preflight against every project-owned QML
+  registration header. A `QML_ELEMENT` type declared `final` MUST fail during
+  configure with a causal diagnostic. The preflight supplements and MUST NOT
+  replace the full Qt build required by `GUI-022`.
 
 Do not use `std::views::enumerate` in portable examples unless the active
 standard library has been verified to provide it.

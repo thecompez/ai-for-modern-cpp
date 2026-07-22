@@ -207,6 +207,14 @@ not instantiate it and the selected singleton, uncreatable, context-property,
 or factory ownership strategy has been verified not to require Qt-generated
 subclassing.
 
+Generated projects copy `cmake/AimcppProjectChecks.cmake` from this repository
+and call `aimcpp_reject_final_qml_creatable_types` for every project-owned QML
+registration header before `qt_add_qml_module`. This turns the common
+`QML_ELEMENT` plus `final` contradiction into a configure-time `GUI-021`
+diagnostic. It is a fast preflight, not proof of Qt integration; the generated
+registration sources and graphical executable still must complete a clean full
+build.
+
 ## Optional CLI Adapter
 
 When an additional CLI is justified, keep it as a thin composition and

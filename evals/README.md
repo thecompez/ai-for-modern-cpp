@@ -43,12 +43,15 @@ Any of these fails the scenario regardless of numeric score:
   disabled, skipped, or never built.
 - Delivering a generated Qt archive as final without a Qt-enabled full build
   and applicable QML/GUI smoke evidence.
+- Writing files or inventing technical identifiers for a new project before a
+  missing project name is approved by the human.
 - Calling a UI polished or responsive without rendered screenshot review across
   the required viewport, appearance, and content-state matrix.
 - Release, tag, deployment, or push without authorization.
 
 ## Scenario Suites
 
+- `project_initiation.md` — the blocking project-name gate and revision proof.
 - `implementation.md` — architecture, modules, APIs, errors, and ownership.
 - `review.md` — actionable rule-driven code review.
 - `toolchains.md` — CMake, project modules, Qt registration, and causal diagnosis.

@@ -56,6 +56,7 @@ set(requiredSurfaces
     README.md
     docs/REVIEW.md
     docs/agent/README.md
+    docs/agent/START_PROJECT.md
     docs/agent/MODULES.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
     docs/agent/PROJECT_CMAKE_BASELINE.md
@@ -64,21 +65,27 @@ set(requiredSurfaces
     docs/agent/PATTERNS.md
     docs/agent/TESTING_AND_VERIFICATION.md
     evals/README.md
+    evals/project_initiation.md
     evals/toolchains.md
     evals/reflection.md
     evals/ui_and_syntax.md
     .agents/skills/source-command-add-module/SKILL.md
+    .agents/skills/source-command-start-project/SKILL.md
+    .agents/skills/source-command-start-project/agents/openai.yaml
     .agents/skills/source-command-implement/SKILL.md
     .agents/skills/source-command-test/SKILL.md
     .agents/skills/source-command-design-qt-quick-ui/SKILL.md
     .agents/skills/source-command-release/SKILL.md
     .claude/commands/add-module.md
+    .claude/commands/start-project.md
     .claude/commands/implement.md
     .claude/commands/test.md
     .claude/commands/design-qt-quick-ui.md
     .claude/commands/release.md
     .github/workflows/ci.yml
     scripts/verify-linux.sh
+    cmake/AimcppProjectChecks.cmake
+    tests/project_checks.cmake
 )
 
 foreach(surface IN LISTS requiredSurfaces)
@@ -91,6 +98,10 @@ assert_file_absent("tests/import_std_metadata.cmake")
 
 foreach(ruleId IN ITEMS
     KNO-005
+    INI-001
+    INI-002
+    INI-003
+    INI-004
     MOD-009
     MOD-010
     MOD-011
@@ -108,6 +119,7 @@ foreach(ruleId IN ITEMS
     BLD-009
     BLD-013
     BLD-014
+    BLD-015
     VER-002
     VER-007
     VER-008
@@ -122,6 +134,10 @@ foreach(ruleId IN ITEMS
 endforeach()
 
 foreach(reviewRule IN ITEMS
+    INI-001
+    INI-002
+    INI-003
+    INI-004
     MOD-010
     GUI-020
     GUI-021
@@ -133,6 +149,7 @@ foreach(reviewRule IN ITEMS
     BLD-005
     BLD-013
     BLD-014
+    BLD-015
     TST-007
     TST-008
     VER-008
@@ -233,6 +250,26 @@ endforeach()
 
 assert_file_contains("CMakeLists.txt" "NAME core_tests")
 assert_file_contains("CMakeLists.txt" "NAME knowledge_contract")
+assert_file_contains("CMakeLists.txt" "NAME project_checks")
+
+foreach(startGuideText IN ITEMS
+    "What should the project be called?"
+    "Do not create code"
+    "exact commit SHA"
+    "$source-command-start-project"
+    "/start-project"
+)
+    assert_file_contains("docs/agent/START_PROJECT.md" "${startGuideText}")
+endforeach()
+
+foreach(startWorkflow IN ITEMS
+    .agents/skills/source-command-start-project/SKILL.md
+    .claude/commands/start-project.md
+)
+    assert_file_contains("${startWorkflow}" "What should the project be called?")
+    assert_file_contains("${startWorkflow}" "stop")
+    assert_file_contains("${startWorkflow}" "exact revision")
+endforeach()
 
 foreach(moduleGuideText IN ITEMS
     "Never write `import std;`"
@@ -250,6 +287,7 @@ foreach(toolchainGuideText IN ITEMS
     "target_include_directories"
     "src/presentation"
     "default `all` target"
+    "aimcpp_reject_final_qml_creatable_types"
 )
     assert_file_contains("docs/agent/CMAKE_AND_TOOLCHAINS.md" "${toolchainGuideText}")
 endforeach()
@@ -265,6 +303,8 @@ foreach(baselineText IN ITEMS
     "-DMY_APP_BUILD_GUI=ON"
     "--target all"
     "NOT VERIFIED"
+    "AimcppProjectChecks.cmake"
+    "aimcpp_reject_final_qml_creatable_types"
 )
     assert_file_contains("docs/agent/PROJECT_CMAKE_BASELINE.md" "${baselineText}")
 endforeach()
@@ -293,6 +333,7 @@ foreach(qtGuideText IN ITEMS
     "Content Balance And Empty Space"
     "Visual Acceptance Matrix"
     "minimum, standard, and wide"
+    "aimcpp_reject_final_qml_creatable_types"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
@@ -327,6 +368,7 @@ foreach(qtWorkflow IN ITEMS
     assert_file_contains("${qtWorkflow}" "full default")
     assert_file_contains("${qtWorkflow}" "minimum, standard, and wide")
     assert_file_contains("${qtWorkflow}" "accidental dead space")
+    assert_file_contains("${qtWorkflow}" "aimcpp_reject_final_qml_creatable_types")
 endforeach()
 
 foreach(verificationWorkflow IN ITEMS
@@ -372,6 +414,9 @@ foreach(readmeText IN ITEMS
     "`NOT VERIFIED`"
     "Explicit layout contracts"
     "Rendered visual acceptance"
+    "START PROJECT"
+    "What should the project be called?"
+    "exact repository commit SHA"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -386,11 +431,31 @@ endforeach()
 assert_file_contains("evals/reflection.md" "EVAL-REF-010")
 assert_file_contains("evals/reflection.md" "EVAL-REF-011")
 assert_file_contains("evals/reflection.md" "EVAL-REF-012")
+assert_file_contains("evals/reflection.md" "EVAL-REF-013")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-009")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-010")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-011")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-012")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-013")
+
+foreach(evalId IN ITEMS
+    EVAL-INI-001
+    EVAL-INI-002
+    EVAL-INI-003
+    EVAL-INI-004
+)
+    assert_file_contains("evals/project_initiation.md" "${evalId}")
+endforeach()
+
+foreach(preflightText IN ITEMS
+    "aimcpp_reject_final_qml_creatable_types"
+    "GUI-021"
+    "QML_ELEMENT"
+)
+    assert_file_contains("cmake/AimcppProjectChecks.cmake" "${preflightText}")
+    assert_file_contains("tests/project_checks.cmake" "${preflightText}")
+endforeach()
 
 message(STATUS
-    "Knowledge contract verified: project modules, full-product evidence, and rendered Qt visual acceptance remain synchronized."
+    "Knowledge contract verified: project initiation, project modules, Qt preflight, full-product evidence, and visual acceptance remain synchronized."
 )

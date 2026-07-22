@@ -73,6 +73,7 @@ docs/agent/                Task-specific engineering decision guides
 docs/REVIEW.md             Rule-driven review checklist
 docs/MCP.md                Safe tool and context policy
 evals/                     Agent behavior scenarios and scoring rubric
+cmake/                     Copy-ready generated-project preflight checks
 src/                       Executable module-based proof of the rules
 tests/                     Behavior tests and knowledge-contract checks
 .github/workflows/ci.yml   macOS and Linux verification
@@ -82,6 +83,37 @@ CMakeLists.txt             Project-module and standard-header integration
 Start with [`AGENTS.md`](AGENTS.md), then use the routing table in that file.
 The detailed knowledge map is in
 [`docs/agent/README.md`](docs/agent/README.md).
+
+## Start A New Product Or Project
+
+Project identity is a human decision. Before any agent writes code for a new
+product, project, repository, or idea, it must establish the project name. If
+the request does not already contain an unambiguous name, the agent asks
+**What should the project be called?** and waits. It must not invent
+identifiers or use documentation placeholders such as `MyApp` as the delivered
+name.
+
+Codex can invoke `$source-command-start-project`; Claude Code can invoke
+`/start-project`. For GPT or any other agent, begin with this universal prompt:
+
+```text
+START PROJECT
+
+Use https://github.com/thecompez/ai-for-modern-cpp as the engineering
+authority. Before producing code, files, build configuration, or an archive:
+
+1. Read the current AGENTS.md and docs/agent/START_PROJECT.md.
+2. Report the exact repository commit SHA and every routed guide you read.
+3. If I have not supplied an unambiguous project name, ask me what the project
+   should be called and stop. Wait for my answer.
+4. Do not invent CMake, target, module, namespace, QML URI, package, bundle,
+   directory, or branding identifiers before the name is approved.
+5. After I approve the name, follow the remaining routed guides, implement the
+   complete requested product, and report only observed verification evidence.
+```
+
+See [`docs/agent/START_PROJECT.md`](docs/agent/START_PROJECT.md) for named
+projects, existing repositories, and identifier derivation.
 
 ## Engineering Position
 

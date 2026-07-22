@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start Project"
+  short_description: "Require a project name before writing code"
+  default_prompt: "Use $source-command-start-project to begin a new product or idea safely."
