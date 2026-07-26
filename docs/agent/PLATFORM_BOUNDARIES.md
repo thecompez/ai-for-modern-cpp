@@ -42,6 +42,21 @@ main domain API.
 Fail explicitly during configuration or at a deliberate factory boundary.
 Never return a plausible but incorrect default path, permission, or capability.
 
+## Application Icons And Native Packaging
+
+Application icons are native packaging resources even when the product uses Qt
+Quick. Read [`APP_ICONS_AND_BRANDING.md`](APP_ICONS_AND_BRANDING.md) whenever a
+task creates, replaces, packages, or verifies an app icon or launcher icon.
+
+- Keep platform icon files and metadata behind target-local CMake, manifest,
+  resource-script, asset-catalog, desktop-entry, or installer boundaries.
+- Do not expose `.ico`, `.icns`, Android resources, Apple catalogs, or Linux
+  hicolor paths through domain or application APIs.
+- Keep the in-application mark in the UI asset boundary; it is not a native
+  packaging resource merely because it shares the same visual identity.
+- Report packaging and rendered verification separately for every claimed
+  platform.
+
 ## Platform Change Checklist
 
 - Stable declaration remains platform-neutral.

@@ -94,6 +94,7 @@ After reading this file, read only the guides required for the task.
 | Design or review a public API | `docs/agent/API_DESIGN.md` and `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
+| Create, replace, package, or verify application icons or in-application brand marks | `docs/agent/APP_ICONS_AND_BRANDING.md`, `docs/agent/PLATFORM_BOUNDARIES.md`, and `docs/agent/QT_QUICK_UI.md` when the mark appears in the interface |
 | Select the interface for an unspecified user-facing interactive application | `docs/agent/QT_QUICK_UI.md` and `docs/agent/ARCHITECTURE.md` |
 | Design or implement a Qt graphical interface | `docs/agent/QT_QUICK_UI.md`, `docs/agent/ARCHITECTURE.md`, and `docs/agent/NAMING.md` |
 | Generate a new Qt Quick/C++ project baseline | `docs/agent/PROJECT_CMAKE_BASELINE.md`, `docs/agent/QT_QUICK_UI.md`, and `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
@@ -415,6 +416,52 @@ See `docs/agent/ERRORS_AND_RESOURCES.md`.
   adapters.
 - **PLT-005** — Unsupported platforms MUST fail explicitly, not silently select
   unrelated behavior.
+
+### Application Icon And Branding Rules
+
+- **APP-001** — Product names, canonical marks, platform compositions, and
+  in-application brand marks MUST come from human-approved sources. Agents MUST
+  NOT invent, redraw, recolor, crop, plate, or mask branding without explicit
+  authorization.
+- **APP-002** — Canonical source artwork, Apple-specific compositions, non-Apple
+  compositions, generated platform artifacts, and in-application marks MUST have
+  explicit ownership and MUST NOT be treated as one interchangeable bitmap.
+- **APP-003** — Native icon resources MUST remain at explicit platform and
+  packaging boundaries. CMake, manifests, resource scripts, asset catalogs,
+  desktop entries, and installers MUST reference them target-locally and must not
+  leak packaging concerns into domain or application modules.
+- **APP-004** — Apple icon assets MUST use the selected Apple asset-catalog,
+  layered-icon, or bundle-resource workflow without unintended double masking,
+  duplicate plates, or hand-edited generated project files.
+- **APP-005** — Android launcher icons MUST use adaptive foreground/background
+  layers when supported. Critical content MUST remain inside the platform safe
+  zone, the foreground MUST NOT contain a pre-applied launcher mask or shadow,
+  and themed/monochrome support MUST be supplied when claimed.
+- **APP-006** — Windows and Linux deliverables MUST use their native artifact
+  families: a multi-representation Windows icon or package asset set, and a
+  stable Linux icon name whose hicolor installation matches its desktop entry.
+- **APP-007** — A brand mark rendered inside the application MUST be treated as
+  a UI asset with deliberate source size, opacity, scaling, contrast, and
+  high-DPI behavior. Launcher or store artwork MUST NOT be reused blindly as a
+  small interface glyph.
+- **APP-008** — Icon generation MUST be deterministic, idempotent, and derived
+  from immutable approved masters. Generated artifacts MUST NOT be hand-edited
+  without updating the generator and verification contract.
+- **APP-009** — Static verification MUST validate required dimensions, container
+  representations, resource references, manifest/catalog metadata, alpha policy,
+  and installed icon-name consistency for every enabled platform.
+- **APP-010** — Application icon work MUST be visually verified from the actual
+  packaged product in representative system contexts and masks. Source images or
+  generated file lists alone are not visual evidence.
+- **APP-011** — Before changing approved artwork to address a stale appearance,
+  agents MUST verify package bytes and resource references and rule out launcher,
+  shell, installer, or previous-install caching.
+- **APP-012** — Every requested icon surface MUST be reported separately as
+  `PASS`, `FAIL`, or `NOT VERIFIED`. Missing SDKs, devices, package formats,
+  stores, launchers, or desktop environments MUST NOT inherit success from
+  another platform.
+
+See `docs/agent/APP_ICONS_AND_BRANDING.md`.
 
 See `docs/agent/PLATFORM_BOUNDARIES.md`.
 
@@ -839,6 +886,15 @@ Agents MUST NOT:
 - Add legacy project headers without a justified boundary.
 - Add raw ownership, manual cleanup, or global mutable state casually.
 - Scatter platform macros through domain logic.
+- Reuse one precomposed application icon unchanged across Apple, Android,
+  Windows, Linux, and in-application surfaces without a verified
+  platform-composition contract.
+- Put an Apple-style rounded composition or another pre-applied mask inside
+  an Android adaptive foreground, or hide safe-zone defects with another
+  circular or rounded plate.
+- Call application icon work complete because source PNGs were generated
+  while native targets, manifests, catalogs, installers, launchers, or
+  packaged system contexts were not verified.
 - Change public API names or unrelated subsystems without need.
 - Perform broad formatting-only rewrites during functional work.
 - Add non-English source comments.

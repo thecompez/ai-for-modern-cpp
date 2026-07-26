@@ -312,6 +312,29 @@ modules, clear its build directory or use **Build > Clear CMake Configuration**
 in Qt Creator. Generated `.qmltypes` files are expected only after a successful
 configure and Generate step.
 
+## Optional Application Icon And Branding Integration
+
+The generic baseline deliberately does not invent a product icon. When the human
+provides approved branding or explicitly requests application-icon work, read
+[`APP_ICONS_AND_BRANDING.md`](APP_ICONS_AND_BRANDING.md) before adding resources.
+
+- Keep approved masters separate from deterministic generated artifacts.
+- Add native icon resources target-locally and conditionally for the owning
+  platform; do not place `.ico`, `.icns`, Android package resources, Apple asset
+  catalogs, or Linux desktop metadata in the QML module file list.
+- Keep the in-application mark under `ui/assets/` and register it with the QML
+  resource boundary only when the interface actually renders it.
+- Respect the declared Qt minimum. `QT_ANDROID_APP_ICON` is available only in Qt
+  6.9 or newer and works when the manifest is Qt-managed or retains Qt's icon
+  placeholder; older/custom-manifest projects must use the documented manifest
+  path instead of silently assuming the property works.
+- Do not call the generated project complete until every requested packaged icon
+  surface has the static and rendered evidence required by `APP-009` through
+  `APP-012`.
+
+This hook is conditional. A project without approved branding must not receive a
+fabricated placeholder identity merely to make the baseline appear complete.
+
 ## Final Delivery Gate
 
 The default options deliberately enable both GUI and tests. Before a generated

@@ -141,6 +141,9 @@ The reference implementation demonstrates and enforces:
 - Product-specific UI/UX decisions instead of generic repetitive screen
   recipes, with QML and presentation assets grouped under a top-level `ui/`
   boundary.
+- Platform-native application icon and branding workflows that separate
+  approved masters, Apple/non-Apple compositions, generated packaging artifacts,
+  and crisp in-application marks instead of copying one bitmap everywhere.
 - Explicit layout contracts for content bounds, grids, alignment lines,
   spacing, repeated-control metrics, safe insets, and compact/standard/wide
   composition instead of relying on layout containers alone.

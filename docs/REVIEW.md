@@ -79,6 +79,34 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `PLT-001`: Platform macros remain at platform boundaries.
 - [ ] `PLT-004`: Native resources are isolated behind safe adapters.
 
+## Application Icons And Branding
+
+- [ ] `APP-001`: Product identity and all source compositions are human-approved;
+  no unauthorized redraw, recolor, crop, plate, shadow, or mask was introduced.
+- [ ] `APP-002`: Canonical masters, Apple/non-Apple compositions, generated native
+  artifacts, and in-application marks have distinct ownership.
+- [ ] `APP-003`: Native resources are attached through target-local platform
+  packaging boundaries and do not leak into domain/application modules.
+- [ ] `APP-004`: Apple icon packaging uses the selected native workflow without
+  double masking or hand-edited generated project state.
+- [ ] `APP-005`: Android adaptive layers respect the 108 dp layer contract, the
+  centered 66 dp safe zone, mask-free foreground artwork, and claimed themed
+  icon support.
+- [ ] `APP-006`: Windows multi-representation assets and Linux hicolor/desktop
+  icon names match the actual packaging model.
+- [ ] `APP-007`: In-application marks are crisp, full-opacity when active,
+  high-DPI aware, contrast-safe, and not blindly reused launcher/store images.
+- [ ] `APP-008`: Generation is deterministic and idempotent; approved masters are
+  not overwritten and generated files are not stale hand edits.
+- [ ] `APP-009`: Static checks validate dimensions, representations, metadata,
+  references, alpha policy, and installed icon-name consistency.
+- [ ] `APP-010`: Rendered evidence comes from the packaged product in every
+  claimed launcher, shell, store, desktop, and in-application context.
+- [ ] `APP-011`: Package bytes and caches were diagnosed before approved artwork
+  was changed to chase stale system output.
+- [ ] `APP-012`: Every requested platform icon surface is reported independently
+  as `PASS`, `FAIL`, or `NOT VERIFIED`.
+
 ## Qt Quick UI
 
 - [ ] `GUI-001`: New Qt UI uses Qt Quick, QML, and Qt Quick Controls.

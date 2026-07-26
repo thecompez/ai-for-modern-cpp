@@ -680,3 +680,33 @@ Tests: PASS — 2/2
 ```text
 It should compile and tests probably pass.
 ```
+
+## Cross-Platform Application Icon Composition
+
+**Correct**
+
+```text
+human-approved canonical mark
+    → Apple composition → iOS/macOS native icon workflow
+    → non-Apple composition → Android layers + Windows assets + Linux hicolor
+    → UI mark → size-appropriate in-application asset
+```
+
+Each output preserves the same identity while adapting masking assumptions,
+padding, layer structure, small-size rendering, and packaging metadata to its
+owning platform. Native artifacts remain outside the QML module; the UI mark is
+registered only when the interface renders it.
+
+**Incorrect**
+
+```text
+apple-rounded-icon.png
+    → Android adaptive foreground
+    → Windows ICO
+    → Linux desktop icon
+    → 32 px QML header logo
+```
+
+The incorrect form violates `APP-002` through `APP-007`: it double-masks
+Android, ignores Windows and Linux native artifact families, and treats a large
+launcher composition as a small interface asset.

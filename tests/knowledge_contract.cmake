@@ -56,6 +56,7 @@ set(requiredSurfaces
     README.md
     docs/REVIEW.md
     docs/agent/README.md
+    docs/agent/APP_ICONS_AND_BRANDING.md
     docs/agent/START_PROJECT.md
     docs/agent/MODULES.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
@@ -65,6 +66,7 @@ set(requiredSurfaces
     docs/agent/PATTERNS.md
     docs/agent/TESTING_AND_VERIFICATION.md
     evals/README.md
+    evals/app_icons.md
     evals/project_initiation.md
     evals/toolchains.md
     evals/reflection.md
@@ -120,6 +122,18 @@ foreach(ruleId IN ITEMS
     MOD-010
     MOD-011
     MOD-012
+    APP-001
+    APP-002
+    APP-003
+    APP-004
+    APP-005
+    APP-006
+    APP-007
+    APP-008
+    APP-009
+    APP-010
+    APP-011
+    APP-012
     GUI-019
     GUI-020
     GUI-021
@@ -167,6 +181,18 @@ foreach(reviewRule IN ITEMS
     INI-003
     INI-004
     MOD-010
+    APP-001
+    APP-002
+    APP-003
+    APP-004
+    APP-005
+    APP-006
+    APP-007
+    APP-008
+    APP-009
+    APP-010
+    APP-011
+    APP-012
     GUI-020
     GUI-021
     GUI-022
@@ -400,6 +426,10 @@ foreach(baselineText IN ITEMS
     "RUNTIME_OUTPUT_DIRECTORY"
     "WORKING_DIRECTORY"
     "-M MyApp"
+    "Optional Application Icon And Branding Integration"
+    "QT_ANDROID_APP_ICON"
+    "APP-009"
+    "APP-012"
 )
     assert_file_contains("docs/agent/PROJECT_CMAKE_BASELINE.md" "${baselineText}")
 endforeach()
@@ -473,9 +503,51 @@ foreach(qtGuideText IN ITEMS
     "QT_QML_OUTPUT_DIRECTORY"
     "RUNTIME_OUTPUT_DIRECTORY"
     "-M MyApp"
+    "APP_ICONS_AND_BRANDING.md"
+    "Application icon and in-application brand-mark ownership"
 )
     assert_file_contains("docs/agent/QT_QUICK_UI.md" "${qtGuideText}")
 endforeach()
+
+foreach(appIconGuideText IN ITEMS
+    "Canonical brand-mark source"
+    "One Identity, Multiple Compositions"
+    "108 by 108 dp"
+    "66 by 66 dp safe zone"
+    "QT_ANDROID_APP_ICON"
+    "multi-representation `.ico`"
+    "hicolor"
+    "In-Application Brand Mark"
+    "Deterministic Generation"
+    "Rendered verification"
+    "Cache And Reinstallation"
+)
+    assert_file_contains(
+        "docs/agent/APP_ICONS_AND_BRANDING.md"
+        "${appIconGuideText}"
+    )
+endforeach()
+
+foreach(appIconRoutingText IN ITEMS
+    "APP_ICONS_AND_BRANDING.md"
+    "application icons"
+    "in-application brand"
+)
+    assert_file_contains("docs/agent/README.md" "${appIconRoutingText}")
+endforeach()
+
+assert_file_contains(
+    "docs/agent/PLATFORM_BOUNDARIES.md"
+    "APP_ICONS_AND_BRANDING.md"
+)
+assert_file_contains(
+    "docs/agent/PATTERNS.md"
+    "Cross-Platform Application Icon Composition"
+)
+assert_file_contains(
+    "evals/README.md"
+    "app_icons.md"
+)
 
 foreach(failureText IN ITEMS
     "module 'std' not found"
@@ -524,6 +596,21 @@ foreach(qtWorkflow IN ITEMS
     assert_file_contains("${qtWorkflow}" "QT_RESOURCE_ALIAS")
     assert_file_contains("${qtWorkflow}" "QT_QML_OUTPUT_DIRECTORY")
     assert_file_contains("${qtWorkflow}" "RUNTIME_OUTPUT_DIRECTORY")
+endforeach()
+
+foreach(appIconWorkflow IN ITEMS
+    .agents/skills/source-command-design-qt-quick-ui/SKILL.md
+    .agents/skills/source-command-test/SKILL.md
+    .agents/skills/source-command-release/SKILL.md
+    .claude/commands/design-qt-quick-ui.md
+    .claude/commands/test.md
+    .claude/commands/release.md
+)
+    assert_file_contains(
+        "${appIconWorkflow}"
+        "APP_ICONS_AND_BRANDING.md"
+    )
+    assert_file_contains("${appIconWorkflow}" "NOT VERIFIED")
 endforeach()
 
 foreach(verificationWorkflow IN ITEMS
@@ -580,6 +667,7 @@ foreach(readmeText IN ITEMS
     "Generated QML sources remain project-relative"
     "receive deterministic"
     "same-name `MyApp` Qt integration fixture"
+    "Platform-native application icon and branding workflows"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()
@@ -608,6 +696,16 @@ assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-013")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-014")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-015")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-016")
+
+foreach(evalId IN ITEMS
+    EVAL-APP-001
+    EVAL-APP-002
+    EVAL-APP-003
+    EVAL-APP-004
+    EVAL-APP-005
+)
+    assert_file_contains("evals/app_icons.md" "${evalId}")
+endforeach()
 
 foreach(evalId IN ITEMS
     EVAL-INI-001
@@ -689,5 +787,5 @@ foreach(preflightText IN ITEMS
 endforeach()
 
 message(STATUS
-    "Knowledge contract verified: project initiation, modules, deterministic QML resources, separated outputs, full-product evidence, and visual acceptance remain synchronized."
+    "Knowledge contract verified: project initiation, modules, deterministic QML resources, platform-native application icons, separated outputs, full-product evidence, and visual acceptance remain synchronized."
 )

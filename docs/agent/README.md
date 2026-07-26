@@ -33,6 +33,7 @@ and update the guide in the same change when authorized.
 | What should the public contract expose? | `API_DESIGN.md` |
 | Is this `expected`, an exception, or RAII? | `ERRORS_AND_RESOURCES.md` |
 | Where does OS-specific code belong? | `PLATFORM_BOUNDARIES.md` |
+| How should application icons and in-application brand marks be designed, generated, packaged, and verified? | `APP_ICONS_AND_BRANDING.md`, then `PLATFORM_BOUNDARIES.md` and `QT_QUICK_UI.md` when applicable |
 | What interface should an unspecified interactive application use? | `QT_QUICK_UI.md`, then `ARCHITECTURE.md` |
 | How should a Qt interface be designed and implemented? | `QT_QUICK_UI.md` |
 | How should modules and standard headers be configured? | `CMAKE_AND_TOOLCHAINS.md`, then `COMMON_FAILURES.md` |

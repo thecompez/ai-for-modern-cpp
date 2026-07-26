@@ -3,6 +3,12 @@
 Use this guide for any new or modified Qt graphical interface. Canonical rules:
 `GUI-*`, plus `ARC-*`, `NAM-*`, `SYN-*`, `RES-*`, and `TST-*`.
 
+When the task includes an application icon, launcher icon, store icon, or
+in-application brand mark, also read
+[`APP_ICONS_AND_BRANDING.md`](APP_ICONS_AND_BRANDING.md). Native packaging
+artifacts remain platform resources; only the in-application mark belongs under
+the `ui/` visual boundary.
+
 Generated projects should begin with the combined ordering in
 [`PROJECT_CMAKE_BASELINE.md`](PROJECT_CMAKE_BASELINE.md), which keeps project
 modules, Qt policy setup, and generated-type include paths aligned.
@@ -58,6 +64,7 @@ Affordances, immediate feedback, and error prevention/recovery:
 Keyboard path and focus order:
 Reusable components:
 Design tokens:
+Application icon and in-application brand-mark ownership, when in scope:
 Outer content bounds and maximum task width:
 Columns, gutters, and shared alignment lines:
 Repeated-control size and gap invariants:
