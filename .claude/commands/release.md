@@ -5,7 +5,10 @@ allowed-tools: Read, Edit, Bash, Grep, Glob
 
 # Release
 
-Use this command to prepare a release.
+This command is always verification level `V4`. Read `AGENTS.md`,
+`docs/agent/EXECUTION_DISCIPLINE.md`, and
+`docs/agent/TESTING_AND_VERIFICATION.md` before preparing the release. Resource
+and context discipline never weakens the final release gate.
 
 ## Required Checks
 
@@ -36,3 +39,5 @@ Use this command to prepare a release.
 14. Ask for explicit human approval before tagging or publishing.
 
 Do not create tags or publish artifacts without explicit approval.
+
+When application icons or in-application brand marks are in scope, apply `docs/agent/APP_ICONS_AND_BRANDING.md`; any required unverified packaging/icon surface remains `NOT VERIFIED`.

@@ -45,21 +45,23 @@ flowchart TB
 ## How An Agent Uses The Repository
 
 ```text
-Read AGENTS.md
+Read AGENTS.md once for the task
     ↓
-Classify the task
+Classify the task and verification level
     ↓
-Read the routed task guides
+Read only the routed task guides
     ↓
-Inspect code, tests, and the current diff
+Inspect the owning code, tests, and current diff
     ↓
 Apply the smallest rule-compliant change
     ↓
-Configure → build → test → review
+Run affected-surface verification; rerun only invalidated stages
     ↓
-Report exact evidence
+Escalate to clean/full verification only when the change or final claim requires it
     ↓
-Reflect durable human corrections back into the knowledge base
+Report exact evidence and NOT VERIFIED layers
+    ↓
+Stop; reflect only durable human corrections back into the knowledge base
 ```
 
 ## Repository Map
@@ -69,7 +71,7 @@ AGENTS.md                  Canonical policy and stable rule identifiers
 CLAUDE.md                  Claude Code entry point
 .agents/skills/            Codex-compatible repository workflows
 .claude/commands/          Claude Code workflow adapters
-docs/agent/                Task-specific engineering decision guides
+docs/agent/                Task-specific engineering decision guides, including execution discipline
 docs/REVIEW.md             Rule-driven review checklist
 docs/MCP.md                Safe tool and context policy
 evals/                     Agent behavior scenarios and scoring rubric
@@ -135,6 +137,12 @@ The reference implementation demonstrates and enforces:
 - Explicit recoverable errors with `std::expected`.
 - RAII ownership and isolated platform boundaries.
 - Target-based CMake, Ninja, real builds, and honest test evidence.
+- Adaptive `V0`–`V4` verification: changed production code compiles the affected
+  production surface, while clean full builds are reserved for structural/final
+  gates that actually require them.
+- Single-agent execution by default, bounded discovery, routed context, local
+  evidence before web research, incremental build-tree reuse, causal reruns, and
+  explicit stop conditions.
 - Qt Quick/QML as the primary interface for new user-facing interactive
   applications when the surface is unspecified, with C++ module-based domain
   behavior and an explicit presentation boundary.

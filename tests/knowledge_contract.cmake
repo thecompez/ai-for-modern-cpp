@@ -63,10 +63,12 @@ set(requiredSurfaces
     docs/agent/PROJECT_CMAKE_BASELINE.md
     docs/agent/QT_QUICK_UI.md
     docs/agent/COMMON_FAILURES.md
+    docs/agent/EXECUTION_DISCIPLINE.md
     docs/agent/PATTERNS.md
     docs/agent/TESTING_AND_VERIFICATION.md
     evals/README.md
     evals/app_icons.md
+    evals/execution_efficiency.md
     evals/project_initiation.md
     evals/toolchains.md
     evals/reflection.md
@@ -164,6 +166,12 @@ foreach(ruleId IN ITEMS
     VER-010
     VER-011
     VER-012
+    VER-013
+    VER-014
+    VER-015
+    VER-016
+    VER-017
+    VER-018
     TST-007
     TST-008
     TST-009
@@ -171,6 +179,18 @@ foreach(ruleId IN ITEMS
     REP-008
     REP-009
     REP-010
+    REP-011
+    REP-012
+    EFF-001
+    EFF-002
+    EFF-003
+    EFF-004
+    EFF-005
+    EFF-006
+    EFF-007
+    EFF-008
+    EFF-009
+    EFF-010
 )
     assert_file_contains("AGENTS.md" "${ruleId}")
 endforeach()
@@ -222,9 +242,24 @@ foreach(reviewRule IN ITEMS
     VER-010
     VER-011
     VER-012
+    VER-013
+    VER-014
+    VER-015
+    VER-016
+    VER-017
+    VER-018
     REP-008
     REP-009
     REP-010
+    REP-011
+    REP-012
+    EFF-001
+    EFF-002
+    EFF-004
+    EFF-005
+    EFF-007
+    EFF-009
+    EFF-010
 )
     assert_file_contains("docs/REVIEW.md" "${reviewRule}")
 endforeach()
@@ -569,6 +604,54 @@ foreach(failureText IN ITEMS
     assert_file_contains("docs/agent/COMMON_FAILURES.md" "${failureText}")
 endforeach()
 
+foreach(executionText IN ITEMS
+    "Single-Agent Default"
+    "Discovery Budget"
+    "External Research"
+    "Build-Tree Reuse"
+    "Failure Rerun Rule"
+    "Stop Conditions"
+)
+    assert_file_contains("docs/agent/EXECUTION_DISCIPLINE.md" "${executionText}")
+endforeach()
+
+foreach(efficiencyWorkflow IN ITEMS
+    .agents/skills/source-command-implement/SKILL.md
+    .agents/skills/source-command-test/SKILL.md
+    .agents/skills/source-command-review/SKILL.md
+    .agents/skills/source-command-design-qt-quick-ui/SKILL.md
+    .claude/commands/implement.md
+    .claude/commands/test.md
+    .claude/commands/review.md
+    .claude/commands/design-qt-quick-ui.md
+)
+    assert_file_contains("${efficiencyWorkflow}" "EXECUTION_DISCIPLINE.md")
+endforeach()
+
+foreach(adaptiveWorkflow IN ITEMS
+    .agents/skills/source-command-implement/SKILL.md
+    .agents/skills/source-command-test/SKILL.md
+    .agents/skills/source-command-design-qt-quick-ui/SKILL.md
+    .claude/commands/implement.md
+    .claude/commands/test.md
+    .claude/commands/design-qt-quick-ui.md
+)
+    assert_file_contains("${adaptiveWorkflow}" "V1")
+    assert_file_contains("${adaptiveWorkflow}" "V4")
+    assert_file_contains("${adaptiveWorkflow}" "NOT VERIFIED")
+endforeach()
+
+foreach(effEvalId IN ITEMS
+    EVAL-EFF-001
+    EVAL-EFF-002
+    EVAL-EFF-003
+    EVAL-EFF-004
+    EVAL-EFF-005
+    EVAL-EFF-006
+)
+    assert_file_contains("evals/execution_efficiency.md" "${effEvalId}")
+endforeach()
+
 foreach(skill IN ITEMS
     .agents/skills/source-command-add-module/SKILL.md
     .agents/skills/source-command-implement/SKILL.md
@@ -668,6 +751,8 @@ foreach(readmeText IN ITEMS
     "receive deterministic"
     "same-name `MyApp` Qt integration fixture"
     "Platform-native application icon and branding workflows"
+    "Adaptive `V0`–`V4` verification"
+    "Single-agent execution by default"
 )
     assert_file_contains("README.md" "${readmeText}")
 endforeach()

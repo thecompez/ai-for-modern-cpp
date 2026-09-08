@@ -1,65 +1,27 @@
 ---
-description: Build and test the repository without making unnecessary code changes.
+description: Verify the requested repository surface without unnecessary rebuilds.
 allowed-tools: Read, Bash, Grep, Glob
 ---
 
 # Test
 
-Run the repository verification loop.
+Read `AGENTS.md`, `docs/agent/EXECUTION_DISCIPLINE.md`, and
+`docs/agent/TESTING_AND_VERIFICATION.md`.
 
-Preferred commands:
+If the user names a target, test, component, or changed surface, classify and
+run the smallest valid `V1`–`V3` gate. Reuse a compatible configured build tree,
+build the affected production target, and run relevant tests/lint/smoke. If
+build graph/module/toolchain inputs changed, reconfigure and cover every
+affected surface.
 
-```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure --no-tests=error
-```
+If the user requests full/final verification or release readiness, use `V4`:
+clean configure, every requested default feature, full default `all` target,
+all tests with zero tests treated as an error, and applicable product smoke
+checks. Qt `V4` also requires strict `qmllint`, warning-fatal interaction under
+the effective Controls style, the required visual acceptance matrix,
+`APP_ICONS_AND_BRANDING.md` checks when that surface is in scope, and final
+linked runtime plus `qmldir`/`.qmltypes` output evidence.
 
-If presets exist, prefer the repository presets.
-
-Use a clean final-verification directory, keep every requested default feature
-enabled, and build the full default `all` target. For Qt products, confirm the
-graphical executable links after generated MOC, QML registration, resource, and
-QML cache sources compile, then run a QML interaction or deterministic startup
-smoke check. A core-only or GUI-disabled build does not verify the application.
-
-For graphical products, capture and inspect minimum, standard, and wide
-screenshots across relevant appearance/content states. Check shared edges,
-baselines, repeated metrics, spacing rhythm, clipping, overlap, truncation,
-optical centering, contrast, safe insets, and accidental dead space. Run
-deterministic QML geometry checks where practical.
-
-For Qt Quick, run strict `qmllint` with zero project warnings and a warning-fatal
-interaction smoke under the same explicit Controls style as the application.
-The flow must reach explicit readiness and instantiate primary-path popups,
-dialogs, delegates, editors, and responsive branches; a timer-only launch is
-insufficient. Reject invalid properties, unsupported style customization,
-binding loops, missing-font warnings, clipped popup content, and truncated
-primary actions.
-
-For generated Qt Quick baselines, verify a same-named executable target and QML
-URI in a clean non-bundle layout. Confirm deterministic aliases omit only the
-top-level `ui/` boundary, the executable links under `bin/`, the QML module is
-generated under `qml/`, and `qmldir` plus `.qmltypes` exist before reporting GUI
-success. Run strict lint against that actual QML output root.
-
-For CMake, module, or toolchain-policy changes, use a fresh build directory and
-verify the single supported standard-library path: project modules plus minimal
-standard headers in global module fragments.
-
-Report:
-
-- Configure result.
-- Build result.
-- Test result.
-- Exact failing tests if any.
-- Whether failures appear related to the current change.
-- Whether the `knowledge_contract` test passed.
-- A per-surface `PASS`, `FAIL`, or `NOT VERIFIED` matrix.
-- A viewport/appearance/content-state visual acceptance matrix.
-- The minimum Qt version, effective Controls style, lint/runtime warning counts,
-  and lazy components exercised by the interaction flow.
-- The linked executable, `qmldir`, and `.qmltypes` output paths.
-
-Do not describe a project or archive as final while a requested primary surface
-is unbuilt or `NOT VERIFIED` because its SDK or runtime was unavailable.
+After a failure, resume from the earliest stage invalidated by the fix instead
+of restarting everything. Report exact commands/results, selected level,
+per-surface `PASS`/`FAIL`/`NOT VERIFIED`, and all unavailable layers.

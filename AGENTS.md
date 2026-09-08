@@ -100,6 +100,7 @@ After reading this file, read only the guides required for the task.
 | Generate a new Qt Quick/C++ project baseline | `docs/agent/PROJECT_CMAKE_BASELINE.md`, `docs/agent/QT_QUICK_UI.md`, and `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Change CMake, compilers, modules, or standard-library integration | `docs/agent/CMAKE_AND_TOOLCHAINS.md` |
 | Add or change behavior | `docs/agent/TESTING_AND_VERIFICATION.md` |
+| Control exploration, tool usage, subagents, or verification cost | `docs/agent/EXECUTION_DISCIPLINE.md` |
 | Diagnose a known build or module failure | `docs/agent/COMMON_FAILURES.md` |
 | Learn approved and forbidden code shapes | `docs/agent/PATTERNS.md` |
 | Review a change | `docs/REVIEW.md` and all guides touched by the diff |
@@ -119,16 +120,16 @@ Read the request and applicable rules
 Pass the project initiation gate when creating a new product or project
 Inspect the current diff and working tree
 Locate the owning subsystem and module boundary
-Read the relevant implementation and tests
-State important assumptions
+Read only the relevant implementation, tests, and routed guides
+Classify the verification level and important assumptions
 Make the smallest correct change
-Configure
-Build
-Run tests
-Inspect failures
-Fix and repeat verification
+Run the smallest verification gate that proves the changed surface
+Inspect the first causal failure
+Fix and rerun from the earliest stage invalidated by that fix
+Escalate verification only when risk, uncertainty, or changed scope requires it
 Review the final diff
-Report exact evidence
+Report exact evidence and anything not verified
+Stop
 ```
 
 - **SCP-001** — Agents MUST inspect before editing and MUST NOT guess project
@@ -146,7 +147,46 @@ Report exact evidence
 
 ---
 
-## 5. Architecture Rules
+## 5. Execution And Resource Discipline
+
+Reliable engineering does not require unbounded exploration. The default is one
+focused agent, routed reading, and evidence proportional to the changed surface.
+
+- **EFF-001** — A single-agent workflow is the default for implementation,
+  debugging, UI work, build diagnosis, testing, and review.
+- **EFF-002** — Agents MUST NOT create subagents, parallel reviewers, or
+  delegated investigations for routine scoped work. Delegation requires
+  genuinely independent scopes whose parallel execution materially improves the
+  result.
+- **EFF-003** — Every delegated scope MUST have an explicit question, bounded
+  file or subsystem surface, and stop condition. Agents MUST NOT recursively
+  delegate review or exploration.
+- **EFF-004** — Repository-local source, tests, build metadata, issue context,
+  and checked-in documentation take priority over web research. External search
+  is justified only when current external documentation, API behavior, or
+  toolchain facts are required.
+- **EFF-005** — Agents MUST use targeted search before broad reads and MUST NOT
+  repeatedly read unchanged files, guides, logs, or diffs without a concrete
+  new question.
+- **EFF-006** — Generated files, build trees, vendored dependencies, caches,
+  package outputs, and third-party source trees are excluded from discovery
+  unless evidence directly implicates them.
+- **EFF-007** — Discovery MUST stop once the owning subsystem, relevant contract,
+  change surface, and verification path are known.
+- **EFF-008** — Agents MUST NOT perform opportunistic refactoring, unrelated
+  cleanup, speculative redesign, or broad review during a scoped task.
+- **EFF-009** — A compatible configured build tree SHOULD be reused for
+  incremental verification. Clean configuration is reserved for changes that
+  invalidate build-system/toolchain state or for the final product gate.
+- **EFF-010** — Once the requested behavior is implemented, the required
+  verification level passes, and the final diff is reviewed, the agent MUST
+  stop instead of continuing exploratory or cosmetic work.
+
+See `docs/agent/EXECUTION_DISCIPLINE.md`.
+
+---
+
+## 6. Architecture Rules
 
 - **ARC-001** — Each behavior MUST have a clear owning subsystem.
 - **ARC-002** — Dependencies SHOULD point from composition and adapters toward
@@ -167,7 +207,7 @@ See `docs/agent/ARCHITECTURE.md`.
 
 ---
 
-## 6. Language And Module Rules
+## 7. Language And Module Rules
 
 This repository targets C++20 or newer and uses C++26 for its executable
 reference path. Prefer C++26, then C++23, with C++20 as the minimum family for
@@ -221,7 +261,7 @@ See `docs/agent/MODULES.md`.
 
 ---
 
-## 7. Naming Rules
+## 8. Naming Rules
 
 - **NAM-001** — Module names MUST be dotted, lowercase, stable,
   domain-oriented, and contain no underscore.
@@ -278,7 +318,7 @@ See `docs/agent/NAMING.md`.
 
 ---
 
-## 8. Syntax And Style Rules
+## 9. Syntax And Style Rules
 
 Modern syntax is a correctness and readability contract, not optional polish.
 
@@ -358,7 +398,7 @@ See `docs/agent/SYNTAX_AND_STYLE.md`.
 
 ---
 
-## 9. API And Compile-Time Rules
+## 10. API And Compile-Time Rules
 
 - **API-001** — Every exported class, function, enum, concept, and public data
   structure MUST have English Doxygen documentation.
@@ -380,7 +420,7 @@ See `docs/agent/API_DESIGN.md`.
 
 ---
 
-## 10. Error And Resource Rules
+## 11. Error And Resource Rules
 
 - **ERR-001** — Recoverable expected failures SHOULD use `std::expected` or the
   project equivalent.
@@ -405,7 +445,7 @@ See `docs/agent/ERRORS_AND_RESOURCES.md`.
 
 ---
 
-## 11. Platform Boundary Rules
+## 12. Platform Boundary Rules
 
 - **PLT-001** — Platform macros MAY appear only at platform boundaries.
 - **PLT-002** — Business and domain logic MUST NOT contain scattered platform
@@ -467,7 +507,7 @@ See `docs/agent/PLATFORM_BOUNDARIES.md`.
 
 ---
 
-## 12. Qt Quick UI Rules
+## 13. Qt Quick UI Rules
 
 These rules apply when a derived project requires a Qt graphical interface or
 when `GUI-015` selects one for an otherwise unspecified user-facing interactive
@@ -612,7 +652,7 @@ See `docs/agent/QT_QUICK_UI.md`.
 
 ---
 
-## 13. CMake And Toolchain Rules
+## 14. CMake And Toolchain Rules
 
 Primary path:
 
@@ -690,7 +730,7 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
 
 ---
 
-## 14. Testing And Verification Rules
+## 15. Testing And Verification Rules
 
 - **TST-001** — Every behavior change MUST have relevant automated coverage
   when practical.
@@ -756,20 +796,51 @@ See `docs/agent/CMAKE_AND_TOOLCHAINS.md`.
   target path, QML output root, module `qmldir`, and `.qmltypes` path after the
   final link. Successful module scanning, MOC, RCC, registration, or QML cache
   generation before a failed final link is not a successful GUI build.
+- **VER-013** — Every change MUST be classified as verification level `V0`
+  through `V4` before final verification. The level is determined by the
+  changed surface and claim scope, not by agent preference.
+- **VER-014** — Production C++ changes MUST compile the smallest affected
+  production target. Qt/QML changes MUST build the affected Qt target when QML
+  compilation/resource integration is part of that target, then run applicable
+  lint and smoke checks. A user prohibition or unavailable toolchain changes the
+  result to `NOT VERIFIED`; it does not create inferred success.
+- **VER-015** — After a failure, rerun from the earliest verification stage
+  invalidated by the fix. Source-only fixes do not require repeated configure;
+  test-only fixes do not require a clean rebuild; CMake/toolchain fixes do.
+- **VER-016** — Clean full verification is mandatory for `V4`, and for `V3`
+  changes when build-system or toolchain state is invalidated. Routine `V1` and
+  `V2` work MUST NOT clean-configure or rebuild unrelated targets by default.
+- **VER-017** — A compatible configured build tree SHOULD be reused for `V1`
+  and `V2`. If no compatible tree exists, configure once with the minimum
+  feature set required to build the affected production surface.
+- **VER-018** — Required verification skipped by explicit user instruction,
+  missing SDK/runtime, unavailable platform, or environment restrictions MUST be
+  reported as `NOT VERIFIED` at that layer and in every claim that depends on it.
 
-Preferred loop:
+Verification levels:
+
+| Level | Typical change | Required final gate |
+|---|---|---|
+| `V0` | Documentation, comments, non-executable policy/metadata | Relevant contract checks + final diff; no build unless executable behavior changed |
+| `V1` | Local QML/presentation/resource change without C++/CMake topology changes | Affected Qt target when applicable + relevant lint/smoke + visual evidence for visual claims |
+| `V2` | Ordinary target-local C++ behavior or bug fix | Affected production target + directly relevant tests/smoke |
+| `V3` | CMake, module graph, public API, dependency, Qt registration/resource topology, platform boundary | Configure as required + all affected production surfaces + relevant integration tests |
+| `V4` | Release, final archive, major milestone, toolchain qualification, explicit full verification | Clean configure + full default build + all tests + applicable lint/smoke/visual gates |
+
+The default implementation loop is incremental. The `V4` final gate retains the
+strict full-build workflow:
 
 ```bash
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure --no-tests=error
+cmake -S . -B build/verify -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/verify --parallel --target all
+ctest --test-dir build/verify --output-on-failure --no-tests=error
 ```
 
 See `docs/agent/TESTING_AND_VERIFICATION.md`.
 
 ---
 
-## 15. Documentation And Knowledge Rules
+## 16. Documentation And Knowledge Rules
 
 - **DOC-001** — Source comments and repository technical documentation MUST be
   written in English.
@@ -787,7 +858,7 @@ See `docs/agent/TESTING_AND_VERIFICATION.md`.
 
 ---
 
-## 16. Security And Tool Rules
+## 17. Security And Tool Rules
 
 - **SEC-001** — Secrets, tokens, private endpoints, and machine-specific paths
   MUST NOT be committed.
@@ -807,7 +878,7 @@ See `docs/MCP.md` for the MCP safety model.
 
 ---
 
-## 17. Change, Commit, And Release Rules
+## 18. Change, Commit, And Release Rules
 
 - **CHG-001** — Commits MUST be cohesive and use precise imperative titles.
 - **CHG-002** — Pull request summaries MUST state what changed, why, how it was
@@ -835,14 +906,17 @@ AI changes
 
 ---
 
-## 18. Final Report Contract
+## 19. Final Report Contract
 
 Every completed implementation report MUST include:
 
 - **REP-001** — Files changed.
 - **REP-002** — What changed and why.
-- **REP-003** — Configure and build commands with exact results.
-- **REP-004** — Test commands, discovered test count, and exact results.
+- **REP-003** — Exact configure/build commands and results for every stage
+  required by the selected verification level; stages not required or not run
+  MUST be identified instead of fabricated.
+- **REP-004** — Exact test/lint/smoke commands, discovered test count when
+  applicable, and results for every stage that ran.
 - **REP-005** — Known limitations or unverified environments.
 - **REP-006** — Any rule exception and its justification.
 - **REP-007** — For reflected corrections, what was learned and why the new
@@ -857,6 +931,10 @@ Every completed implementation report MUST include:
 - **REP-010** — Qt UI reports MUST record the effective Controls style, Qt
   version, QML lint result, runtime warning result, and the interactions that
   instantiated popups, dialogs, delegates, editors, and other lazy components.
+- **REP-011** — Every implementation report MUST name the selected verification
+  level (`V0`–`V4`) and the reason that level matches the changed surface.
+- **REP-012** — Skipped, prohibited, unavailable, or deferred verification
+  stages MUST be listed explicitly with the resulting `NOT VERIFIED` scope.
 
 Never report:
 
@@ -870,10 +948,18 @@ Report only observed evidence.
 
 ---
 
-## 19. Forbidden Agent Behavior
+## 20. Forbidden Agent Behavior
 
 Agents MUST NOT:
 
+- Launch routine parallel subagents or reviewers when one bounded agent can
+  complete the task.
+- Continue repository exploration after ownership, scope, and verification path
+  are known.
+- Use web search as a substitute for repository-local evidence when current
+  external facts are not required.
+- Clean-configure and rebuild the entire project after every small source or QML
+  edit when an incremental affected-surface gate is valid.
 - Invent build, test, review, or tool results.
 - Hide failures or present cascading errors as independent root causes.
 - Replace modules with classic include architecture.
@@ -951,7 +1037,7 @@ Agents MUST NOT:
 
 ---
 
-## 20. Multi-Agent Compatibility
+## 21. Multi-Agent Compatibility
 
 For Claude Code:
 
@@ -963,6 +1049,8 @@ For Codex:
 - Repository-local skills under `.agents/skills/` MUST route back to this file
   and the applicable task guides.
 - Expected file layout and commands MUST be explicit.
+- Routine tasks MUST preserve the single-agent default and adaptive verification
+  contract instead of spawning parallel review/exploration workers.
 
 For GitHub Copilot and other agents:
 

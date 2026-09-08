@@ -298,7 +298,7 @@ in Qt-generated and custom manifests.
 
 ### Win32 Desktop Contract
 
-- Produce a multi-image `.ico` file.
+- Produce a multi-representation `.ico` file.
 - Include at least 16, 24, 32, 48, and 256 pixel representations.
 - Include 20, 30, 36, 40, 60, 64, 72, 80, 96, and 128 pixel variants when the
   selected packaging model and generator support them reliably.

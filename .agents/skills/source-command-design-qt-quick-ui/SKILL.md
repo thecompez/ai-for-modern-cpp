@@ -1,6 +1,6 @@
 ---
 name: "source-command-design-qt-quick-ui"
-description: "Design and implement a Qt Quick interface with a deliberate visual system and a clean C++ module boundary."
+description: "Design and implement Qt Quick UI with bounded context and adaptive verification."
 ---
 
 # source-command-design-qt-quick-ui
@@ -11,114 +11,89 @@ whose primary surface is selected by `GUI-015`.
 
 ## Required Reading
 
-Read completely before editing:
+Always read:
 
 1. `AGENTS.md`
-2. `docs/agent/START_PROJECT.md` when creating a new product or project
+2. `docs/agent/EXECUTION_DISCIPLINE.md`
 3. `docs/agent/QT_QUICK_UI.md`
-4. `docs/agent/PROJECT_CMAKE_BASELINE.md`
-5. `docs/agent/ARCHITECTURE.md`
-6. `docs/agent/NAMING.md`
-7. `docs/agent/SYNTAX_AND_STYLE.md`
-8. `docs/agent/API_DESIGN.md`
-9. `docs/agent/ERRORS_AND_RESOURCES.md`
-10. `docs/agent/TESTING_AND_VERIFICATION.md`
+4. `docs/agent/TESTING_AND_VERIFICATION.md`
 
-## Design Process
+Read additional guides only when the task touches them:
+
+- `START_PROJECT.md` for a new product/project;
+- `PROJECT_CMAKE_BASELINE.md` for a generated project or QML/CMake topology;
+- `ARCHITECTURE.md` when ownership/dependency boundaries change;
+- `NAMING.md` when public/module identifiers change;
+- `SYNTAX_AND_STYLE.md` for substantial C++ changes;
+- `API_DESIGN.md` for public C++/presentation contracts;
+- `ERRORS_AND_RESOURCES.md` for ownership/failure/lifetime changes;
+- `APP_ICONS_AND_BRANDING.md` when application icons or in-application brand
+  marks are in scope.
+
+Do not load all guides merely because the task is graphical.
+
+## Design And Implementation Process
 
 1. For a new product, enforce `INI-001` through `INI-004`. If the project name
-   is missing, ask for it and stop before writing code or choosing identifiers.
-2. Classify the requested product surface. Preserve explicit CLI, service,
-   library, daemon, and headless scopes; otherwise apply `GUI-015` to an
-   unspecified user-facing interactive application.
-3. Inspect the existing Qt version, QML modules, CMake targets, screens,
-   components, tests, and current diff.
-4. Define the audience, usage context, primary user goal, navigation, actions,
-   and authoritative state.
-5. Define a product-specific visual direction, information hierarchy, and
-   content density. Reject generic repeated card, gradient, glass-panel, and
-   dashboard recipes that are not justified by the product task.
-6. Enumerate loading, empty, success, disabled, and failure states, including
-   affordances, immediate feedback, error prevention, and recovery.
-7. Define reusable components and design tokens for spacing, typography, color,
-   radius, and motion without making every screen composition repetitive.
-8. Define a layout contract: outer bounds, maximum task width, columns, gutters,
-   shared alignment lines, spacing scale, repeated-control metrics, safe insets,
-   and each region's grow, shrink, wrap, or overflow behavior.
-9. Define compact, standard, and wide compositions, plus keyboard path, focus
-   order, accessible names, and localization needs.
-10. Draw the QML → presentation adapter → application → domain dependency path,
-   plus any optional CLI adapter that shares the application layer.
-11. Keep domain/application behavior in C++ modules and expose only a minimal
-   typed presentation contract to QML.
-12. Place new QML, design tokens, and visual assets under the top-level `ui/`
-    boundary, using responsibility-based subdirectories only when needed.
-13. For a generated project, start from `PROJECT_CMAKE_BASELINE.md`; do not
-    reconstruct module and Qt integration from partial snippets.
-14. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`.
-15. For QML subdirectories, select QTP0004 `NEW` behind
-    `QT_KNOWN_POLICY_QTP0004` before `qt_add_qml_module`. Treat missing generated
-    `.qmltypes` after a failed CMake Generate step as a cascading symptom.
-    Keep QML paths source-relative, assign deterministic `QT_RESOURCE_ALIAS`
-    values that remove only the architectural `ui/` prefix, and preserve
-    module-root `Main` plus logical subdirectories. Separate the project-wide
-    `QT_QML_OUTPUT_DIRECTORY` from each target-local
-    `RUNTIME_OUTPUT_DIRECTORY` so identical target and URI names remain valid.
-16. Add every directory containing a nested `QML_ELEMENT` adapter header as a
-    target-local private include directory. Never patch generated
-    `*_qmltyperegistrations.cpp` files.
-17. Copy the baseline `cmake/AimcppProjectChecks.cmake` into generated projects
-    and run `aimcpp_reject_final_qml_creatable_types` on every project-owned QML
-    registration header.
-18. A QML-creatable `QML_ELEMENT` QObject must not be `final`; Qt's generated
-    registration wrapper derives from it.
-19. Do not introduce Qt Widgets unless the user explicitly requests it or an
-   inspected compatibility boundary requires it; document the exception.
-20. Keep any secondary CLI thin and connected to the same application/domain
-    modules; do not let it replace the primary interface.
-21. Choose the Controls style strategy before implementing reusable controls.
-    If `background`, `contentItem`, `indicator`, delegates, or popups are
-    replaced, select a customizable style before loading QML and keep it
-    identical in application runs, lint, tests, screenshots, and packaging.
-22. Verify every QML API on the exact instantiated type and declared minimum Qt
-    version. Run strict `qmllint` with zero project warnings; do not infer a
-    property from a similar type.
-23. Define one-way geometry ownership for viewports, content, implicit sizes,
-    popups, and delegates. Reject binding loops, fixed primary-action widths
-    that elide labels, clipped bilingual/RTL rows, and unverified font families.
-24. Add C++ presentation tests plus QML interaction, strict lint, geometry, and
-    warning-fatal runtime smoke coverage. Exercise lazy popups, dialogs,
-    delegates, editors, and responsive branches used by the primary flow; a
-    timer-only launch is insufficient.
-    Lint the generated module from its configured QML output root with options
-    supported by the declared minimum Qt version.
-25. In a clean tree with the GUI and tests enabled, build the full default
-    target, run all tests and a GUI/QML smoke flow, inspect the final diff, and
-    report exact per-surface evidence. Do not deliver a final archive when the
-    Qt surface is unbuilt or `NOT VERIFIED`.
-    Record the linked runtime target, generated `qmldir`, and `.qmltypes` paths.
-26. Capture rendered screenshots at minimum, standard, and wide sizes across
-    relevant appearance/content states. Audit alignment lines, repeated metrics,
-    spacing rhythm, clipping, overlap, truncation, optical centering, contrast,
-    safe insets, and accidental dead space before calling the UI polished.
+   is missing, ask and stop before writing code or choosing identifiers.
+2. Inspect the current diff, owning screen/component, relevant Qt version, QML
+   module/target, presentation boundary, and directly relevant tests.
+3. Classify the change before broad design work:
+   - a local existing-screen visual/interaction fix is normally `V1`;
+   - C++ presentation/domain behavior is normally `V2`;
+   - QML registration, resource topology, CMake, public adapter/API, or major
+     cross-surface architecture is `V3`;
+   - a final product/release claim is `V4`.
+4. Work as one agent by default. Do not launch separate UI/startup/routing/test
+   reviewers for one scoped screen change.
+5. Define only the UX information needed by the requested scope: audience,
+   primary goal, hierarchy, states, feedback/recovery, layout contract,
+   accessibility/localization, and visual direction. Do not redesign unrelated
+   screens.
+6. Keep domain/application behavior in C++ modules and expose a minimal typed
+   presentation contract to QML. Keep new QML/tokens/assets under `ui/`.
+7. Use Qt Quick, QML, Qt Quick Controls, and `qt_add_qml_module`; preserve
+   project module architecture and target-local presentation integration.
+8. When QML subdirectories/topology are touched, preserve guarded QTP0004,
+   deterministic `QT_RESOURCE_ALIAS`, module-root `Main`, configured
+   `QT_QML_OUTPUT_DIRECTORY`, target-local `RUNTIME_OUTPUT_DIRECTORY`, and
+   valid target-local includes for nested `QML_ELEMENT` adapters. Never edit
+   generated `*_qmltyperegistrations.cpp` files. A QML-creatable QObject must
+   not be `final`.
+9. Choose one effective customizable Controls style when custom control surfaces
+   require it, and keep that style consistent across app/lint/tests/smoke.
+10. Verify QML APIs on the exact type/minimum Qt version; preserve acyclic
+    geometry, content-safe actions/popups, portable fonts, focus/accessibility,
+    and responsive behavior.
+11. Make the smallest coherent UI change.
+12. Verify according to the selected level:
+    - `V1`: affected Qt target when applicable, relevant strict `qmllint`,
+      focused interaction smoke, and targeted rendered visual inspection;
+    - `V2`: affected production C++/Qt target + directly relevant tests and UI
+      smoke;
+    - `V3`: configure if topology changed + all affected product surfaces +
+      relevant integration/lint/smoke;
+    - `V4`: clean tree, full default target, all tests, strict lint,
+      warning-fatal primary interaction, minimum/standard/wide visual acceptance
+      matrix, and generated output verification.
+13. Reuse compatible build state for `V1`/`V2`. After a failure, rerun from the
+    earliest stage invalidated by the fix rather than restarting the full gate.
+14. Report exact evidence. For final generated Qt `V4`, include the linked
+    runtime target, generated `qmldir`, and `.qmltypes` paths. Any required
+    unavailable surface is `NOT VERIFIED`.
+15. Stop when the requested UI change and required verification are complete.
+
+Critical Qt invariants when those surfaces are touched: run
+`aimcpp_reject_final_qml_creatable_types`; a QML-creatable QObject must not be `final`; reject binding loops and a timer-only smoke flow; for a final polished
+claim inspect minimum, standard, and wide states and record accidental dead space
+as a visual defect when present.
 
 ## Output
 
-Before implementation, state:
+Before implementation, state only the design decisions needed to execute the
+requested scope and the planned verification level.
 
-- audience, user flow, and screen-state model;
-- product-specific visual direction, hierarchy, density, and component system;
-- layout contract, breakpoint compositions, alignment anchors, and spacing
-  scale;
-- affordance, feedback, prevention, and recovery decisions;
-- accessibility and responsive decisions;
-- C++/QML ownership boundary;
-- planned verification.
-
-After implementation, also report the minimum Qt version, effective Controls
-style, strict lint warning count, runtime warning count, and the lazy UI
-components instantiated by the smoke/interaction flow.
-
-After implementation, report the standard `REP-*` evidence plus any UI states
-or platforms that were not visually or interactively verified, and include the
-viewport/appearance/content-state visual acceptance matrix.
+After implementation, report the standard `REP-*` evidence. When Qt lint/smoke
+ran, include the minimum Qt version, effective Controls style, warning counts,
+and lazy components exercised. Include a visual acceptance matrix only to the
+depth required by the selected level and claimed UI quality.

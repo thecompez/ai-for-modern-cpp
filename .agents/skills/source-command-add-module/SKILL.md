@@ -9,8 +9,9 @@ Use this skill when introducing a new project-owned C++ module.
 
 ## Required Process
 
-1. Read `AGENTS.md`, `docs/agent/ARCHITECTURE.md`, `MODULES.md`, `NAMING.md`,
-   and `SYNTAX_AND_STYLE.md`.
+1. Read `AGENTS.md`, `docs/agent/EXECUTION_DISCIPLINE.md`,
+   `docs/agent/ARCHITECTURE.md`, `MODULES.md`, `NAMING.md`, and
+   `SYNTAX_AND_STYLE.md`.
 2. Identify the module's single owned responsibility.
 3. Choose a dotted lowercase domain-oriented module name.
 4. Put exported declarations and Doxygen contracts in `.cppm`.
@@ -21,7 +22,9 @@ Use this skill when introducing a new project-owned C++ module.
 8. Enable target module scanning with `CXX_SCAN_FOR_MODULES`.
 9. Link consumers to the owning CMake target.
 10. Add public-behavior tests.
-11. Configure, build, test, inspect the diff, and report exact evidence.
+11. Classify the module-topology change as `V3`; configure as required, build
+    every affected production surface, run relevant tests, inspect the diff,
+    and report exact evidence. Do not expand into unrelated full-project work.
 
 Do not create `.h` files or add a module named `utils`, `helpers`, `common`, or
 `misc` without a repository-established domain reason.

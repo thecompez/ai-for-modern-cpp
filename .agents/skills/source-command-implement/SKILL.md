@@ -1,64 +1,60 @@
 ---
 name: "source-command-implement"
-description: "Implement a requested change using the repository's modern C++ agent loop."
+description: "Implement the smallest verified change with adaptive verification and bounded agent execution."
 ---
 
 # source-command-implement
 
-Use this skill when the user asks to run the migrated source command `implement`.
-
-## Command Template
-
-# Implement
-
-Use this command when implementing a feature, bug fix, or refactor.
+Use this skill for a feature, bug fix, or refactor.
 
 ## Required Process
 
-1. Read `AGENTS.md`.
-2. When this request creates a new product or project, apply `INI-001` through
-   `INI-004` and read `docs/agent/START_PROJECT.md`. If the project name is
-   missing, ask for it and stop before writing code or choosing identifiers.
-3. Classify the product surface. For an unspecified user-facing interactive
-   application, apply `GUI-015`, read the Qt Quick guides, and use Qt Quick as
-   the primary interface rather than silently selecting CLI-only.
-4. Use the task-routing table and read every selected guide completely.
-   Generated Qt Quick/C++ projects must read and start from
-   `docs/agent/PROJECT_CMAKE_BASELINE.md`.
-5. Understand the smallest subsystem that owns the requested behavior.
-6. Inspect existing module boundaries, tests, working tree, and current diff.
-7. Make the smallest correct change.
-8. Preserve `.cppm` declaration and `.cpp` implementation separation.
-9. Preserve project modules. Put required standard headers in each module
-   unit's global module fragment. Do not add experimental standard-library
-   module setup.
-10. Use C++20+ features appropriately, choose return syntax for readability,
-   and prefer `std::print` or `std::println` for ordinary formatted output.
-11. Keep CMake on the deterministic standard-header path: register `.cppm`
-    files with `FILE_SET CXX_MODULES` and enable target module scanning.
-12. In a clean final-verification tree, enable every requested default product
-    surface and build the full default target. A core-only target cannot verify
-    an unbuilt GUI.
-13. Run all tests with zero discovered tests treated as an error, plus the
-    applicable product startup or interaction smoke checks.
-14. For Qt Quick work, use one explicit Controls style across application and
-    tests, run strict QML lint with zero project warnings, and make runtime QML
-    warnings fail the interaction smoke. Exercise primary-path lazy controls;
-    a fixed-delay launch is insufficient.
-    For generated projects, verify deterministic QML resource aliases and
-    distinct QML/runtime output roots; preserve identical approved target and
-    URI names and record the final linked target plus `qmldir`/`.qmltypes` paths.
-15. Fix failures and repeat the complete verification loop.
-16. Inspect the final diff and run `git diff --check`.
-17. Report a target-by-target verification matrix. Do not label an archive
-    final while a requested primary surface is `NOT VERIFIED`.
+1. Read `AGENTS.md` and `docs/agent/EXECUTION_DISCIPLINE.md`.
+2. When creating a new product/project, apply `INI-001` through `INI-004` and
+   read `docs/agent/START_PROJECT.md`. If the name is missing, ask and stop.
+3. Use the task-routing table. Read only guides required by the actual touched
+   concerns; do not load every guide by default.
+4. Inspect the current diff/working tree, locate the owning subsystem, and read
+   the directly relevant implementation, tests, and build target.
+5. Classify the change as `V0` through `V4` using
+   `docs/agent/TESTING_AND_VERIFICATION.md`.
+6. Work as one agent by default. Do not launch routine parallel reviewers or
+   exploratory subagents.
+7. Make the smallest coherent change. Preserve unrelated human work.
+8. Preserve `.cppm` declaration and `.cpp` implementation separation. Put
+   required standard headers in the global module fragment; do not add
+   experimental standard-library module setup.
+9. Register changed/new modules with `FILE_SET CXX_MODULES` and target-local
+   scanning when the task touches module topology.
+10. Verify incrementally:
+    - `V0`: contract/diff checks only as applicable;
+    - `V1`: affected Qt target when applicable + relevant QML lint/smoke/visual;
+    - `V2`: affected production target + directly relevant tests/smoke;
+    - `V3`: configure when graph inputs changed + all affected production
+      surfaces + relevant integration checks;
+    - `V4`: clean final-verification tree, every requested default surface,
+      full default `all` target, all tests, and applicable lint/smoke/visual
+      gates.
+11. Reuse a compatible configured build tree for `V1`/`V2`. If none exists,
+    configure once with the minimum feature set that includes the affected
+    production surface.
+12. If verification fails, fix the first causal failure and rerun from the
+    earliest stage invalidated by the fix. Do not repeat the complete pipeline
+    unnecessarily.
+13. For Qt Quick work, preserve one explicit Controls style across app/tests;
+    use strict `qmllint` and warning-fatal runtime smoke to the depth required
+    by the selected level. Final Qt `V4` evidence includes the linked runtime,
+    generated `qmldir`, `.qmltypes`, and required visual acceptance matrix.
+14. Inspect the final diff and run `git diff --check` when git metadata is
+    available.
+15. Report the selected verification level, exact evidence, files changed,
+    limitations, and every `NOT VERIFIED` layer, then stop.
 
 ## Rules
 
-Do not create `.h` files.
+Do not create `.h` files for new project-owned code.
 
-Do not use classic header/source architecture for new code.
+Do not use classic header/source architecture for new internal code.
 
-Do not claim success without running build and tests.
-
-For policy or documentation changes, the `knowledge_contract` test is required.
+Do not claim success for a production surface that was not actually built or
+otherwise verified at the required layer.

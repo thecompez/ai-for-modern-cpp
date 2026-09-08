@@ -26,6 +26,13 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `SCP-002`: Unrelated human changes were preserved.
 - [ ] `SCP-003`: The diff is the smallest coherent complete change.
 - [ ] `SCP-004`: No unrelated API rename, dependency, rewrite, or formatting churn exists.
+- [ ] `EFF-001`: Routine scoped work used the single-agent default.
+- [ ] `EFF-002`: Any delegation was genuinely independent and justified.
+- [ ] `EFF-004`: External research was used only when current external facts were required.
+- [ ] `EFF-005`: Discovery and reading were targeted rather than repetitive.
+- [ ] `EFF-007`: Discovery stopped once ownership, contract, and verification path were known.
+- [ ] `EFF-009`: Compatible incremental build state was reused when appropriate.
+- [ ] `EFF-010`: Work stopped after the requested behavior and required evidence were complete.
 
 ## Architecture And Modules
 
@@ -220,6 +227,17 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `VER-012`: The actual runtime target, `qmldir`, and `.qmltypes` paths are
   recorded after final linking; earlier generated-source success is not treated
   as a successful GUI build.
+- [ ] `VER-013`: The change has an explicit `V0`–`V4` verification level that
+  matches its actual change surface and claim scope.
+- [ ] `VER-014`: Production code compiled the affected production surface, or
+  the skipped/unavailable compile layer is `NOT VERIFIED`.
+- [ ] `VER-015`: Failure recovery resumed from the earliest invalidated stage
+  instead of blindly restarting the complete pipeline.
+- [ ] `VER-016`: Clean full verification was reserved for `V4` or structural
+  state that actually required it.
+- [ ] `VER-017`: Compatible build state was reused for routine `V1`/`V2` work.
+- [ ] `VER-018`: Any prohibited or unavailable verification stage is reported as
+  `NOT VERIFIED` and does not inherit success from another layer.
 
 ## Knowledge Consistency
 
@@ -238,7 +256,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `REP-002`: What and why are explained.
 - [ ] `REP-010`: Qt reports name the style/version, lint result, runtime warning
   result, and interactions that instantiated lazy UI components.
-- [ ] `REP-003`: Configure/build evidence is exact.
+- [ ] `REP-011`: The report names the selected verification level and rationale.
+- [ ] `REP-012`: Skipped/unavailable stages and resulting `NOT VERIFIED` scope are explicit.
+- [ ] `REP-003`: Configure/build evidence is exact for stages that were required and run.
 - [ ] `REP-004`: Test count and result are exact.
 - [ ] `REP-005`: Known limitations are explicit.
 - [ ] `REP-006`: Any exception is justified.

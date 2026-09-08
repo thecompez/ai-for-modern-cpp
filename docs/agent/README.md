@@ -38,6 +38,7 @@ and update the guide in the same change when authorized.
 | How should a Qt interface be designed and implemented? | `QT_QUICK_UI.md` |
 | How should modules and standard headers be configured? | `CMAKE_AND_TOOLCHAINS.md`, then `COMMON_FAILURES.md` |
 | What CMake baseline should a generated Qt Quick project start from? | `PROJECT_CMAKE_BASELINE.md`, then `CMAKE_AND_TOOLCHAINS.md` and `QT_QUICK_UI.md` |
+| How much should I inspect, delegate, build, or retest? | `EXECUTION_DISCIPLINE.md` |
 | What and how should I test? | `TESTING_AND_VERIFICATION.md` |
 | What does approved code look like? | `PATTERNS.md` |
 
@@ -57,12 +58,15 @@ Before editing:
 
 After editing:
 
-1. Configure from a compatible toolchain.
-2. Build the affected targets.
-3. Run relevant tests with zero-tests treated as an error.
-4. Run the knowledge contract for policy or documentation changes.
-5. Inspect the final diff and `git diff --check`.
-6. Report exact evidence and limitations.
+1. Classify the change as `V0` through `V4`.
+2. Reuse a compatible build tree for incremental `V1`/`V2` verification.
+3. Build the smallest affected production surface and run relevant tests/lint/smoke.
+4. After a failure, rerun from the earliest stage invalidated by the fix.
+5. Escalate to structural or clean full verification only when the changed
+   surface or final claim requires it.
+6. Run the knowledge contract for policy or documentation changes.
+7. Inspect the final diff and `git diff --check` when git metadata is available.
+8. Report exact evidence, selected verification level, and limitations, then stop.
 
 ## Knowledge Maintenance
 
