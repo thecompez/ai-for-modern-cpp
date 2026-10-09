@@ -34,6 +34,13 @@ Complexity or blocking behavior when important:
 Do not use a raw pointer or `bool` when the real contract is ownership,
 optionality, or a structured failure.
 
+For borrowed views, range-returning functions and deferred callbacks, read
+[`SAFETY_AND_LIFETIME.md`](SAFETY_AND_LIFETIME.md): a `span`, `string_view`,
+`function_ref` or range is not an owner. The API must document the owner,
+view lifetime and invalidation/cancellation rules. Consult
+[`CPP20_26_FEATURES.md`](CPP20_26_FEATURES.md) before choosing a newer
+container, callable adapter or feature unavailable in the minimum toolchain.
+
 ## Strong Types
 
 Use a dedicated value type when primitive values have invariants, units, or
