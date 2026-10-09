@@ -173,6 +173,34 @@ The approved forms choose return syntax based on readability. The API still
 makes naming, non-owning input, failure, constness, and significant results
 explicit.
 
+
+## Required Results Without Warning Noise
+
+**Correct: a failure must be observed**
+
+```cpp
+[[nodiscard]] auto writeConfig(std::filesystem::path path)
+    -> std::expected<void, SaveError>;
+```
+
+**Correct: a side effect is the reason to call the function**
+
+```cpp
+std::size_t appendLog(std::string_view line); // Returned count is optional.
+```
+
+**Incorrect: discardable output marked only because it is non-`void`**
+
+```cpp
+[[nodiscard]] std::size_t appendLog(std::string_view line);
+```
+
+`SYN-008` is about meaningful contracts, not blanket annotation. If
+`writeConfig(...)` fails, callers must check or propagate its result.
+If callers intentionally ignore an optional log count, no diagnostic should
+be required. See `SYNTAX_AND_STYLE.md` for annotated result types, references,
+reason strings, and safe intentional discards.
+
 ## Modern Formatted Console Output
 
 **Correct**
