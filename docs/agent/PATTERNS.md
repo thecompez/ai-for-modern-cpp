@@ -173,7 +173,6 @@ The approved forms choose return syntax based on readability. The API still
 makes naming, non-owning input, failure, constness, and significant results
 explicit.
 
-
 ## Required Results Without Warning Noise
 
 **Correct: a failure must be observed**
