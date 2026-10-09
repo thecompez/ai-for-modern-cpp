@@ -67,6 +67,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `SYN-004`: Enumerations are scoped and every enumerator is PascalCase.
 - [ ] `SYN-005`: Null pointers use `nullptr`.
 - [ ] `SYN-006`: No C-style cast was introduced.
+- [ ] `SYN-008`: Mandatory error/query results are annotated; optional
+  side-effect outputs are not marked mechanically; intentional discards are
+  explicitly safe and do not suppress required error checks.
 - [ ] `SYN-015`: Control-flow bodies use braces.
 - [ ] `SYN-016`: Class layout presents its contract before private state.
 - [ ] `SYN-018`: Constructor initialization follows member declaration order.
