@@ -70,3 +70,20 @@ ownership abstraction at a low-level boundary.
 6. Does asynchronous work retain valid state?
 
 If any answer is unclear, the ownership design is incomplete.
+
+## Security, Lifetime And C++20+ Additions
+
+For secure parsing, checked lengths, borrowed views, async tasks, checked
+C++26 arithmetic, foreign-output-pointer adapters, contract semantics and
+STL hardening, read [`SAFETY_AND_LIFETIME.md`](SAFETY_AND_LIFETIME.md).
+Its `SAFE-*` rules extend `ERR-*` and `RES-*` without replacing them.
+
+In particular, `std::jthread` joins after requesting **cooperative** stop;
+its destructor can block forever if work cannot stop. Coroutines must keep
+by-reference parameters alive across every suspension. `std::out_ptr` must
+adopt C handles using the matching deleter and error contract.
+
+`std::expected` is a structured recovery channel, not permission to ignore
+a result or fabricate success. C++26 contract assertions may be ignored by
+the selected evaluation semantics, so authorization and input validation
+remain ordinary checked runtime operations.
