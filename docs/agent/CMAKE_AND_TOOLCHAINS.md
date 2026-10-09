@@ -33,6 +33,12 @@ libstdc++.modules.json
 Do not add automatic, strict, or fallback modes for standard-library delivery.
 One source path is easier to understand, build, test, and reproduce.
 
+Language mode is not a library feature guarantee. See
+[`CPP20_26_FEATURES.md`](CPP20_26_FEATURES.md) and rule `FEAT-001`:
+probe the actual compiler, standard-library headers, feature-test macros
+and linked runtime before selecting optional C++23/26 APIs. Do not enable
+experimental `import std;` as a workaround for missing library features.
+
 ## Standard Headers Inside Project Modules
 
 The project module remains a module; only the standard library is textual:
