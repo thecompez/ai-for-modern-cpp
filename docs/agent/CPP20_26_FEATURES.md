@@ -90,6 +90,8 @@ Do not choose a new abstraction just to avoid a short, readable function.
 |---|---|---|
 | `ckd_add`/`ckd_sub`/`ckd_mul` | Detect overflow before allocation, indexing and arithmetic | Wrapped output is safe when overflow is reported |
 | `std::span::at` and `std::mdspan::at` | Explicit checked indexed access | Invalid source pointers/extents become valid |
+| `std::saturating_add`/`sub`/`mul`/`div`/`cast` | Defined clamped numeric results where saturation is intentional | Overflow is reported to a caller like checked `ckd_*` (it is not) |
+| `std::execution` sender/receiver and async scopes | Structured, composable async work with value/error/stopped channels | Operation-state lifetime, synchronization or cancellation manages itself |
 | Contracts (`pre`, `post`, `contract_assert`, `<contracts>`) | Document/test programmer invariants | They run in every build or can reject untrusted requests |
 | Standard library hardening | Selected precondition diagnostics/termination | All STLs check every index or recover from violations |
 | `std::inplace_vector` | Embedded, fixed-capacity contiguous storage | Growth is unlimited; excess elements need explicit handling |
@@ -123,6 +125,17 @@ from any other non-owning view.
 rename from `std::runtime_format` to `std::dynamic_format`. Do not hardcode
 either spelling without checking the actual toolchain and feature test
 macro. Static literal format templates remain the preferred default.
+
+**Async execution caution:** C++26 `std::execution` in `<execution>` includes
+sender/receiver operation states. A started operation state's address must
+remain stable and it must stay alive until completion. Handle all three
+completion channels (`value`, `error`, `stopped`) and verify
+`__cpp_lib_senders` availability. A sender description is not automatically
+started, and cancellation/ownership are explicit system decisions.
+
+**Saturation caution:** cppreference now uses `std::saturating_add` etc.;
+older examples may use `std::add_sat`. Probe the actual `<numeric>` API and
+never saturate security-critical allocation sizes silently.
 
 **Concurrency caution:** hazard pointers and RCU may prevent specific
 reclamation hazards when correctly used, but they are *not* generic
@@ -174,4 +187,6 @@ supported toolchains, correct replacement and tests.
 - [C++26 inplace_vector](https://en.cppreference.com/cpp/container/inplace_vector)
 - [C++26 hive](https://en.cppreference.com/cpp/container/hive)
 - [C++26 dynamic format](https://en.cppreference.com/cpp/utility/format/dynamic_format)
+- [C++26 saturation arithmetic](https://en.cppreference.com/cpp/numeric/add_sat)
+- [C++26 execution](https://en.cppreference.com/cpp/execution)
 - [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
