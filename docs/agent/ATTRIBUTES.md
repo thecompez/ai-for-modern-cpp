@@ -87,6 +87,9 @@ ValidationResult validateInput(std::string_view input);
 A `[[nodiscard]]` class/enum triggers a discard diagnostic for **by-value**
 returns, but not automatically when the function returns `T&` or `const T&`.
 A `[[nodiscard]]` function returning a reference still requests a warning.
+`[[nodiscard]]` may also be applied to constructors for relevant **explicit
+conversion/construction** expressions whose unused temporary signals a bug;
+do not assume it diagnoses every implicit construction.
 C++20 reason strings should explain a meaningful failure or recovery action.
 
 Do not turn a required error check into a suppression. In the *rare* case of an
@@ -121,7 +124,9 @@ auto parseLegacy(std::string_view text) -> Expression;
 ```
 
 Do not annotate every old symbol; avoid introducing deprecation warnings without
-an agreed removal/migration plan. The attribute discourages use; it does not
+an agreed removal/migration plan. The attribute may apply to functions,
+types, aliases, namespaces, enumerators and other permitted declarations;
+choose the narrowest intended surface. It discourages use; it does not
 prohibit it or remove an API.
 
 ### `[[fallthrough]]` — `ATTR-007`
@@ -162,7 +167,9 @@ void process([[maybe_unused]] int diagnosticId)
 ```
 
 Do not suppress warnings from forgotten logic or dead code. It is not a
-substitute for removing an unused parameter if the API can change.
+substitute for removing an unused parameter if the API can change. Structured
+bindings are supported; C++26 also permits `[[maybe_unused]]` on unused labels
+and contract result bindings. Check the target language level before use.
 
 ### `[[likely]]` and `[[unlikely]]` — `ATTR-008`
 
@@ -293,4 +300,4 @@ not treat annotations or contracts as drop-in substitutes for attributes.
 - [C++ standard attributes](https://cppreference.com/cpp/language/attributes)
 - [C++ Core Guidelines F.9](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-unnamed)
 - [C++ Core Guidelines ES.48](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Res-casts)
-- [C++ Core Guidelines E.25](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Re-throw)
+- [C++ Core Guidelines E.25 (error handling)](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
