@@ -134,6 +134,15 @@ is written even on overflow, but the wrapped value MUST NOT be treated as
 a safe allocation size. Their declarations are in the global namespace;
 do **not** assume `std::ckd_mul` exists. Confirm header/toolchain support.
 
+C++26 also introduces saturating arithmetic (`std::saturating_add`,
+`std::saturating_sub`, `std::saturating_mul`, `std::saturating_div`,
+`std::saturating_cast` in `<numeric>`). Unlike checked `ckd_*`, saturation
+**clamps** and does not report the precise error. It MAY be suitable for
+signal processing or intentionally bounded counters, but MUST NOT silently
+replace overflow validation for allocation lengths, quotas or finance.
+The names changed from earlier C++26 drafts (`add_sat`, etc.); check
+`__cpp_lib_saturation_arithmetic` and toolchain spelling before use.
+
 Prefer `std::midpoint(a,b)` (C++20) over overflowing integer `(a+b)/2`.
 Use `std::in_range<T>(value)` (C++20) before narrowing external values
 when the intent is representability.
@@ -209,6 +218,13 @@ std::jthread worker([](std::stop_token stop) {
     }
 }); // Destructor requests stop and joins; bounded work must terminate.
 ```
+
+New C++26 `std::execution` sender/receiver/operation-state support is **not**
+a promise of automatic lifetime safety: started operation state must remain
+alive at a stable address until completion, and values/errors/stopped are
+separate completion channels. For a derived project's minimum toolchain,
+probe `__cpp_lib_senders` and real `<execution>` implementation before
+adoption; do not leak tasks or omit cancellation/error paths.
 
 Review condition-variable wakeups (including spurious wakeups),
 `atomic::wait/notify` (C++20) publication and memory order,
@@ -365,4 +381,6 @@ explicitly; do not claim that a documentation test compiled examples.
 - [C++26 checked arithmetic](https://en.cppreference.com/cpp/numeric/ckd_mul)
 - [C++26 span bounds checking](https://en.cppreference.com/cpp/container/span/at)
 - [C++26 contracts](https://en.cppreference.com/cpp/language/contracts)
+- [C++26 saturation](https://en.cppreference.com/cpp/numeric/add_sat)
+- [C++26 sender/receiver execution](https://en.cppreference.com/cpp/execution)
 - [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines)
