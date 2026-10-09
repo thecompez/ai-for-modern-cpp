@@ -31,6 +31,8 @@ and update the guide in the same change when authorized.
 | What should this symbol be called? | `NAMING.md` |
 | Which C++ syntax and style shape is required? | `SYNTAX_AND_STYLE.md` |
 | When should I use or avoid C++ attributes? | `ATTRIBUTES.md`, then `SYNTAX_AND_STYLE.md` as needed |
+| Is this input/view/thread/coroutine code memory-safe and validated? | `SAFETY_AND_LIFETIME.md`, then `ERRORS_AND_RESOURCES.md` as needed |
+| Which new C++20, C++23 or C++26 feature fits here? | `CPP20_26_FEATURES.md` and the relevant safety/attribute guide |
 | What should the public contract expose? | `API_DESIGN.md` and `ATTRIBUTES.md` for attribute contracts |
 | Is this `expected`, an exception, or RAII? | `ERRORS_AND_RESOURCES.md` |
 | Where does OS-specific code belong? | `PLATFORM_BOUNDARIES.md` |
