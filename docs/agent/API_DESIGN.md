@@ -57,6 +57,14 @@ Avoid unconstrained public templates whose errors appear deep inside an
 implementation. Also avoid concepts that merely rename `typename` without
 improving diagnostics or safety.
 
+## Attribute Contracts
+
+Choose API attributes for real contracts, not decoration. See
+[`ATTRIBUTES.md`](ATTRIBUTES.md) and `SYN-008`: apply `[[nodiscard]]` when
+ignoring the result conceals a failure, but not to optional side-effect
+outputs; use `[[deprecated]]` only with a planned migration. Restrict
+compiler-specific attributes and layout hints at public API/ABI boundaries.
+
 ## Documentation
 
 Exported APIs require English Doxygen comments that explain behavior,

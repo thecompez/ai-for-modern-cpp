@@ -62,6 +62,8 @@ Any of these fails the scenario regardless of numeric score:
 - `toolchains.md` — CMake, project modules, Qt registration, and causal diagnosis.
 - `reflection.md` — converting human corrections into durable knowledge.
 - `ui_and_syntax.md` — Qt Quick design decisions and enforceable C++ syntax.
+- `attributes.md` — standard attribute decisions, portability, correctness,
+  suppression risks, and evidence-based optimization.
 - `app_icons.md` — cross-platform application-icon composition, packaging, safe zones, in-application marks, and cache diagnosis.
 
 ## Result Record

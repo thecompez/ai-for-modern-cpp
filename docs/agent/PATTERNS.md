@@ -173,6 +173,66 @@ The approved forms choose return syntax based on readability. The API still
 makes naming, non-owning input, failure, constness, and significant results
 explicit.
 
+## Required Results Without Warning Noise
+
+**Correct: a failure must be observed**
+
+```cpp
+[[nodiscard]] auto writeConfig(std::filesystem::path path)
+    -> std::expected<void, SaveError>;
+```
+
+**Correct: a side effect is the reason to call the function**
+
+```cpp
+std::size_t appendLog(std::string_view line); // Returned count is optional.
+```
+
+**Incorrect: discardable output marked only because it is non-`void`**
+
+```cpp
+[[nodiscard]] std::size_t appendLog(std::string_view line);
+```
+
+`SYN-008` is about meaningful contracts, not blanket annotation. If
+`writeConfig(...)` fails, callers must check or propagate its result.
+If callers intentionally ignore an optional log count, no diagnostic should
+be required. See `ATTRIBUTES.md` for result types, reference returns, Core Guidelines
+ES.48 safe discards, and the rest of the C++ attribute rules.
+
+## Standard Attributes: Focused Contracts
+
+**Correct: intentional switch fallthrough**
+
+```cpp
+switch (mode) {
+case Mode::Verbose:
+    trace();
+    [[fallthrough]];
+case Mode::Normal:
+    execute();
+    break;
+}
+```
+
+**Correct: conditional unusedness**
+
+```cpp
+void process([[maybe_unused]] int traceId);
+```
+
+**Incorrect: unproven assumption and speculative branch hint**
+
+```cpp
+[[assume(uncheckedUserInput > 0)]];
+if (flag) [[likely]] {
+    execute();
+}
+```
+
+An assumption is not a runtime check; a branch hint needs measured evidence.
+See `ATTRIBUTES.md` (`ATTR-001` to `ATTR-014`) for complete decisions.
+
 ## Modern Formatted Console Output
 
 **Correct**

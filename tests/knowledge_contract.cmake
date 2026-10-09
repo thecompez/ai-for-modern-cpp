@@ -57,6 +57,7 @@ set(requiredSurfaces
     docs/REVIEW.md
     docs/agent/README.md
     docs/agent/APP_ICONS_AND_BRANDING.md
+    docs/agent/ATTRIBUTES.md
     docs/agent/START_PROJECT.md
     docs/agent/MODULES.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
@@ -68,6 +69,7 @@ set(requiredSurfaces
     docs/agent/TESTING_AND_VERIFICATION.md
     evals/README.md
     evals/app_icons.md
+    evals/attributes.md
     evals/execution_efficiency.md
     evals/project_initiation.md
     evals/toolchains.md
@@ -201,6 +203,8 @@ foreach(reviewRule IN ITEMS
     INI-003
     INI-004
     MOD-010
+    SYN-008
+    ATTR-001
     APP-001
     APP-002
     APP-003
@@ -781,6 +785,50 @@ assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-013")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-014")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-015")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-016")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-SYN-007")
+assert_file_contains("docs/agent/SYNTAX_AND_STYLE.md" "## Discarded Results (`SYN-008`)")
+assert_file_contains("docs/agent/PATTERNS.md" "## Required Results Without Warning Noise")
+assert_file_contains("docs/agent/PATTERNS.md" "## Standard Attributes: Focused Contracts")
+assert_file_contains("README.md" "docs/agent/ATTRIBUTES.md")
+assert_file_contains("docs/agent/README.md" "ATTRIBUTES.md")
+assert_file_contains("docs/agent/API_DESIGN.md" "ATTRIBUTES.md")
+assert_file_contains("docs/agent/SYNTAX_AND_STYLE.md" "ATTRIBUTES.md")
+assert_file_contains("evals/README.md" "attributes.md")
+
+foreach(attrRule IN ITEMS
+    ATTR-001 ATTR-002 ATTR-003 ATTR-004 ATTR-005 ATTR-006 ATTR-007
+    ATTR-008 ATTR-009 ATTR-010 ATTR-011 ATTR-012 ATTR-013 ATTR-014
+)
+    assert_file_contains("AGENTS.md" "${attrRule}")
+    assert_file_contains("docs/agent/ATTRIBUTES.md" "${attrRule}")
+endforeach()
+
+foreach(attrName IN ITEMS
+    "[[nodiscard]]"
+    "[[noreturn]]"
+    "[[deprecated("
+    "[[fallthrough]]"
+    "[[maybe_unused]]"
+    "[[likely]]"
+    "[[unlikely]]"
+    "[[no_unique_address]]"
+    "[[assume("
+    "[[indeterminate]]"
+    "[[carries_dependency]]"
+    "[[optimize_for_synchronized]]"
+    "alignas"
+    "__has_cpp_attribute"
+    "std::ignore"
+)
+    assert_file_contains("docs/agent/ATTRIBUTES.md" "${attrName}")
+endforeach()
+
+foreach(attrEval IN ITEMS
+    EVAL-ATTR-001 EVAL-ATTR-002 EVAL-ATTR-003 EVAL-ATTR-004
+    EVAL-ATTR-005 EVAL-ATTR-006 EVAL-ATTR-007 EVAL-ATTR-008
+)
+    assert_file_contains("evals/attributes.md" "${attrEval}")
+endforeach()
 
 foreach(evalId IN ITEMS
     EVAL-APP-001

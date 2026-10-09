@@ -232,6 +232,9 @@ the archive is not described as final.
 
 The complete C++ syntax and identifier contract is documented in
 [`docs/agent/SYNTAX_AND_STYLE.md`](docs/agent/SYNTAX_AND_STYLE.md).
+Standard C++ attributes have a dedicated **use only where appropriate**
+policy, compatibility matrix and safety/ABI decision guide in
+[`docs/agent/ATTRIBUTES.md`](docs/agent/ATTRIBUTES.md).
 The copy-ready CMake shape for generated Qt Quick projects is documented in
 [`docs/agent/PROJECT_CMAKE_BASELINE.md`](docs/agent/PROJECT_CMAKE_BASELINE.md).
 
