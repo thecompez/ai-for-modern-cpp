@@ -70,6 +70,13 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `SYN-008`: Mandatory error/query results are annotated; optional
   side-effect outputs are not marked mechanically; intentional discards are
   explicitly safe and do not suppress required error checks.
+- [ ] `ATTR-001`–`ATTR-014`: Every attribute has a valid target, meaningful
+  contract, compiler/language support and safe fallback when required.
+  Consult `docs/agent/ATTRIBUTES.md` for standard and vendor attributes.
+- [ ] `ATTR-003`: No unchecked mandatory results are discarded; documented
+  exceptions follow Core Guidelines ES.48 and pass review.
+- [ ] `ATTR-008`/`ATTR-009`/`ATTR-010`: Optimization/ABI effects are measured
+  and assumptions are proved, never fabricated.
 - [ ] `SYN-015`: Control-flow bodies use braces.
 - [ ] `SYN-016`: Class layout presents its contract before private state.
 - [ ] `SYN-018`: Constructor initialization follows member declaration order.
