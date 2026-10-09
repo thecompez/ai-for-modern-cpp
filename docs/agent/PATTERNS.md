@@ -197,8 +197,41 @@ std::size_t appendLog(std::string_view line); // Returned count is optional.
 `SYN-008` is about meaningful contracts, not blanket annotation. If
 `writeConfig(...)` fails, callers must check or propagate its result.
 If callers intentionally ignore an optional log count, no diagnostic should
-be required. See `SYNTAX_AND_STYLE.md` for annotated result types, references,
-reason strings, and safe intentional discards.
+be required. See `ATTRIBUTES.md` for result types, reference returns, Core Guidelines
+ES.48 safe discards, and the rest of the C++ attribute rules.
+
+## Standard Attributes: Focused Contracts
+
+**Correct: intentional switch fallthrough**
+
+```cpp
+switch (mode) {
+case Mode::Verbose:
+    trace();
+    [[fallthrough]];
+case Mode::Normal:
+    execute();
+    break;
+}
+```
+
+**Correct: conditional unusedness**
+
+```cpp
+void process([[maybe_unused]] int traceId);
+```
+
+**Incorrect: unproven assumption and speculative branch hint**
+
+```cpp
+[[assume(uncheckedUserInput > 0)]];
+if (flag) [[likely]] {
+    execute();
+}
+```
+
+An assumption is not a runtime check; a branch hint needs measured evidence.
+See `ATTRIBUTES.md` (`ATTR-001` to `ATTR-014`) for complete decisions.
 
 ## Modern Formatted Console Output
 
