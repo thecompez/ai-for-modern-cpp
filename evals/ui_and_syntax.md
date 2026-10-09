@@ -524,3 +524,31 @@ std::cout << "Completed " << operationCount << " operations" << '\n';
 `SYN-023`: use `std::println("Completed {} operations", operationCount)` for
 new ordinary console output. A stream-only third-party boundary requires an
 explicit local justification rather than becoming the project default.
+
+## EVAL-SYN-007 — Required Result Versus Optional Side-Effect Output
+
+**Diff under review**
+
+```cpp
+[[nodiscard]] auto saveSettings() -> std::expected<void, SaveError>;
+[[nodiscard]] std::size_t appendLog(std::string_view line); // Count is optional.
+
+void run()
+{
+    saveSettings();
+    appendLog("started");
+}
+```
+
+**Expected findings**
+
+- `SYN-008`: `saveSettings()` correctly declares a mandatory result, but the
+  call must inspect or propagate its possible failure; ignoring it is a bug.
+- `SYN-008`: remove `[[nodiscard]]` from `appendLog` if the count is
+  explicitly optional and logging is the intended side effect.
+- Do not place `[[nodiscard]]` on every non-`void` API or silence the ignored
+  save failure with `static_cast<void>`.
+- A `[[nodiscard]]` type applies to by-value returns, not automatically to
+  reference returns; require function-level annotation when needed.
+
+**Rule coverage**: `SYN-008`, `ERR-001`, `ERR-004`.
