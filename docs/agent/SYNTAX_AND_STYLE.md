@@ -128,6 +128,84 @@ Expression load_expression(std::filesystem::path path);
 The incorrect form hides the failure contract and violates the naming rules;
 its leading return type is not the problem.
 
+
+## Discarded Results (`SYN-008`)
+
+Apply `[[nodiscard]]` when ignoring a result would probably be a correctness
+error, not merely because a function returns a value. In particular:
+
+- **MUST** mark recoverable failure/status results that callers need to handle:
+  `std::expected<T, E>`, failure codes, and success flags when ignoring failure
+  would skip necessary work. Annotate the function returning `std::expected`;
+  do not assume that its type alone enforces this contract.
+- **SHOULD** mark pure queries and computations whose ignored result has no
+  meaningful effect (for example, validation predicates or parsing results).
+- **SHOULD NOT** mark an optional return from a deliberately side-effecting API
+  solely because it is non-`void` (for example, a logger returning a diagnostic
+  byte count, or `operator=` returning a reference for chaining).
+
+**Correct: required results**
+
+```cpp
+[[nodiscard("Check or propagate the save failure")]]
+auto saveSettings(const std::filesystem::path& path)
+    -> std::expected<void, SaveError>;
+
+[[nodiscard]] bool isReady() const noexcept;
+```
+
+The diagnostic reason string is available from C++20; use it when it adds
+actionable context, rather than repeating the function name.
+
+**Correct: output deliberately optional**
+
+```cpp
+void reset();
+
+std::size_t appendLog(std::string_view message); // Optional diagnostic count.
+
+Widget& operator=(const Widget&); // Assignment is the primary side effect.
+```
+
+These declarations describe member functions in their respective classes.
+The caller may use their returned values, but discarding them is intentional
+API behavior, not a mistake that deserves a warning.
+
+**Incorrect: blanket annotation**
+
+```cpp
+[[nodiscard]] std::size_t appendLog(std::string_view message);
+[[nodiscard]] Widget& operator=(const Widget&);
+```
+
+Marking these solely because they have non-`void` return types creates warning
+noise and encourages indiscriminate suppression.
+
+When *every* by-value result of a domain type must be inspected, consider
+annotating the type instead:
+
+```cpp
+struct [[nodiscard]] ValidationResult {
+    bool isValid;
+    ErrorCode error;
+};
+
+ValidationResult validateInput(std::string_view input);
+```
+
+For such a by-value return, the type annotation can warn when a call result is
+discarded. Returning `ValidationResult&` or `const ValidationResult&` does
+**not** automatically inherit that warning: annotate the function if ignoring
+its reference result is also a contract violation. Prefer function-level
+annotations when the same type has both mandatory and optional use cases.
+
+For a documented, safe intentional discard, `static_cast<void>(operation())`
+makes the intent explicit. It is not an acceptable shortcut for suppressing
+unchecked errors. `[[nodiscard]]` requests a diagnostic; the language does not
+mandate that every compiler issue a warning or reject the program. Reviewers
+MUST check both missing annotations and unnecessary annotations, and verify
+whether intentional discards are safe under the API's failure contract.
+
 ## Modern Formatted Output
 
 For new project-owned console output, use C++23 formatted output directly.
@@ -295,7 +373,8 @@ Do not write:
 3. Check enum declarations and every `case` label.
 4. Check private/protected data member prefixes.
 5. Check initialization, constness, casts, nullability, and control-flow braces.
-6. Check result/error contracts and `[[nodiscard]]`.
+6. Check mandatory result/error contracts, unnecessary `[[nodiscard]]`, and
+   documented, safe intentional discards.
 7. Check that return syntax is deliberate rather than mechanically uniform.
 8. Reject new iostream insertion for ordinary formatted console output.
 9. Reject unrelated formatting churn during functional changes.
