@@ -128,7 +128,6 @@ Expression load_expression(std::filesystem::path path);
 The incorrect form hides the failure contract and violates the naming rules;
 its leading return type is not the problem.
 
-
 ## Discarded Results (`SYN-008`)
 
 Apply `[[nodiscard]]` when ignoring a result would probably be a correctness
