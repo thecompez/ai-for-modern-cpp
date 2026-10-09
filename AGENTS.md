@@ -16,6 +16,10 @@ Primary references:
 
 - ISO C++ Core Guidelines: https://isocpp.org/guidelines
 - C++ language attributes: https://cppreference.com/cpp/language/attributes
+- C++20/23/26 feature and compiler support: https://en.cppreference.com/cpp/compiler_support
+- C++20 features: https://en.cppreference.com/cpp/20
+- C++23 features: https://en.cppreference.com/cpp/23
+- C++26 features: https://en.cppreference.com/cpp/26
 - C++ Core Guidelines source: https://github.com/isocpp/CppCoreGuidelines
 - C++ language status: https://isocpp.org/std/status
 - CMake documentation: https://cmake.org/cmake/help/latest/
@@ -92,9 +96,11 @@ After reading this file, read only the guides required for the task.
 | Understand repository structure or introduce a subsystem | `docs/agent/ARCHITECTURE.md` |
 | Add or change a C++ module | `docs/agent/MODULES.md`, `docs/agent/NAMING.md`, and `docs/agent/SYNTAX_AND_STYLE.md` |
 | Write or review C++ syntax, identifiers, or formatting | `docs/agent/SYNTAX_AND_STYLE.md` and `docs/agent/NAMING.md`; also `docs/agent/ATTRIBUTES.md` when attributes are involved |
-| Design or review a public API | `docs/agent/API_DESIGN.md`, `docs/agent/ERRORS_AND_RESOURCES.md`, and `docs/agent/ATTRIBUTES.md` for attribute contracts |
+| Design or review a public API | `docs/agent/API_DESIGN.md`, `docs/agent/ERRORS_AND_RESOURCES.md`, and `docs/agent/ATTRIBUTES.md` for attribute contracts; `docs/agent/SAFETY_AND_LIFETIME.md` when borrowing or concurrency applies |
 | Add or audit C++ attributes, annotations, or attribute portability | `docs/agent/ATTRIBUTES.md` and `docs/agent/SYNTAX_AND_STYLE.md` |
-| Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
+| Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` and `docs/agent/SAFETY_AND_LIFETIME.md` |
+| Process untrusted data, binary packets, ranges, coroutines, integer sizes or concurrent state | `docs/agent/SAFETY_AND_LIFETIME.md` |
+| Select a C++20/23/26 language or library feature | `docs/agent/CPP20_26_FEATURES.md` and its applicable safety/attribute guide |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
 | Create, replace, package, or verify application icons or in-application brand marks | `docs/agent/APP_ICONS_AND_BRANDING.md`, `docs/agent/PLATFORM_BOUNDARIES.md`, and `docs/agent/QT_QUICK_UI.md` when the mark appears in the interface |
 | Select the interface for an unspecified user-facing interactive application | `docs/agent/QT_QUICK_UI.md` and `docs/agent/ARCHITECTURE.md` |
@@ -498,6 +504,77 @@ See `docs/agent/API_DESIGN.md`.
   directories are resources and follow the same ownership rules.
 
 See `docs/agent/ERRORS_AND_RESOURCES.md`.
+
+---
+
+## 11A. Modern C++20+ Safety And Lifetime Rules
+
+These rules are **risk-triggered**, not requests for blanket refactors.
+They extend `API-*`, `ERR-*`, `RES-*` and `SYN-*`. Exact semantics,
+examples, feature gates, and failure modes: `docs/agent/SAFETY_AND_LIFETIME.md`.
+
+- **SAFE-001** — Untrusted indices, offsets, lengths, `std::span` and
+  `std::mdspan` extents MUST be validated against live backing storage.
+  A non-owning view or hardened STL MUST NOT be treated as bounds validation.
+- **SAFE-002** — Views, references, ranges, iterators, borrowed callbacks
+  and captures MUST NOT outlive their owners. Returned/retained temporaries,
+  including across asynchronous work, require an explicit lifetime proof.
+- **SAFE-003** — Integer size arithmetic, narrowing and allocation counts
+  MUST be checked **before** overflow or conversion. C++26 `ckd_*` results
+  MUST be checked (`true` means overflow); use safe C++20/23 fallbacks.
+- **SAFE-004** — Untrusted input parsers MUST validate domain, encoding,
+  bounds and required full consumption; binary serialization MUST explicitly
+  handle endianness, representation, alignment and size.
+- **SAFE-005** — Every recoverable failure MUST be observed, recovered or
+  propagated using an appropriate result/error contract. A default value
+  MUST NOT conceal failure; this complements `ERR-001` through `ERR-005`.
+- **SAFE-006** — Concurrent tasks MUST have deliberate ownership, data
+  synchronization and termination behavior. `std::jthread` cancellation
+  is cooperative and MUST NOT be assumed to interrupt blocking work.
+- **SAFE-007** — Coroutines and asynchronous tasks MUST own or prove the
+  lifetime of all state across suspension, cancellation and destruction;
+  coroutine handles and borrowed references MUST NOT leak.
+- **SAFE-008** — Foreign/C output pointers MUST use matched release/deleter
+  contracts. C++23 `std::out_ptr`/`std::inout_ptr` MAY be used only when
+  reset, error, lifetime and ownership semantics are correct.
+- **SAFE-009** — External strings MUST be treated as formatting **data**
+  by default, not trusted format templates. Diagnostic paths, stack traces,
+  user data and secrets MUST be bounded/redacted by the logging policy.
+- **SAFE-010** — C++26 contracts (`pre`, `post`, `contract_assert`) MUST NOT
+  replace input validation, authorization or recoverable runtime checks;
+  evaluation may be disabled. Predicate side effects are forbidden.
+- **SAFE-011** — Library hardening, debug checks and sanitizers are defense
+  in depth, never a replacement for validating preconditions. A non-hardened
+  library can still have UB and hardened violation can terminate.
+- **SAFE-012** — Filesystem trust boundaries MUST defend traversal, symlink
+  escape and check/open races; canonicalization alone is not a secure open.
+  OS-dependent enforcement stays at `PLT-*` boundaries.
+- **SAFE-013** — Security-sensitive changes MUST be tested against malformed,
+  truncated, overflow and lifetime/concurrency failures. Available
+  sanitizers SHOULD be run on relevant targets, and missing coverage MUST
+  be reported, not presumed.
+
+## 11B. C++20/23/26 Feature Adoption Rules
+
+The feature guide `docs/agent/CPP20_26_FEATURES.md` explains preferred
+and avoided uses across language, ranges, containers, numeric facilities,
+structured errors, coroutines, diagnostics, and concurrency.
+
+- **FEAT-001** — Newer library/language features MUST match the actual
+  target's compiler, STL, language level and feature-test/compile probe.
+  C++26 source mode does not guarantee C++26 library implementation.
+- **FEAT-002** — Container/range selection MUST account for ownership,
+  capacity, iterator/reference invalidation, complexity and lifetime.
+  `std::inplace_vector` is bounded and `std::function_ref` is non-owning.
+- **FEAT-003** — Interop, serialization and diagnostics MUST preserve
+  representation, allocator/deleter, error and privacy boundaries.
+  New facilities do not automatically perform these checks.
+- **FEAT-004** — New optimization-oriented tools, SIMD, containers or
+  algorithms SHOULD be selected by maintainability and workload evidence;
+  speculative adoption or unmeasured speed/space claims are forbidden.
+- **FEAT-005** — Removed/deprecated standard-library facilities MUST NOT
+  be copied into new projects; migration MUST verify precise replacements,
+  affected targets and build evidence.
 
 ---
 
