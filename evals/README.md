@@ -64,6 +64,9 @@ Any of these fails the scenario regardless of numeric score:
 - `ui_and_syntax.md` — Qt Quick design decisions and enforceable C++ syntax.
 - `attributes.md` — standard attribute decisions, portability, correctness,
   suppression risks, and evidence-based optimization.
+- `modern_cpp_safety.md` — 12 adversarial safety, lifetime and modern-feature
+  scenarios: untrusted data, overflow, coroutines, cancellation, contracts,
+  portability, memory ownership and hardening.
 - `app_icons.md` — cross-platform application-icon composition, packaging, safe zones, in-application marks, and cache diagnosis.
 
 ## Result Record

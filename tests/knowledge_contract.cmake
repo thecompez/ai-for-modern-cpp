@@ -58,6 +58,8 @@ set(requiredSurfaces
     docs/agent/README.md
     docs/agent/APP_ICONS_AND_BRANDING.md
     docs/agent/ATTRIBUTES.md
+    docs/agent/SAFETY_AND_LIFETIME.md
+    docs/agent/CPP20_26_FEATURES.md
     docs/agent/START_PROJECT.md
     docs/agent/MODULES.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
@@ -70,6 +72,7 @@ set(requiredSurfaces
     evals/README.md
     evals/app_icons.md
     evals/attributes.md
+    evals/modern_cpp_safety.md
     evals/execution_efficiency.md
     evals/project_initiation.md
     evals/toolchains.md
@@ -126,6 +129,10 @@ foreach(ruleId IN ITEMS
     MOD-010
     MOD-011
     MOD-012
+    SAFE-001
+    SAFE-013
+    FEAT-001
+    FEAT-005
     APP-001
     APP-002
     APP-003
@@ -205,6 +212,10 @@ foreach(reviewRule IN ITEMS
     MOD-010
     SYN-008
     ATTR-001
+    SAFE-001
+    SAFE-013
+    FEAT-001
+    FEAT-005
     APP-001
     APP-002
     APP-003
@@ -829,6 +840,58 @@ foreach(attrEval IN ITEMS
 )
     assert_file_contains("evals/attributes.md" "${attrEval}")
 endforeach()
+
+foreach(safeRule IN ITEMS
+    SAFE-001 SAFE-002 SAFE-003 SAFE-004 SAFE-005 SAFE-006
+    SAFE-007 SAFE-008 SAFE-009 SAFE-010 SAFE-011 SAFE-012 SAFE-013
+)
+    assert_file_contains("AGENTS.md" "${safeRule}")
+    assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "${safeRule}")
+endforeach()
+
+foreach(featureRule IN ITEMS FEAT-001 FEAT-002 FEAT-003 FEAT-004 FEAT-005)
+    assert_file_contains("AGENTS.md" "${featureRule}")
+    assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "${featureRule}")
+endforeach()
+
+foreach(featureName IN ITEMS
+    "std::span"
+    "std::mdspan"
+    "std::jthread"
+    "std::stop_token"
+    "std::expected"
+    "std::out_ptr"
+    "std::start_lifetime_as"
+    "std::ranges::borrowed_range"
+    "ckd_mul"
+    "std::span::at"
+    "contract_assert"
+    "std::function_ref"
+    "std::inplace_vector"
+)
+    if(featureName STREQUAL "std::function_ref" OR
+       featureName STREQUAL "std::inplace_vector")
+        assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "${featureName}")
+    else()
+        assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "${featureName}")
+    endif()
+endforeach()
+
+foreach(safetyEval IN ITEMS
+    EVAL-SAFE-001 EVAL-SAFE-002 EVAL-SAFE-003 EVAL-SAFE-004
+    EVAL-SAFE-005 EVAL-SAFE-006 EVAL-SAFE-007 EVAL-SAFE-008
+    EVAL-SAFE-009 EVAL-SAFE-010 EVAL-SAFE-011 EVAL-SAFE-012
+)
+    assert_file_contains("evals/modern_cpp_safety.md" "${safetyEval}")
+endforeach()
+assert_file_contains("README.md" "SAFETY_AND_LIFETIME.md")
+assert_file_contains("README.md" "CPP20_26_FEATURES.md")
+assert_file_contains("docs/agent/README.md" "SAFETY_AND_LIFETIME.md")
+assert_file_contains("docs/agent/README.md" "CPP20_26_FEATURES.md")
+assert_file_contains("docs/agent/ERRORS_AND_RESOURCES.md" "SAFETY_AND_LIFETIME.md")
+assert_file_contains("docs/agent/API_DESIGN.md" "CPP20_26_FEATURES.md")
+assert_file_contains("docs/agent/TESTING_AND_VERIFICATION.md" "SAFETY_AND_LIFETIME.md")
+assert_file_contains("evals/README.md" "modern_cpp_safety.md")
 
 foreach(evalId IN ITEMS
     EVAL-APP-001

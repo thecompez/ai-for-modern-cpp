@@ -235,6 +235,11 @@ The complete C++ syntax and identifier contract is documented in
 Standard C++ attributes have a dedicated **use only where appropriate**
 policy, compatibility matrix and safety/ABI decision guide in
 [`docs/agent/ATTRIBUTES.md`](docs/agent/ATTRIBUTES.md).
+Safety-critical C++20–C++26 features have an evidence-based guide covering
+bounds, ownership, parsing, integer overflow, concurrency, contracts and
+foreign APIs in [`SAFETY_AND_LIFETIME.md`](docs/agent/SAFETY_AND_LIFETIME.md).
+The broader, **use only when justified** feature matrix is in
+[`CPP20_26_FEATURES.md`](docs/agent/CPP20_26_FEATURES.md).
 The copy-ready CMake shape for generated Qt Quick projects is documented in
 [`docs/agent/PROJECT_CMAKE_BASELINE.md`](docs/agent/PROJECT_CMAKE_BASELINE.md).
 
