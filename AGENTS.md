@@ -340,7 +340,13 @@ Modern syntax is a correctness and readability contract, not optional polish.
 - **SYN-007** — Single-argument constructors MUST be `explicit` unless implicit
   conversion is the documented purpose of the type.
 - **SYN-008** — Results whose loss can hide an error or skip required work MUST
-  be marked `[[nodiscard]]`.
+  be marked `[[nodiscard]]`. This includes recoverable error/status results and
+  meaningful query/computation results whose discard is likely a bug. Do not
+  mark every non-`void` function mechanically: optional informational returns
+  from side-effect operations (including assignment operators) SHOULD NOT be
+  marked. An intentional discard MUST be safe under the documented contract,
+  explicit, and justified; it MUST NOT conceal a required error check. See
+  `docs/agent/SYNTAX_AND_STYLE.md` for function/type placement and examples.
 - **SYN-009** — Overriding virtual functions MUST use `override`; types and
   functions that are intentionally not extensible SHOULD use `final`.
 - **SYN-010** — Prefer brace initialization when it prevents narrowing or
