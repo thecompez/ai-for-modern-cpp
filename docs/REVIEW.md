@@ -87,6 +87,24 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `API-002`: Ownership, lifetime, optionality, and failure are explicit.
 - [ ] `API-005`: Public templates use meaningful constraints where required.
 
+## C++20+ Safety And Feature Gates
+
+- [ ] `SAFE-001`–`SAFE-004`: Non-owning views have live backing storage,
+  indices/extents are checked and overflow/narrowing is prevented **before**
+  allocation or indexing; parsing enforces complete valid input.
+- [ ] `SAFE-005`–`SAFE-008`: Failure propagation, joining/cancellation,
+  suspended coroutine references and C API adoption are sound and explicit.
+- [ ] `SAFE-009`–`SAFE-012`: Formats treat hostile text as data; credentials
+  are redacted; contracts/hardening are not trusted for authorization or
+  error recovery; filesystem handling is race/traversal aware.
+- [ ] `SAFE-013`: Required negative tests and available sanitizer evidence
+  have been collected, or unavailable layers are reported `NOT VERIFIED`.
+- [ ] `FEAT-001`–`FEAT-005`: The selected feature exists in the actual
+  language/STL/Qt toolchain, and container lifetime/invalidation,
+  performance claims, portability and removed API usage are reviewed.
+- [ ] `SAFETY_AND_LIFETIME.md` and `CPP20_26_FEATURES.md` were consulted
+  for changes involving the relevant risks.
+
 ## Errors, Ownership, And Platforms
 
 - [ ] `ERR-001`: Recoverable failures use `std::expected` or an equivalent.
