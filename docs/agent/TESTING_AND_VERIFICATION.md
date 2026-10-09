@@ -159,9 +159,19 @@ Add tests for:
 - move/ownership behavior when resource types change;
 - platform translation at supported boundaries;
 - regressions reproduced by a prior failure.
+- invalid spans, truncated buffers, index-at-size and external extents;
+- integer overflow and signed-to-unsigned size conversions;
+- dangling views, iterator invalidation and coroutine cancellation;
+- C API failure/deleter paths and partially initialized outputs;
+- data races, stop requests during blocking operations and shutdown deadlocks;
+- format-string misuse, secret leakage and hostile filesystem paths.
 
 Avoid tests that expose private helpers solely for access. Prefer public module
-behavior.
+behavior. For changed security-critical code, use the `SAFE-*` negative-test
+matrix in [`SAFETY_AND_LIFETIME.md`](SAFETY_AND_LIFETIME.md), run
+applicable ASan/UBSan and separately TSan when supported, and report any
+untested configuration. Static documentation checks cannot validate memory
+safety or correctness of illustrative C++23/26 snippets.
 
 For a Qt Quick product, the final evidence can include these layers in
 proportion to the selected verification level and claim scope:
