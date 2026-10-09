@@ -30,7 +30,8 @@ and update the guide in the same change when authorized.
 | Is this declaration or implementation? | `MODULES.md` |
 | What should this symbol be called? | `NAMING.md` |
 | Which C++ syntax and style shape is required? | `SYNTAX_AND_STYLE.md` |
-| What should the public contract expose? | `API_DESIGN.md` |
+| When should I use or avoid C++ attributes? | `ATTRIBUTES.md`, then `SYNTAX_AND_STYLE.md` as needed |
+| What should the public contract expose? | `API_DESIGN.md` and `ATTRIBUTES.md` for attribute contracts |
 | Is this `expected`, an exception, or RAII? | `ERRORS_AND_RESOURCES.md` |
 | Where does OS-specific code belong? | `PLATFORM_BOUNDARIES.md` |
 | How should application icons and in-application brand marks be designed, generated, packaged, and verified? | `APP_ICONS_AND_BRANDING.md`, then `PLATFORM_BOUNDARIES.md` and `QT_QUICK_UI.md` when applicable |
