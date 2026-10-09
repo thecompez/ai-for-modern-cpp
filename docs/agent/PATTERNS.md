@@ -233,6 +233,51 @@ if (flag) [[likely]] {
 An assumption is not a runtime check; a branch hint needs measured evidence.
 See `ATTRIBUTES.md` (`ATTR-001` to `ATTR-014`) for complete decisions.
 
+## C++20+ Safety: Boundaries Before Use
+
+**Correct: check an index before accessing a non-owning view**
+
+```cpp
+[[nodiscard]] auto readAt(std::span<const std::byte> bytes,
+                          std::size_t index)
+    -> std::optional<std::byte>
+{
+    if (index >= bytes.size()) {
+        return std::nullopt;
+    }
+    return bytes[index];
+}
+```
+
+**Incorrect: unchecked index or lifetime assumption**
+
+```cpp
+auto element = bytes[untrustedIndex]; // May be out of bounds.
+std::string_view result = std::string("temporary"); // Dangling.
+```
+
+**Correct: detect multiplication overflow before allocation (C++20)**
+
+```cpp
+if (elementSize != 0 &&
+    elementCount > std::numeric_limits<std::size_t>::max() / elementSize) {
+    return std::unexpected(SizeError::Overflow);
+}
+const auto bytesNeeded = elementCount * elementSize;
+```
+
+**Incorrect: assume contracts enforce hostile-input validation**
+
+```cpp
+// C++26-only, and not a substitute for input checks:
+contract_assert(isAuthorized(request)); // May be ignored.
+```
+
+All C++20+ high-risk decisions are in `SAFETY_AND_LIFETIME.md`
+(`SAFE-001`–`SAFE-013`). Use `CPP20_26_FEATURES.md`
+(`FEAT-001`–`FEAT-005`) for feature selection, capacities,
+coroutine and callable ownership, and compiler-support gates.
+
 ## Modern Formatted Console Output
 
 **Correct**
