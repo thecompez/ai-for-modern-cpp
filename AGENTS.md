@@ -15,6 +15,7 @@ the evals test whether an agent applies them correctly.
 Primary references:
 
 - ISO C++ Core Guidelines: https://isocpp.org/guidelines
+- C++ language attributes: https://cppreference.com/cpp/language/attributes
 - C++ Core Guidelines source: https://github.com/isocpp/CppCoreGuidelines
 - C++ language status: https://isocpp.org/std/status
 - CMake documentation: https://cmake.org/cmake/help/latest/
@@ -90,8 +91,9 @@ After reading this file, read only the guides required for the task.
 | Start a new product, project, repository, or idea implementation | `docs/agent/START_PROJECT.md` before every other routed guide |
 | Understand repository structure or introduce a subsystem | `docs/agent/ARCHITECTURE.md` |
 | Add or change a C++ module | `docs/agent/MODULES.md`, `docs/agent/NAMING.md`, and `docs/agent/SYNTAX_AND_STYLE.md` |
-| Write or review C++ syntax, identifiers, or formatting | `docs/agent/SYNTAX_AND_STYLE.md` and `docs/agent/NAMING.md` |
-| Design or review a public API | `docs/agent/API_DESIGN.md` and `docs/agent/ERRORS_AND_RESOURCES.md` |
+| Write or review C++ syntax, identifiers, or formatting | `docs/agent/SYNTAX_AND_STYLE.md` and `docs/agent/NAMING.md`; also `docs/agent/ATTRIBUTES.md` when attributes are involved |
+| Design or review a public API | `docs/agent/API_DESIGN.md`, `docs/agent/ERRORS_AND_RESOURCES.md`, and `docs/agent/ATTRIBUTES.md` for attribute contracts |
+| Add or audit C++ attributes, annotations, or attribute portability | `docs/agent/ATTRIBUTES.md` and `docs/agent/SYNTAX_AND_STYLE.md` |
 | Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
 | Create, replace, package, or verify application icons or in-application brand marks | `docs/agent/APP_ICONS_AND_BRANDING.md`, `docs/agent/PLATFORM_BOUNDARIES.md`, and `docs/agent/QT_QUICK_UI.md` when the mark appears in the interface |
@@ -346,7 +348,8 @@ Modern syntax is a correctness and readability contract, not optional polish.
   from side-effect operations (including assignment operators) SHOULD NOT be
   marked. An intentional discard MUST be safe under the documented contract,
   explicit, and justified; it MUST NOT conceal a required error check. See
-  `docs/agent/SYNTAX_AND_STYLE.md` for function/type placement and examples.
+  `docs/agent/ATTRIBUTES.md` for function/type placement, source references,
+  and the Core Guidelines ES.48 deliberate-discard policy.
 - **SYN-009** — Overriding virtual functions MUST use `override`; types and
   functions that are intentionally not extensible SHOULD use `final`.
 - **SYN-010** — Prefer brace initialization when it prevents narrowing or
@@ -401,6 +404,53 @@ case ErrorCode::InvalidToken:
 ```
 
 See `docs/agent/SYNTAX_AND_STYLE.md`.
+
+---
+
+
+## 9A. Standard Attribute Discipline
+
+An attribute expresses a **true, useful, legally placed contract**, not a
+badge of modernity. All `ATTR-*` rules apply to the actual project language
+standard and supported compilers. See `docs/agent/ATTRIBUTES.md` for the
+complete standard-attribute matrix, examples, portability, and evidence.
+
+- **ATTR-001** — Agents MUST choose each attribute by semantic contract and
+  permitted declaration/statement target. Blanket annotation is forbidden.
+- **ATTR-002** — Agents MUST verify standard version, syntax, placement,
+  compiler support, and fallback before introducing an attribute; C++26
+  reference support MUST NOT be assumed in C++20/23 derived code.
+- **ATTR-003** — Significant results MUST follow `SYN-008`. Suppression of
+  `[[nodiscard]]` on mandatory errors is forbidden. Deliberate safe discards
+  require review; prefer `std::ignore` per Core Guidelines ES.48 to casts.
+- **ATTR-004** — `[[noreturn]]` MUST be used only when all execution paths
+  never return normally and its first declaration agrees with the contract.
+- **ATTR-005** — `[[deprecated("reason")]]` SHOULD accompany a deliberate
+  public API migration with an actionable replacement, not arbitrary old code.
+- **ATTR-006** — Unused parameters SHOULD be unnamed. `[[maybe_unused]]`
+  SHOULD be used only for legitimate conditionally unused entities and MUST
+  NOT conceal dead or forgotten logic.
+- **ATTR-007** — `[[fallthrough]];` MUST mark only intentional fallthrough
+  to the next switch label, using the required null-statement form.
+- **ATTR-008** — `[[likely]]`/`[[unlikely]]` SHOULD be added only after
+  representative profiling demonstrates value; speculative hints are forbidden.
+- **ATTR-009** — `[[no_unique_address]]` MUST have an intentional layout
+  reason and verified address/ABI/compiler behavior; space savings are not
+  guaranteed.
+- **ATTR-010** — `[[assume(expr)]];` MUST NOT be used for input validation
+  or unsupported assumptions; any use requires a proof that the predicate
+  holds on every reaching path and evidence of benefit.
+- **ATTR-011** — `[[indeterminate]]` MUST NOT be introduced in ordinary
+  production code; narrowly reviewed C++26 low-level exceptions require
+  initialized-before-read evidence and must respect `SYN-002`.
+- **ATTR-012** — Removed C++26 `[[carries_dependency]]` MUST NOT be added
+  to new code; pre-C++26 legacy retention requires a specific justification.
+- **ATTR-013** — TM TS `[[optimize_for_synchronized]]` and vendor attributes
+  (`gnu::`, `clang::`, `msvc::`) MUST NOT enter portable core code without
+  an approved, isolated toolchain boundary and verified fallback.
+- **ATTR-014** — `alignas` is a separate alignment specifier, not a
+  `[[...]]` attribute. Use it only for measured/required alignment contracts;
+  do not classify `override`, `final`, `noexcept` or `explicit` as attributes.
 
 ---
 
