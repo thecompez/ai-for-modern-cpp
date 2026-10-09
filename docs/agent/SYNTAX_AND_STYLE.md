@@ -130,6 +130,11 @@ its leading return type is not the problem.
 
 ## Discarded Results (`SYN-008`)
 
+For **all** standard attributes, use [`ATTRIBUTES.md`](ATTRIBUTES.md) for
+allowed placement, language version, real contract, safe non-use, compiler
+portability, and optimization/ABI proof. `[[nodiscard]]` is one case of
+`ATTR-001`–`ATTR-014`, not a template for blanket annotation.
+
 Apply `[[nodiscard]]` when ignoring a result would probably be a correctness
 error, not merely because a function returns a value. In particular:
 
@@ -198,12 +203,12 @@ discarded. Returning `ValidationResult&` or `const ValidationResult&` does
 its reference result is also a contract violation. Prefer function-level
 annotations when the same type has both mandatory and optional use cases.
 
-For a documented, safe intentional discard, `static_cast<void>(operation())`
-makes the intent explicit. It is not an acceptable shortcut for suppressing
-unchecked errors. `[[nodiscard]]` requests a diagnostic; the language does not
-mandate that every compiler issue a warning or reject the program. Reviewers
-MUST check both missing annotations and unnecessary annotations, and verify
-whether intentional discards are safe under the API's failure contract.
+For a **rare, documented, reviewed, demonstrably safe** intentional discard,
+Core Guidelines ES.48 prefers `std::ignore = operation();` (from `<tuple>`)
+over a cast to `void`. Neither can bypass a required error check: always
+handle or propagate recoverable failures. `[[nodiscard]]` encourages but does
+not invariably mandate a diagnostic. Review missing/unnecessary annotations
+and safe discards against the contract. See `ATTRIBUTES.md`.
 
 ## Modern Formatted Output
 
@@ -372,8 +377,8 @@ Do not write:
 3. Check enum declarations and every `case` label.
 4. Check private/protected data member prefixes.
 5. Check initialization, constness, casts, nullability, and control-flow braces.
-6. Check mandatory result/error contracts, unnecessary `[[nodiscard]]`, and
-   documented, safe intentional discards.
+6. Check attributes with `ATTRIBUTES.md`: legal target and version, semantic
+   purpose, safe discards, and evidence for profiling, layout and assumptions.
 7. Check that return syntax is deliberate rather than mechanically uniform.
 8. Reject new iostream insertion for ordinary formatted console output.
 9. Reject unrelated formatting churn during functional changes.
