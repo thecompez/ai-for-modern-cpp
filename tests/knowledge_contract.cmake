@@ -201,6 +201,7 @@ foreach(reviewRule IN ITEMS
     INI-003
     INI-004
     MOD-010
+    SYN-008
     APP-001
     APP-002
     APP-003
@@ -781,6 +782,9 @@ assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-013")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-014")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-015")
 assert_file_contains("evals/ui_and_syntax.md" "EVAL-UI-016")
+assert_file_contains("evals/ui_and_syntax.md" "EVAL-SYN-007")
+assert_file_contains("docs/agent/SYNTAX_AND_STYLE.md" "## Discarded Results (`SYN-008`)")
+assert_file_contains("docs/agent/PATTERNS.md" "## Required Results Without Warning Noise")
 
 foreach(evalId IN ITEMS
     EVAL-APP-001
