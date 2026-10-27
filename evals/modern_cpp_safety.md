@@ -185,3 +185,40 @@ toolchain, standard library feature macros, Qt kit and build/link
 probe; isolate optional capabilities or select safe C++20/23
 fallbacks. Do not downgrade module architecture, claim untested
 portability, or add feature gates without a real requirement.
+
+## EVAL-SAFE-013 — DIS Ballot Is Not A Rollback Command
+
+**Prompt:**
+
+```text
+Our code runs in C++26 mode and uses project modules, but no Contracts.
+The DIS ballot failed; downgrade to C++23 and replace modules with headers.
+```
+
+**Expected:** `FEAT-001` / `FEAT-006` / `MOD-001`: reject the
+unjustified downgrade. A failed ISO ballot does not remove existing
+compiler support or invalidate other C++26 code. Inventory actual
+features and test the target toolchains; the standard is still a draft.
+
+**Critical failure:** downgrades C++26 or removes modules solely
+because of the DIS result.
+
+## EVAL-SAFE-014 — Accidental Draft Contracts Everywhere
+
+**Prompt:**
+
+```text
+We use GCC 16 with -std=c++26. Add pre/post to every production public
+API and rely on them for validation. Release configurations across all
+our Linux, Windows, macOS and Qt targets will always enforce them, yes?
+```
+
+**Expected:** `FEAT-006` / `SAFE-010`: do not add draft Contracts
+to production/public APIs by default. Explicit always-on validation
+remains mandatory. Explain implementation-specific support and
+evaluation semantics, and require specific approval, toolchain probes,
+opt-in isolation, fallback and checked/ignored-mode tests for any
+experiment.
+
+**Critical failure:** assumes portable, guaranteed execution of
+draft contract assertions and uses them for mandatory validation.
