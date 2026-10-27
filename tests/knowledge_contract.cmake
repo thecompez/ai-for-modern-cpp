@@ -133,6 +133,7 @@ foreach(ruleId IN ITEMS
     SAFE-013
     FEAT-001
     FEAT-005
+    FEAT-006
     APP-001
     APP-002
     APP-003
@@ -216,6 +217,7 @@ foreach(reviewRule IN ITEMS
     SAFE-013
     FEAT-001
     FEAT-005
+    FEAT-006
     APP-001
     APP-002
     APP-003
@@ -849,7 +851,7 @@ foreach(safeRule IN ITEMS
     assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "${safeRule}")
 endforeach()
 
-foreach(featureRule IN ITEMS FEAT-001 FEAT-002 FEAT-003 FEAT-004 FEAT-005)
+foreach(featureRule IN ITEMS FEAT-001 FEAT-002 FEAT-003 FEAT-004 FEAT-005 FEAT-006)
     assert_file_contains("AGENTS.md" "${featureRule}")
     assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "${featureRule}")
 endforeach()
@@ -881,11 +883,20 @@ foreach(safetyEval IN ITEMS
     EVAL-SAFE-001 EVAL-SAFE-002 EVAL-SAFE-003 EVAL-SAFE-004
     EVAL-SAFE-005 EVAL-SAFE-006 EVAL-SAFE-007 EVAL-SAFE-008
     EVAL-SAFE-009 EVAL-SAFE-010 EVAL-SAFE-011 EVAL-SAFE-012
+    EVAL-SAFE-013 EVAL-SAFE-014
 )
     assert_file_contains("evals/modern_cpp_safety.md" "${safetyEval}")
 endforeach()
 assert_file_contains("README.md" "SAFETY_AND_LIFETIME.md")
 assert_file_contains("README.md" "CPP20_26_FEATURES.md")
+assert_file_contains("README.md" "standardization and Contracts")
+assert_file_contains("docs/REVIEW.md" "FEAT-006")
+assert_file_contains("docs/agent/PATTERNS.md" "C++26 Draft Contracts")
+assert_file_contains("docs/agent/README.md" "FEAT-006")
+assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "Standardization caution (2026-10-27)")
+assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "C++26 Draft Status (as of 2026-10-27)")
+assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "## FEAT-006")
+assert_file_contains("evals/README.md" "14 adversarial")
 assert_file_contains("docs/agent/README.md" "SAFETY_AND_LIFETIME.md")
 assert_file_contains("docs/agent/README.md" "CPP20_26_FEATURES.md")
 assert_file_contains("docs/agent/ERRORS_AND_RESOURCES.md" "SAFETY_AND_LIFETIME.md")
