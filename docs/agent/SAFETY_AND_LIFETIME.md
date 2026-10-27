@@ -313,6 +313,15 @@ are not guaranteed for every build.** Avoid state changes inside
 contract predicates. Do not rely on contracts for hostile network
 requests, auth, persistence integrity or security checks.
 
+**Standardization caution (2026-10-27):** C++26's DIS ballot was
+reported disapproved in October 2026. The national-body comments and
+final ISO wording remain unresolved. FEAT-006 forbids default adoption
+of draft Contracts in production/public APIs. A specifically approved
+experiment must document toolchain version/flags and evaluation
+semantics, isolate the feature behind opt-in, preserve a non-Contracts
+fallback, and test both checked and ignored modes. Unrelated working
+C++26 code need not be downgraded.
+
 **Correct pattern:**
 
 ```cpp

@@ -17,6 +17,27 @@ It is intentionally strict. The goal is not to collect isolated language
 features or become an application product. The goal is to make high-quality
 modern C++ engineering behavior legible and repeatable for AI agents.
 
+> [!IMPORTANT]
+> **C++26 standardization and Contracts — status as of 27 October 2026.**
+> The C++26 Draft International Standard ballot was [reported as
+> disapproved](https://train-it.eu/blog/cpp26-contracts-the-ballot-result/).
+> Final ISO wording and the publication schedule remain unresolved;
+> national-body comments are not public yet, so the precise reasons for
+> every vote are not established. This **does not invalidate** existing
+> working C++26 builds or project modules. Keep the C++26 reference
+> target, and verify each draft-only facility against the actual compiler,
+> standard library and Qt kit instead of rolling back automatically.
+>
+> **Do not automatically adopt draft C++26 Contracts** (`pre`, `post`,
+> `contract_assert`) in production code or public APIs. Checking may be
+> ignored depending on evaluation semantics; Contracts do not replace
+> unconditional input validation, authorization or recoverable errors.
+> Explicitly approved experiments need isolated opt-in use, documented
+> compiler/version/flags, a non-Contracts fallback, and tests with checks
+> enabled and disabled. See [FEAT-006](docs/agent/CPP20_26_FEATURES.md#feat-006--provisional-contracts-adoption-gate),
+> [SAFE-010](docs/agent/SAFETY_AND_LIFETIME.md#safe-010-c26-contracts-are-not-input-validation)
+> and [WG21 P4433R0](https://wg21.link/P4433R0).
+
 ## Knowledge Architecture
 
 ```mermaid

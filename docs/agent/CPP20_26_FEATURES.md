@@ -21,6 +21,20 @@ Before introducing a C++23/26 feature:
 No wholesale migration or library dependency is authorized just because
 a newer feature is available.
 
+### C++26 Draft Status (as of 2026-10-27)
+
+The C++26 Draft International Standard ballot was **reported disapproved**
+in October 2026. The final ISO text, schedule and Contracts design remain
+unsettled. National-body comments are not yet public: do not claim
+Contracts are confirmed as the cause of every negative vote. A failed
+ballot does not invalidate working compiler implementations, remove
+other C++26 features or require reverting to C++23. Continue probing
+draft-only features on each supported toolchain.
+
+Sources: [ballot report](https://train-it.eu/blog/cpp26-contracts-the-ballot-result/)
+and [WG21 P4433R0](https://wg21.link/P4433R0). Recheck the status when
+WG21/ISO publishes its subsequent decision.
+
 ## C++20: New Tools And Meaningful Use
 
 | Facility | Recommended when | Do not use when |
@@ -92,7 +106,7 @@ Do not choose a new abstraction just to avoid a short, readable function.
 | `std::span::at` and `std::mdspan::at` | Explicit checked indexed access | Invalid source pointers/extents become valid |
 | `std::saturating_add`/`sub`/`mul`/`div`/`cast` | Defined clamped numeric results where saturation is intentional | Overflow is reported to a caller like checked `ckd_*` (it is not) |
 | `std::execution` sender/receiver and async scopes | Structured, composable async work with value/error/stopped channels | Operation-state lifetime, synchronization or cancellation manages itself |
-| Contracts (`pre`, `post`, `contract_assert`, `<contracts>`) | Document/test programmer invariants | They run in every build or can reject untrusted requests |
+| Contracts (`pre`, `post`, `contract_assert`, `<contracts>`) | May document/test programmer invariants in an approved experiment (FEAT-006) | Final wording, portable availability, or checks running in all builds; never reject untrusted requests solely this way |
 | Standard library hardening | Selected precondition diagnostics/termination | All STLs check every index or recover from violations |
 | `std::inplace_vector` | Embedded, fixed-capacity contiguous storage | Growth is unlimited; excess elements need explicit handling |
 | `std::hive` | Stable references to surviving elements amid insertion/erasure | Erased-element references remain valid or iteration is contiguous |
@@ -141,6 +155,41 @@ never saturate security-critical allocation sizes silently.
 reclamation hazards when correctly used, but they are *not* generic
 thread-safety wrappers. Require specialist design, stress tests and
 measured justification before adopting.
+
+## FEAT-006 — Provisional Contracts Adoption Gate
+
+**Default: do not add C++26 Contracts to production code or public APIs
+while their standardization is unsettled.** This is not a ban on other
+verified C++26 features or a reason to downgrade working projects.
+C++20 concepts/`requires` and standard `static_assert` are distinct
+from the disputed C++26 runtime Contracts proposal.
+
+The draft currently has `pre`, `post`, `contract_assert` and four
+evaluation semantics: `ignore`, `observe`, `enforce` and
+`quick-enforce`. Implementations may select whether a check runs.
+These cannot replace required runtime authorization, bounds checks,
+validation, persistence integrity or error reporting; do not put side
+effects into a predicate (SAFE-010).
+
+For an **explicitly human-approved experiment** only:
+
+1. Isolate and opt in the Contracts code outside stable public API
+   requirements; document exact compiler version, flags and libraries.
+2. Compile/link a probe on each selected target; `-std=c++26` and
+   feature-test macros alone do not prove complete support.
+3. Document the evaluation semantics of each build configuration and
+   which assertions may be ignored.
+4. Keep unconditional runtime validation and a portable non-Contracts
+   fallback for production targets.
+5. Test with checks enabled and ignored; do not infer one mode's
+   behavior from the other.
+6. Reevaluate once ISO standardization is final and do not promise
+   final source or ABI compatibility in advance.
+
+**Incorrect:** adding `pre(isAuthorized(request))` as the only gate
+for a production operation. **Correct:** execute an explicit
+authorization check and return a defined error. Do not mechanically
+annotate all functions.
 
 ## FEAT-002 — Containers And Iterator Stability
 
