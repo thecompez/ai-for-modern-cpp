@@ -233,6 +233,39 @@ if (flag) [[likely]] {
 An assumption is not a runtime check; a branch hint needs measured evidence.
 See `ATTRIBUTES.md` (`ATTR-001` to `ATTR-014`) for complete decisions.
 
+## C++26 Draft Contracts: Avoid Accidental Production Adoption
+
+**Correct: mandatory bounds validation is unconditional.**
+
+```cpp
+[[nodiscard]] auto readAt(std::span<const int> values, std::size_t index)
+    -> std::optional<int>
+{
+    if (index >= values.size()) {
+        return std::nullopt;
+    }
+    return values[index];
+}
+```
+
+**Incorrect: a draft contract is the only bounds check (example only,
+not part of the executable proof).**
+
+```cpp
+int readAt(std::span<const int> values, std::size_t index)
+    pre(index < values.size())
+{
+    return values[index]; // Unsafe when contract evaluation is ignored.
+}
+```
+
+Per FEAT-006 and SAFE-010, do not add `pre`, `post`, or
+`contract_assert` to production APIs by default while the ISO
+specification remains unsettled. Human-approved experiments need
+documented compiler/flags, explicit evaluation semantics, an isolated
+fallback, and tests with checking enabled/ignored. Other working
+C++26 features do not require rollback.
+
 ## C++20+ Safety: Boundaries Before Use
 
 **Correct: check an index before accessing a non-owning view**
