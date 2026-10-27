@@ -102,6 +102,12 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `FEAT-001`–`FEAT-005`: The selected feature exists in the actual
   language/STL/Qt toolchain, and container lifetime/invalidation,
   performance claims, portability and removed API usage are reviewed.
+- [ ] `FEAT-006`: C++26 is not described as ISO-final or downgraded
+  solely because the DIS ballot failed. Draft Contracts are not added
+  to production/public APIs by default. Approved experiments have
+  isolated opt-in use, verified toolchain/flags, recorded evaluation
+  semantics, a fallback and checked/ignored-mode tests; SAFE-010
+  validation remains always-on.
 - [ ] `SAFETY_AND_LIFETIME.md` and `CPP20_26_FEATURES.md` were consulted
   for changes involving the relevant risks.
 
