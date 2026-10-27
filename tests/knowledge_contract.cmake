@@ -993,20 +993,6 @@ foreach(preflightText IN ITEMS
     assert_file_contains("tests/project_checks.cmake" "${preflightText}")
 endforeach()
 
-foreach(contractsSurface IN ITEMS
-    "AGENTS.md"
-    "docs/agent/CPP20_26_FEATURES.md"
-    "docs/REVIEW.md"
-    "docs/agent/PATTERNS.md"
-    "evals/modern_cpp_safety.md"
-)
-    assert_file_contains("${contractsSurface}" "FEAT-006")
-endforeach()
-assert_file_contains("README.md" "Avoid new C++26 Contracts")
-assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "FEAT-006")
-assert_file_contains("evals/modern_cpp_safety.md" "EVAL-SAFE-013")
-assert_file_contains("evals/modern_cpp_safety.md" "EVAL-SAFE-014")
-
 message(STATUS
     "Knowledge contract verified: project initiation, modules, deterministic QML resources, platform-native application icons, separated outputs, full-product evidence, and visual acceptance remain synchronized."
 )

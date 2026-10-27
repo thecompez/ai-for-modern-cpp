@@ -38,24 +38,6 @@ modern C++ engineering behavior legible and repeatable for AI agents.
 > [SAFE-010](docs/agent/SAFETY_AND_LIFETIME.md#safe-010-c26-contracts-are-not-input-validation)
 > and [WG21 P4433R0](https://wg21.link/P4433R0).
 
-> [!IMPORTANT]
-> **C++26 Contracts and standardization — 27 October 2026.** The ISO
-> C++26 Draft International Standard ballot was [reported unsuccessful](https://train-it.eu/blog/cpp26-contracts-the-ballot-result/).
-> Its final wording and schedule are not settled. This does **not** mean
-> C++26 is cancelled or that working compiler-supported C++26 features,
-> including project modules, need to be rolled back. Verify draft-specific
-> support on actual compiler, standard library and Qt toolchains.
->
-> **Avoid new C++26 Contracts in production/public APIs by default.**
-> Draft `pre`, `post`, `contract_assert` and `<contracts>` may change,
-> and their evaluation may be ignored in a build. Never use them instead
-> of mandatory input validation or authorization. Explicitly approved
-> experiments require isolated opt-in use, compiler/version/flag probes,
-> documented checking semantics, a portable non-Contracts fallback, and
-> tests with checking enabled and ignored. See `FEAT-006` in
-> [feature guidance](docs/agent/CPP20_26_FEATURES.md) and `SAFE-010` in
-> [safety guidance](docs/agent/SAFETY_AND_LIFETIME.md).
-
 ## Knowledge Architecture
 
 ```mermaid

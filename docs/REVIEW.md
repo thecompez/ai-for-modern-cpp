@@ -108,13 +108,6 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   isolated opt-in use, verified toolchain/flags, recorded evaluation
   semantics, a fallback and checked/ignored-mode tests; SAFE-010
   validation remains always-on.
-- [ ] `FEAT-006`: Do not misrepresent provisional C++26 as an ISO-final
-  standard or downgrade working modules/features solely due to the DIS
-  result. Avoid introducing draft Contracts in production/public APIs
-  by default. Explicitly authorized experiments need isolated opt-in,
-  real compiler/version/flag probes, documented evaluation modes,
-  non-Contracts fallback and checked/ignored-mode tests. Keep SAFE-010
-  validation always active.
 - [ ] `SAFETY_AND_LIFETIME.md` and `CPP20_26_FEATURES.md` were consulted
   for changes involving the relevant risks.
 

@@ -575,15 +575,6 @@ structured errors, coroutines, diagnostics, and concurrency.
 - **FEAT-005** — Removed/deprecated standard-library facilities MUST NOT
   be copied into new projects; migration MUST verify precise replacements,
   affected targets and build evidence.
-- **FEAT-006** — The C++26 DIS ballot was reported unsuccessful in October
-  2026. C++26 features remain usable where verified on the actual toolchain,
-  and existing projects MUST NOT be downgraded solely because of the ballot.
-  Until Contracts standardization is resolved, agents MUST NOT add C++26
-  `pre`, `post`, `contract_assert` or `<contracts>` to production code or
-  stable public APIs by default. Explicitly human-approved experiments MAY
-  use isolated opt-in Contracts only with exact compiler/version/flag probes,
-  documented evaluation semantics, portable non-Contracts fallbacks and
-  tests with contract checking enabled and ignored. SAFE-010 always applies.
 - **FEAT-006** — The C++26 ISO DIS ballot was reported disapproved in
   October 2026. This repository MAY retain its working C++26 reference
   toolchain, but MUST NOT describe the draft as a published ISO standard.
