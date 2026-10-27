@@ -848,3 +848,35 @@ apple-rounded-icon.png
 The incorrect form violates `APP-002` through `APP-007`: it double-masks
 Android, ignores Windows and Linux native artifact families, and treats a large
 launcher composition as a small interface asset.
+
+## Provisional C++26 Contracts Versus Always-On Validation
+
+**Correct: unconditional bounds validation, independent of Contracts.**
+
+```cpp
+[[nodiscard]] auto readValue(std::span<const int> values, std::size_t index)
+    -> std::optional<int>
+{
+    if (index >= values.size()) {
+        return std::nullopt;
+    }
+    return values[index];
+}
+```
+
+**Incorrect: relying on a draft Contract (illustration only; not an
+executable proof).**
+
+```cpp
+int readValue(std::span<const int> values, std::size_t index)
+    pre(index < values.size())
+{
+    return values[index]; // Unsafe when contract checking is ignored.
+}
+```
+
+FEAT-006 and SAFE-010 require unconditional runtime checks and forbid
+automatic adoption of draft C++26 Contracts in production/public APIs.
+Explicitly approved experiments need a verified compiler and modes,
+a non-Contracts fallback and both checked/ignored tests. Do not roll
+back unrelated working C++26 facilities because of the ballot.

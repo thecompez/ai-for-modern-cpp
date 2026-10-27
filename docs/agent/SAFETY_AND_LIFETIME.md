@@ -336,6 +336,14 @@ Do not introduce C++26 syntax without compiler and library probes
 (`__cpp_contracts` / `__cpp_lib_contracts`). Existing `assert` statements
 may also compile out; use runtime checks for recoverable errors.
 
+**C++26 status note (27 October 2026):** The C++26 DIS ballot was
+reported unsuccessful and Contracts' final ISO wording is unresolved.
+FEAT-006 therefore discourages adding draft Contracts to production
+or public APIs by default; approved experiments require isolated
+opt-in use, compiler/flag and evaluation-mode evidence, fallback, and
+tests with checks enabled/ignored. Existing non-Contracts C++26 code
+does not require wholesale rollback.
+
 ## SAFE-011: Hardened Standard Library Is Defense In Depth
 
 C++26 standardized hardening describes selected library preconditions;
