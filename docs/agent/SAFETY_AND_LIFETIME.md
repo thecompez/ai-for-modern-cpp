@@ -532,7 +532,7 @@ int ratio = amount / divisor; // Invalid when divisor is zero.
 }
 ```
 
-Use `std::in_range<T>` before narrowing numeric input. C++26
+Use `std::in_range<T>` before integral-to-integral narrowing. C++26
 `ckd_add`/`ckd_sub`/`ckd_mul` are optional, feature-gated ways to
 detect integer overflow; the checked fallback is valid for C++20/23.
 Saturating arithmetic is not equivalent to reporting an invalid operation.
