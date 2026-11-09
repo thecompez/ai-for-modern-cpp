@@ -201,6 +201,15 @@ containers in existing code without examining invalidation is forbidden.
 Use `std::ranges::to` (C++23) when materializing a lazy range is necessary
 to establish ownership, and verify the target library supports it.
 
+`reserve()` changes capacity, not `size()` or element lifetime. Do not index
+unconstructed elements, and do not construct a span over `capacity()` elements.
+When the element count must exist, construct or `resize()` it; when building
+incrementally, use `reserve()` with insertion/emplacement. C++23
+`append_range()` can insert a range, but availability must be probed.
+A default-constructed C++26 `std::inplace_vector` also has size zero;
+fixed-capacity inline storage does not create live elements.
+Follow SAFE-014 and SAFE-015 for allocation and invalidation decisions.
+
 ## FEAT-003 — Representation, Interop And Diagnostics
 
 For binary I/O, write an explicit wire contract for endianness, alignment,

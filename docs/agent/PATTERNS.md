@@ -311,6 +311,86 @@ All C++20+ high-risk decisions are in `SAFETY_AND_LIFETIME.md`
 (`FEAT-001`–`FEAT-005`) for feature selection, capacities,
 coroutine and callable ownership, and compiler-support gates.
 
+## Capacity, Construction And Modern Container Access
+
+**Incorrect: reserved capacity is not a live element.**
+
+```cpp
+std::vector<int> values {};
+values.reserve(16);
+values[0] = 42; // UB: size() is zero.
+```
+
+**Correct: append one constructed element (C++20).**
+
+```cpp
+std::vector<int> values {};
+values.reserve(16);
+values.emplace_back(42);
+values[0] = 7;
+```
+
+**Correct: construct all slots when indexing is required (C++20).**
+
+```cpp
+std::vector<int> values(16);
+values[0] = 42;
+```
+
+**Correct: materialize an owning range (C++23, feature-gated).**
+
+```cpp
+auto values = std::views::iota(0, 16)
+            | std::ranges::to<std::vector<int>>();
+values[0] = 42;
+```
+
+**Incorrect:** creating `std::span{values.data(), values.capacity()}`
+to access reserved, unconstructed elements. Use `std::span{values}`
+with a valid live container instead. A C++26 `std::inplace_vector`
+also requires element construction before indexing.
+
+## Invalidation, Validity And Data Races
+
+**Incorrect: a potentially dangling reference after vector growth.**
+
+```cpp
+std::vector<int> values {1};
+auto& first = values.front();
+values.push_back(2);
+consume(first); // Potential UB after reallocation.
+```
+
+**Correct: reacquire after mutation.**
+
+```cpp
+std::vector<int> values {1};
+values.push_back(2);
+consume(values.front());
+```
+
+**Incorrect: do not assume a precondition holds.**
+
+```cpp
+std::optional<int> result {};
+consume(*result); // UB: disengaged optional.
+```
+
+**Correct: check before dereference.**
+
+```cpp
+if (result) {
+    consume(*result);
+}
+```
+
+**Incorrect:** signed overflow, division by zero, out-of-range shifts,
+uninitialized reads, pointer arithmetic outside an array, or conflicting
+unsynchronized reads/writes. A crash, a checked exception and a
+performance regression must not automatically be classified as UB.
+See `SAFETY_AND_LIFETIME.md` (SAFE-014–SAFE-020) for concrete
+triggers and verified repairs.
+
 ## Modern Formatted Console Output
 
 **Correct**

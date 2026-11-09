@@ -13,6 +13,13 @@ This repository combines five forms of knowledge:
 4. **Executable proof** — module-based C++26 source code that must build.
 5. **Evals** — scenarios that test whether an AI agent applies the rules.
 
+The safety contract explicitly covers undefined-behavior prevention, including
+reserved capacity versus constructed elements, iterator invalidation,
+initialization and object lifetime, arithmetic and API preconditions, and
+unsynchronized shared state. See [SAFE-014–SAFE-020](AGENTS.md#11a-modern-c20-safety-and-lifetime-rules),
+[the safety guide](docs/agent/SAFETY_AND_LIFETIME.md), and
+[adversarial safety evals](evals/modern_cpp_safety.md).
+
 It is intentionally strict. The goal is not to collect isolated language
 features or become an application product. The goal is to make high-quality
 modern C++ engineering behavior legible and repeatable for AI agents.

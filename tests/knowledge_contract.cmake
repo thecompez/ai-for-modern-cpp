@@ -846,6 +846,7 @@ endforeach()
 foreach(safeRule IN ITEMS
     SAFE-001 SAFE-002 SAFE-003 SAFE-004 SAFE-005 SAFE-006
     SAFE-007 SAFE-008 SAFE-009 SAFE-010 SAFE-011 SAFE-012 SAFE-013
+    SAFE-014 SAFE-015 SAFE-016 SAFE-017 SAFE-018 SAFE-019 SAFE-020
 )
     assert_file_contains("AGENTS.md" "${safeRule}")
     assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "${safeRule}")
@@ -883,7 +884,9 @@ foreach(safetyEval IN ITEMS
     EVAL-SAFE-001 EVAL-SAFE-002 EVAL-SAFE-003 EVAL-SAFE-004
     EVAL-SAFE-005 EVAL-SAFE-006 EVAL-SAFE-007 EVAL-SAFE-008
     EVAL-SAFE-009 EVAL-SAFE-010 EVAL-SAFE-011 EVAL-SAFE-012
-    EVAL-SAFE-013 EVAL-SAFE-014
+    EVAL-SAFE-013 EVAL-SAFE-014 EVAL-SAFE-015 EVAL-SAFE-016
+    EVAL-SAFE-017 EVAL-SAFE-018 EVAL-SAFE-019 EVAL-SAFE-020
+    EVAL-SAFE-021 EVAL-SAFE-022
 )
     assert_file_contains("evals/modern_cpp_safety.md" "${safetyEval}")
 endforeach()
@@ -891,12 +894,18 @@ assert_file_contains("README.md" "SAFETY_AND_LIFETIME.md")
 assert_file_contains("README.md" "CPP20_26_FEATURES.md")
 assert_file_contains("README.md" "standardization and Contracts")
 assert_file_contains("docs/REVIEW.md" "FEAT-006")
+assert_file_contains("docs/REVIEW.md" "SAFE-014")
+assert_file_contains("docs/REVIEW.md" "SAFE-020")
+assert_file_contains("docs/agent/PATTERNS.md" "Capacity, Construction And Modern Container Access")
+assert_file_contains("docs/agent/PATTERNS.md" "SAFE-014")
+assert_file_contains("docs/agent/README.md" "SAFE-014")
+assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "reserve()")
 assert_file_contains("docs/agent/PATTERNS.md" "C++26 Draft Contracts")
 assert_file_contains("docs/agent/README.md" "FEAT-006")
 assert_file_contains("docs/agent/SAFETY_AND_LIFETIME.md" "Standardization caution (2026-10-27)")
 assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "C++26 Draft Status (as of 2026-10-27)")
 assert_file_contains("docs/agent/CPP20_26_FEATURES.md" "## FEAT-006")
-assert_file_contains("evals/README.md" "14 adversarial")
+assert_file_contains("evals/README.md" "22 adversarial")
 assert_file_contains("docs/agent/README.md" "SAFETY_AND_LIFETIME.md")
 assert_file_contains("docs/agent/README.md" "CPP20_26_FEATURES.md")
 assert_file_contains("docs/agent/ERRORS_AND_RESOURCES.md" "SAFETY_AND_LIFETIME.md")

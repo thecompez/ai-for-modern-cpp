@@ -1,6 +1,7 @@
 # C++20–C++26 Safety, Lifetime, and Security
 
 This guide is mandatory for **new or changed** untrusted-input processing,
+container growth/indexing, iterator invalidation, object lifetime, arithmetic,
 pointer/view lifetimes, binary parsing, thread/coroutine tasks, foreign APIs,
 and security-sensitive numerical operations. The canonical `SAFE-*` rules are
 in `AGENTS.md`; this guide gives executable reasoning and positive/negative
@@ -29,6 +30,11 @@ Use `__cpp_lib_*`/`__cpp_*` tests and compile probes for conditional facilities.
 | Untrusted formatted data | `std::format` (C++20), `std::print` (C++23) | Treat external strings as *data*, not format templates; bound output |
 | Pretend security guarantees | C++26 contracts and hardened library | Contracts/hardening do not replace input validation and do not guarantee recovery |
 | Hostile paths/diagnostics | `std::filesystem` and `std::source_location` (C++20) | Restrict trust boundaries, prevent TOCTOU, redact sensitive paths and data |
+| Reserved storage is indexed as if elements existed | `std::vector::reserve` / `resize`, C++23 `append_range` | Reserve capacity only; create elements before access |
+| Invalidated iterators and views | Container-specific invalidation tables | Reacquire handles after growth/erasure/rehash/Qt detachment |
+| Invalid object lifetime or representation | C++20 `std::bit_cast`, C++23 `std::start_lifetime_as` | Prove actual object existence, type, size, alignment and value validity |
+| Arithmetic, iterator and API preconditions | C++20 `std::in_range`, `std::optional::value`, checked arithmetic | Check before signed overflow, shifts, division, pointer math and dereference |
+| Unsynchronized shared mutable state | `std::mutex`, `std::atomic` (C++20) | Prevent conflicting unsynchronized accesses; establish happens-before |
 
 ## SAFE-001: Bounds And Non-Owning Buffer Views
 
@@ -375,9 +381,257 @@ supported**: ASan/UBSan for memory/UB and TSan separately for races
 of memory-safety bugs. Report untested platforms and feature gates
 explicitly; do not claim that a documentation test compiled examples.
 
+
+## SAFE-014: Capacity Is Not Element Lifetime
+
+`reserve(n)` on `std::vector` and `QList` changes the allocated **capacity**,
+not the number of constructed elements. Only indices less than `size()`
+refer to elements. Merely receiving a non-null `data()` pointer does not
+justify indexing reserved tail storage. Never create
+`std::span{values.data(), values.capacity()}` as a view over a vector's
+unconstructed reserved slots.
+
+**Incorrect (UB even when capacity is 32):**
+
+```cpp
+std::vector<int> values {};
+values.reserve(32);
+values[0] = 7; // No element at index 0; size() is still 0.
+```
+
+**Correct (incremental construction, C++20):**
+
+```cpp
+std::vector<int> values {};
+values.reserve(32);
+values.emplace_back(7);
+values[0] = 9; // The element now exists.
+```
+
+**Correct (all 32 elements must exist, C++20):**
+
+```cpp
+std::vector<int> values(32);
+values[0] = 7;
+```
+
+Use `resize(n)` only if the logical size must become `n`. It constructs
+additional elements, which may be expensive or incorrect for a filtered
+insertion pipeline. In C++23, `append_range` inserts elements from a range;
+`std::ranges::to<std::vector<T>>` constructs a new owning container where
+implemented. They do not retroactively validate unchecked indices.
+
+C++26 `std::inplace_vector<T, N>` stores bounded capacity inline, but a
+default-constructed instance still has `size() == 0`. Check remaining
+capacity before appending; do not treat its capacity as constructed objects.
+Feature-gate C++23/26 facilities using FEAT-001.
+
+## SAFE-015: Invalidation Across Mutation
+
+Before retaining a pointer, reference, iterator or view into a container,
+identify the exact mutation and invalidation rules of that container:
+
+- `std::vector` growth/reallocation invalidates all handles into its
+  elements; `reserve` may reallocate. `erase` invalidates iterators and
+  references at/after the erased position.
+- `std::unordered_map` rehash invalidates iterators but **does not**
+  invalidate references/pointers to existing elements. Erasing an element
+  invalidates handles to that element. Do not generalize across containers.
+- `std::deque` and associative/flat containers have different rules;
+  consult the actual operation's documented guarantees.
+- Qt implicitly shared containers may detach and invalidate prior
+  references/iterators. Inspect non-const access, copy-on-write behavior,
+  mutation and the target Qt version.
+
+**Incorrect:**
+
+```cpp
+std::vector<int> values {1};
+int& first = values.front();
+values.push_back(2); // May reallocate.
+use(first); // Potential dangling reference.
+```
+
+**Correct: reacquire the element after a mutation:**
+
+```cpp
+std::vector<int> values {1};
+values.push_back(2);
+use(values.front());
+```
+
+Do not use a surviving numeric index without checking whether insertion,
+erasure or reordering changed its meaning. Reference stability and logical
+identity are separate contracts.
+
+## SAFE-016: Initialization, Storage And Valid Object Representation
+
+A readable value requires an object whose lifetime has begun and whose
+representation is valid for the intended type. Do not read indeterminate
+values, dereference objects after destruction, use invalidly aligned storage,
+or access inactive union members unless a specific language rule permits it.
+
+**Incorrect:**
+
+```cpp
+int value;
+consume(value); // Indeterminate value.
+```
+
+**Correct:**
+
+```cpp
+int value {};
+consume(value);
+```
+
+`reinterpret_cast` does not start object lifetime or waive strict-aliasing,
+alignment or representation requirements. `std::bit_cast` (C++20)
+copies object representation for compatible trivially copyable types; it
+does not guarantee that every bit pattern denotes a valid target value.
+`std::start_lifetime_as` (C++23) is only appropriate after proving storage
+size, alignment, and the API's permitted implicit-lifetime semantics.
+
+Prefer ordinary typed objects, explicit byte decoding and RAII to manual
+storage/lifetime manipulation. For low-level interop, document the exact
+object-model rule relied upon rather than claiming that a cast is safe.
+
+## SAFE-017: Defined Arithmetic And Pointer Operations
+
+Check arithmetic **before** evaluation, including cases unrelated to
+allocation sizes:
+
+- Signed addition, subtraction and multiplication must not overflow.
+- The divisor must be nonzero; signed minimum / `-1` also overflows.
+- A shift count must be nonnegative and smaller than the promoted
+  left operand's width. Check shift-value rules, especially for signed types.
+- A floating-point value must be finite and convertible to a value
+  representable by the target integer type before conversion.
+- Pointer arithmetic and iterator advancement must remain within
+  their permitted array/range boundaries; only the one-past-end
+  position may be formed, never dereferenced.
+
+**Incorrect:**
+
+```cpp
+int total = amount + delta; // Can overflow before any later check.
+int ratio = amount / divisor; // Invalid when divisor is zero.
+```
+
+**Correct, using checked preconditions (C++20):**
+
+```cpp
+[[nodiscard]] auto checkedAdd(int a, int b) -> std::optional<int>
+{
+    constexpr int max = std::numeric_limits<int>::max();
+    constexpr int min = std::numeric_limits<int>::min();
+    if ((b > 0 && a > max - b) || (b < 0 && a < min - b)) {
+        return std::nullopt;
+    }
+    return a + b;
+}
+```
+
+Use `std::in_range<T>` before narrowing numeric input. C++26
+`ckd_add`/`ckd_sub`/`ckd_mul` are optional, feature-gated ways to
+detect integer overflow; the checked fallback is valid for C++20/23.
+Saturating arithmetic is not equivalent to reporting an invalid operation.
+
+## SAFE-018: Dereference, Access And Control-Flow Preconditions
+
+An index or iterator is valid only while the corresponding object exists and
+its preconditions hold. Validate non-emptiness before `front()`/`back()`;
+never dereference `end()` or a null pointer. A disengaged
+`std::optional<T>` must not be dereferenced with `operator*`.
+`optional::value()` throws `std::bad_optional_access` instead;
+a checked `vector::at()` throws `std::out_of_range` on invalid indices.
+These defined exceptions are **not UB**, but must fit the error policy.
+
+**Incorrect:**
+
+```cpp
+std::vector<int> values {};
+auto first = values.front(); // Precondition violated.
+std::optional<int> answer {};
+auto result = *answer;       // Precondition violated.
+```
+
+**Correct:**
+
+```cpp
+if (!values.empty() && answer.has_value()) {
+    consume(values.front(), *answer);
+}
+```
+
+All value-returning functions must return a value on every reachable
+path, with the language's specific exceptions (such as `main`).
+Do not use assertions, draft contracts, hardening or sanitizer modes
+as substitutes for checks of untrusted or recoverable conditions.
+
+## SAFE-019: Shared-State Data Race Prevention
+
+Unsynchronized conflicting accesses to the same memory location from
+different threads, with at least one write and no applicable atomic or
+happens-before ordering, constitute a C++ data race and UB.
+
+**Incorrect:**
+
+```cpp
+int count {};
+std::thread first([&] { ++count; });
+std::thread second([&] { ++count; });
+first.join();
+second.join(); // Joining does not undo the concurrent race.
+```
+
+**Correct (C++20):**
+
+```cpp
+std::atomic<int> count {0};
+std::jthread first([&] { count.fetch_add(1, std::memory_order_relaxed); });
+std::jthread second([&] { count.fetch_add(1, std::memory_order_relaxed); });
+first.join();
+second.join();
+```
+
+Relaxed atomics are sufficient for this **independent counter only**;
+publication/visibility of other state requires stronger ordering or a
+mutex. Prefer state confinement or ownership transfer where possible.
+`volatile` is not synchronization; neither Qt QObject affinity nor
+queued connections automatically protect every shared C++ object.
+Treat QObject misuse separately from proven language-level data races.
+
+## SAFE-020: Classify And Verify Actual Undefined Behavior
+
+Do not label every crash, exception, Qt warning or poor performance as UB.
+When reviewing a suspicious operation:
+
+1. Identify the exact object, lifetime, access, mutation, precondition
+   and whether the triggering execution is reachable.
+2. Classify the finding as C++ language UB, violated standard-library
+   precondition, defined exception, unspecified/implementation-defined
+   behavior, Qt API violation, logic error or performance risk. Explain
+   which rule or contract is broken.
+3. Apply the smallest behavior-preserving repair: initialize/construct
+   elements, check conditions before evaluation, preserve ownership,
+   reacquire invalidated handles or synchronize shared state.
+4. Test empty/full capacity, boundary indices, invalidation, numerical
+   extremes, absent values and concurrent access as relevant.
+5. Run ASan/UBSan and separately TSan **when supported** on affected
+   executable targets. Record what ran and what did not.
+
+Sanitizers have blind spots; passing tests is evidence for covered
+executions, not a proof that the codebase contains no UB. A documentation
+example or agent eval is not an executed sanitizer test.
+
 ## Reference Links
 
 - [C++20 features](https://en.cppreference.com/cpp/20)
+- [Vector capacity](https://en.cppreference.com/w/cpp/container/vector/reserve)
+- [Iterator invalidation](https://en.cppreference.com/w/cpp/container#Iterator_invalidation)
+- [Undefined behavior](https://en.cppreference.com/w/cpp/language/ub)
+- [C++ memory model](https://en.cppreference.com/w/cpp/language/multithread)
 - [C++23 features](https://en.cppreference.com/cpp/23)
 - [C++26 and library-hardening status](https://en.cppreference.com/cpp/26)
 - [Lifetime](https://en.cppreference.com/cpp/language/lifetime)

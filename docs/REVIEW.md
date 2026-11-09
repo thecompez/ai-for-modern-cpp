@@ -99,6 +99,18 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
   error recovery; filesystem handling is race/traversal aware.
 - [ ] `SAFE-013`: Required negative tests and available sanitizer evidence
   have been collected, or unavailable layers are reported `NOT VERIFIED`.
+- [ ] `SAFE-014`: Reserved capacity was not used as the live size. Elements
+  are constructed before indexing; `reserve`/`resize`/insertion match intent.
+- [ ] `SAFE-015`: Iterator, reference, pointer and view validity is traced
+  across growth, erasure, rehash, move and relevant Qt detach operations.
+- [ ] `SAFE-016`–`SAFE-018`: Reads have valid initialized objects, types and
+  lifetimes; overflow, division, shift and pointer preconditions are checked;
+  no empty/end/null/disengaged accesses or missing value returns occur.
+- [ ] `SAFE-019`: Concurrent shared state uses correct synchronization or
+  confinement; Qt thread affinity is not mistaken for C++ data-race safety.
+- [ ] `SAFE-020`: Suspected UB is precisely classified and demonstrated,
+  repaired with minimal scope, and supported by relevant negative tests.
+  Sanitizer coverage limits are disclosed.
 - [ ] `FEAT-001`–`FEAT-005`: The selected feature exists in the actual
   language/STL/Qt toolchain, and container lifetime/invalidation,
   performance claims, portability and removed API usage are reviewed.
