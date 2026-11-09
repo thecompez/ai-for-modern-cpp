@@ -100,6 +100,7 @@ After reading this file, read only the guides required for the task.
 | Add or audit C++ attributes, annotations, or attribute portability | `docs/agent/ATTRIBUTES.md` and `docs/agent/SYNTAX_AND_STYLE.md` |
 | Add ownership, handles, files, sockets, or threads | `docs/agent/ERRORS_AND_RESOURCES.md` and `docs/agent/SAFETY_AND_LIFETIME.md` |
 | Process untrusted data, binary packets, ranges, coroutines, integer sizes or concurrent state | `docs/agent/SAFETY_AND_LIFETIME.md` |
+| Write or review containers, indexing, iterator stability, arithmetic, object lifetime or UB-prone operations | `docs/agent/SAFETY_AND_LIFETIME.md` and `docs/agent/PATTERNS.md` |
 | Select a C++20/23/26 language or library feature | `docs/agent/CPP20_26_FEATURES.md` and its applicable safety/attribute guide |
 | Add OS-specific behavior | `docs/agent/PLATFORM_BOUNDARIES.md` |
 | Create, replace, package, or verify application icons or in-application brand marks | `docs/agent/APP_ICONS_AND_BRANDING.md`, `docs/agent/PLATFORM_BOUNDARIES.md`, and `docs/agent/QT_QUICK_UI.md` when the mark appears in the interface |
@@ -553,6 +554,38 @@ examples, feature gates, and failure modes: `docs/agent/SAFETY_AND_LIFETIME.md`.
   truncated, overflow and lifetime/concurrency failures. Available
   sanitizers SHOULD be run on relevant targets, and missing coverage MUST
   be reported, not presumed.
+
+- **SAFE-014** — Container capacity MUST NOT be confused with live
+  element count. `reserve()` does not construct elements: indexed access,
+  `front()`, `back()`, and spans over container storage MUST refer only to
+  existing elements. Choose construction, `emplace_back()`/`append_range()`,
+  or `resize()` according to the required element lifetime.
+- **SAFE-015** — Iterators, pointers, references and views MUST be revalidated
+  after operations that may invalidate them (growth, `reserve()`, erasure,
+  rehash, move or Qt implicit-sharing detachment). Each container's precise
+  invalidation guarantees MUST be inspected; do not assume all invalidate alike.
+- **SAFE-016** — Every read MUST target an initialized object whose lifetime
+  has begun, within suitably sized/aligned storage and with a valid type and
+  representation. Uninitialized reads, inactive-union access, invalid
+  type-punning and unsupported casts MUST NOT be introduced.
+- **SAFE-017** — Arithmetic and pointer operations MUST satisfy their language
+  preconditions before evaluation: prevent signed overflow, zero division,
+  invalid shifts, out-of-range float-to-integer conversions and invalid
+  pointer arithmetic. Check edge cases such as minimum-signed / -1.
+- **SAFE-018** — API preconditions MUST be established before access: never
+  dereference null or end iterators, access `front()/back()` on empty
+  containers, dereference disengaged `std::optional`, or flow off the end
+  of a value-returning function. Exception-throwing checked APIs are not
+  interchangeable with unchecked operations.
+- **SAFE-019** — Shared mutable state MUST be synchronized or confined to one
+  execution context. Ordinary unsynchronized conflicting accesses create
+  data races and UB; `volatile`, cooperative cancellation and QObject
+  thread affinity are not substitutes for C++ memory synchronization.
+- **SAFE-020** — Agents MUST classify suspected UB precisely (language UB,
+  library precondition violation, defined exception, implementation-defined
+  behavior, Qt contract violation or performance issue), document the trigger,
+  apply the smallest justified repair and verify relevant negative cases.
+  Passing sanitizer tests MUST NOT be reported as proof of no UB.
 
 ## 11B. C++20/23/26 Feature Adoption Rules
 
