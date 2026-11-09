@@ -222,3 +222,151 @@ experiment.
 
 **Critical failure:** assumes portable, guaranteed execution of
 draft contract assertions and uses them for mandatory validation.
+
+## EVAL-SAFE-015 — Reserve Does Not Construct Elements
+
+**Diff:**
+
+```cpp
+std::vector<Row> rows {};
+rows.reserve(input.size());
+for (std::size_t i = 0; i < input.size(); ++i) {
+    rows[i] = convert(input[i]);
+}
+```
+
+**Expected:** `SAFE-014`: `reserve` changes capacity but leaves `size()`
+at zero. Indexed writes are UB. For incremental creation, use
+`emplace_back(convert(item))`; use `resize` or construct `n` elements
+only if all slots genuinely must exist (and the element type supports it).
+Explain the construction and performance tradeoff; do not blindly
+change every `reserve` to `resize`.
+
+**Critical failure:** calls the code valid because capacity is sufficient.
+
+## EVAL-SAFE-016 — A Span Over Reserved Capacity
+
+**Diff:**
+
+```cpp
+std::vector<std::byte> bytes {};
+bytes.reserve(4096);
+std::span view {bytes.data(), bytes.capacity()};
+writePacket(view);
+```
+
+**Expected:** `SAFE-001` / `SAFE-014`: no live elements exist at
+reserved indices. If a writable 4096-byte buffer is intended, construct
+4096 bytes first or use a valid owned buffer. Otherwise expose a span
+over the actual `size()` only. A C++26 `std::inplace_vector`
+default constructor likewise creates no elements.
+
+**Critical failure:** treats `data()` and `capacity()` as proof of
+constructed elements.
+
+## EVAL-SAFE-017 — A Reference Survives Reallocation
+
+**Diff:**
+
+```cpp
+std::vector<Item> items {firstItem};
+Item& selected = items.front();
+items.push_back(nextItem);
+selected.refresh();
+```
+
+**Expected:** `SAFE-015`: `push_back` may reallocate and invalidate
+`selected`. Reacquire from the container after mutation, or refactor
+to preserve logical identity without unstable references. Explain that
+`std::unordered_map` rehash invalidates iterators but not pointers or
+references to existing elements; invalidation rules are container-specific.
+
+## EVAL-SAFE-018 — Uninitialized Object And Unsafe Type Pun
+
+**Diff:**
+
+```cpp
+std::uint32_t identifier;
+send(identifier);
+auto* header = reinterpret_cast<Header*>(packet.data());
+consume(*header);
+```
+
+**Expected:** `SAFE-016`: initialize the integer; do not assume
+`reinterpret_cast` constructs a `Header` or proves the packet's
+alignment, object lifetime or representation. Prefer typed construction
+or validated byte decoding; explain limitations of C++20 `bit_cast`
+and C++23 `start_lifetime_as`.
+
+## EVAL-SAFE-019 — Arithmetic Preconditions Are Violated
+
+**Diff:**
+
+```cpp
+int total = a + b;
+if (total < a) { reportOverflow(); }
+int ratio = minimumSigned / divisor;
+int flags = 1 << userShift;
+```
+
+**Expected:** `SAFE-017`: detect signed overflow before addition,
+guard division by zero and minimum-signed / -1, validate shift width
+and signed-value rules. Do not claim checking a possibly overflowed
+signed result afterward is safe. Use checked C++20/23 fallbacks or
+feature-gated C++26 `ckd_*` for suitable integer operations.
+
+## EVAL-SAFE-020 — Empty Container Versus Checked Exceptions
+
+**Diff:**
+
+```cpp
+std::vector<int> values;
+std::optional<int> selection;
+consume(values.front());
+consume(*selection);
+consume(values.at(0));
+```
+
+**Expected:** `SAFE-018` / `SAFE-020`: empty `front()` and
+disengaged `operator*` violate preconditions; `at(0)` throws
+`std::out_of_range` rather than causing UB. Validate emptiness and
+engagement, then select an error path compatible with the API.
+Do not classify the checked exception itself as undefined behavior.
+
+## EVAL-SAFE-021 — Joining Does Not Repair A Data Race
+
+**Diff:**
+
+```cpp
+int updates {};
+std::jthread a([&] { ++updates; });
+std::jthread b([&] { ++updates; });
+a.join();
+b.join();
+```
+
+**Expected:** `SAFE-019` / `SAFE-006`: concurrent unsynchronized
+writes create a data race and UB even though both threads join.
+Use `std::atomic`, mutex-protected updates or state confinement
+with suitable ordering. `volatile` and a Qt thread-affinity claim
+do not establish synchronization. Request TSan where supported.
+
+**Critical failure:** claims `join()` makes the increments race-free.
+
+## EVAL-SAFE-022 — Sanitizer Silence Is Not Proof Of No UB
+
+**Proposal:**
+
+```text
+ASan and UBSan passed on a one-element test. Declare all container
+indexing safe, replace every at() with unchecked operator[], and
+state that the full project contains zero UB.
+```
+
+**Expected:** `SAFE-020` / `SAFE-013` / `SAFE-011`: refuse the
+unjustified claim and blanket replacement. Require a reachable trigger,
+precise UB classification, boundary tests (including size zero),
+targeted review, and explicit coverage limitations. An exception from
+`at()` is defined behavior, not itself a UB finding.
+
+**Critical failure:** asserts UB cannot exist after sanitizer success.
