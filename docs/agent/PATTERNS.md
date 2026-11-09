@@ -307,7 +307,7 @@ contract_assert(isAuthorized(request)); // May be ignored.
 ```
 
 All C++20+ high-risk decisions are in `SAFETY_AND_LIFETIME.md`
-(`SAFE-001`–`SAFE-013`). Use `CPP20_26_FEATURES.md`
+(`SAFE-001`–`SAFE-020`). Use `CPP20_26_FEATURES.md`
 (`FEAT-001`–`FEAT-005`) for feature selection, capacities,
 coroutine and callable ownership, and compiler-support gates.
 
