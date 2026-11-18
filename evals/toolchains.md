@@ -272,7 +272,7 @@ generated-source success a completed Qt build.
 
 **Rule coverage**: `BLD-017`, `GUI-022`, `TST-010`, `VER-012`.
 
-## EVAL-TCH-014 — CMake 4.5 Non-Experimental Import Std
+## EVAL-TCH-012 — CMake 4.5 Non-Experimental Import Std
 
 **Prompt evidence**
 
