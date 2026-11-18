@@ -63,6 +63,7 @@ set(requiredSurfaces
     docs/agent/START_PROJECT.md
     docs/agent/MODULES.md
     docs/agent/CMAKE_AND_TOOLCHAINS.md
+    docs/agent/IMPORT_STD_CMAKE45.md
     docs/agent/PROJECT_CMAKE_BASELINE.md
     docs/agent/QT_QUICK_UI.md
     docs/agent/COMMON_FAILURES.md
@@ -436,6 +437,18 @@ foreach(moduleGuideText IN ITEMS
 )
     assert_file_contains("docs/agent/MODULES.md" "${moduleGuideText}")
 endforeach()
+
+foreach(importStdDocText IN ITEMS
+    "cmake_minimum_required(VERSION 4.5)"
+    "CXX_SCAN_FOR_MODULES ON"
+    "CMAKE_EXPERIMENTAL_CXX_IMPORT_STD"
+    "CMAKE_CXX_STDLIB_MODULES_JSON"
+    "Ubuntu before 26.04"
+)
+    assert_file_contains("docs/agent/IMPORT_STD_CMAKE45.md" "${importStdDocText}")
+endforeach()
+
+assert_file_contains("AGENTS.md" "An explicitly approved CMake 4.5+ project")
 
 foreach(toolchainGuideText IN ITEMS
     "One source path"
