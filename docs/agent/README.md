@@ -42,6 +42,7 @@ and update the guide in the same change when authorized.
 | What interface should an unspecified interactive application use? | `QT_QUICK_UI.md`, then `ARCHITECTURE.md` |
 | How should a Qt interface be designed and implemented? | `QT_QUICK_UI.md` |
 | How should modules and standard headers be configured? | `CMAKE_AND_TOOLCHAINS.md`, then `COMMON_FAILURES.md` |
+| When may an approved CMake 4.5+ project use `import std;`? | `IMPORT_STD_CMAKE45.md`, then `MODULES.md` |
 | What CMake baseline should a generated Qt Quick project start from? | `PROJECT_CMAKE_BASELINE.md`, then `CMAKE_AND_TOOLCHAINS.md` and `QT_QUICK_UI.md` |
 | How much should I inspect, delegate, build, or retest? | `EXECUTION_DISCIPLINE.md` |
 | What and how should I test? | `TESTING_AND_VERIFICATION.md` |
