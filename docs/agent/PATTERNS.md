@@ -860,9 +860,11 @@ set(CMAKE_EXPERIMENTAL_CXX_IMPORT_STD "<gate-set-too-late>")
 set(CMAKE_CXX_MODULE_STD ON)
 ```
 
-The incorrect form adds an experimental standard-library module path that the
-repository does not support. Remove the gate and `CMAKE_CXX_MODULE_STD`, use
-standard headers in global module fragments, and preserve project modules.
+This uses a legacy experimental UUID after compiler detection. For the default
+repository baseline use standard headers in global module fragments. For an
+explicitly approved and verified CMake 4.5+ project, use the separate minimal
+probe in `IMPORT_STD_CMAKE45.md` instead of this UUID/obsolete property. Keep
+project-owned modules in either design.
 
 **Correct**
 

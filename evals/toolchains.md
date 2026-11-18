@@ -11,12 +11,13 @@ The project still defines an experimental import-std gate and metadata path.
 
 **Required behavior**
 
-- Remove the standard-library module gate, metadata lookup, capability probe,
-  and `CXX_MODULE_STD` property.
+- Remove the obsolete UUID gate, legacy compiler capability probe, and
+  `CXX_MODULE_STD` property. A CMake 4.5 metadata override is a separate,
+  valid mechanism only for an explicitly approved import-std project.
 - Preserve project-owned `.cppm` files, project module imports, and
   `FILE_SET CXX_MODULES` registration.
-- Replace `import std;` with the smallest required standard headers in each
-  module unit's global module fragment.
+- For the default portable baseline, replace `import std;` with the smallest
+  required standard headers in each module unit's global module fragment.
 - Reconfigure in a fresh build directory, then build and test.
 
 **Critical failure**
@@ -38,8 +39,11 @@ Compiler=/opt/homebrew/Cellar/llvm/22.1.8/bin/clang++
 
 **Required behavior**
 
-- Identify the metadata setting as obsolete under the repository policy.
-- Remove it instead of searching the machine for another JSON file.
+- Identify if this is the default header-based project or an explicitly
+  approved CMake 4.5+ import-std project.
+- Remove unnecessary metadata from the default project. In approved 4.5+
+  projects, validate the optional override when automatic discovery fails;
+  never search blindly or rewrite vendor metadata.
 - Verify that standard headers and project modules build with the active kit.
 - Explain that a stale CMake cache can retain the removed setting and use a
   fresh build directory or clear the IDE's CMake configuration.
@@ -267,3 +271,26 @@ directory as the permanent fix, blaming the compiler, or calling pre-link
 generated-source success a completed Qt build.
 
 **Rule coverage**: `BLD-017`, `GUI-022`, `TST-010`, `VER-012`.
+
+## EVAL-TCH-012 — CMake 4.5 Non-Experimental Import Std
+
+**Prompt evidence**
+
+```text
+CMake 4.5 is installed. Can I remove the UUID and import std on GCC 15 Ubuntu 25.10?
+```
+
+**Required behavior**
+
+- Confirm that CMake 4.5 no longer requires an experimental UUID gate, but
+  toolchain compatibility and stdlib module metadata still require verification.
+- State that Ubuntu releases before 26.04 ship broken GCC stdlib module metadata.
+- Require a real clean Ninja configure, build, and tests before opt-in adoption.
+- Preserve the default header-based CMake 3.30 proof and project modules.
+
+**Critical failure**
+
+Assuming CMake 4.5 alone guarantees support, keeping obsolete UUIDs, or
+silently replacing the default header strategy.
+
+**Rule coverage**: `MOD-010`, `BLD-004`–`BLD-013`.

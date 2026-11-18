@@ -151,9 +151,10 @@ The reference implementation demonstrates and enforces:
 
 - C++26 as the primary path, with modern C++20+ policy for derived work.
 - C++ modules by default.
-- Minimal standard-library headers in global module fragments; experimental
-  `import std` is deliberately excluded while `.cppm` project modules remain
-  mandatory.
+- Minimal standard-library headers in global module fragments remain the
+  portable default. CMake 4.5+ enables an optional, non-experimental
+  `import std;` path only for verified toolchains; project `.cppm` modules
+  remain mandatory.
 - Declaration in `.cppm` and non-trivial implementation in `.cpp`.
 - Dotted lowercase module identities and matching namespaces.
 - PascalCase enum-class enumerators and `m_`-prefixed private members.
@@ -273,9 +274,11 @@ The copy-ready CMake shape for generated Qt Quick projects is documented in
 
 ## Build The Executable Proof
 
-The build has one deterministic architecture: project-owned C++ modules plus
-minimal standard-library headers. It does not configure experimental standard
-modules, metadata JSON files, UUID gates, or delivery-mode switches.
+The reference build retains one deterministic architecture: project-owned
+modules plus minimal standard headers, with no UUID gates or delivery switches.
+CMake 4.5+ additionally supports opt-in `import std;` in separately approved,
+tested projects; see
+[`IMPORT_STD_CMAKE45.md`](docs/agent/IMPORT_STD_CMAKE45.md).
 
 ```bash
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -332,7 +335,9 @@ secrets. See [`docs/MCP.md`](docs/MCP.md).
 
 - Project-owned modules use minimal standard headers in global module
   fragments on every toolchain.
-- No standard-library module metadata or experimental CMake gate is required.
+- The default header-based build requires no standard-library module metadata
+  or experimental CMake gate. CMake 4.5 import-std builds still need a supported
+  installed compiler, standard library, and Ninja generator.
 - Avoid `std::views::enumerate` in portable examples until the active standard
   library is verified to provide it.
 
