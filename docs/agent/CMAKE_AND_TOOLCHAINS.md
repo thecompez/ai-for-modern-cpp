@@ -18,26 +18,20 @@ Compiler with project-module support
 = deterministic project-module build
 ```
 
-The repository deliberately does not use experimental standard-library
-modules. It does not inspect or configure:
+The reference executable and copy-ready Qt baseline deliberately use
+standard headers without stdlib module metadata or UUID gates. CMake 4.5
+makes `import std;` non-experimental **for verified supported toolchains**;
+see [`IMPORT_STD_CMAKE45.md`](IMPORT_STD_CMAKE45.md).
 
-```text
-CMAKE_EXPERIMENTAL_CXX_IMPORT_STD
-CMAKE_CXX_COMPILER_IMPORT_STD
-CMAKE_CXX_STDLIB_MODULES_JSON
-CMAKE_CXX_MODULE_STD
-libc++.modules.json
-libstdc++.modules.json
-```
-
-Do not add automatic, strict, or fallback modes for standard-library delivery.
-One source path is easier to understand, build, test, and reproduce.
+Do not introduce automatic, strict, or fallback modes to silently change
+standard-library delivery. One source path per project is easier to understand,
+build, test, and reproduce.
 
 Language mode is not a library feature guarantee. See
 [`CPP20_26_FEATURES.md`](CPP20_26_FEATURES.md) and rule `FEAT-001`:
 probe the actual compiler, standard-library headers, feature-test macros
-and linked runtime before selecting optional C++23/26 APIs. Do not enable
-experimental `import std;` as a workaround for missing library features.
+and linked runtime before selecting optional C++23/26 APIs. CMake 4.5's
+non-experimental `import std;` support does not manufacture missing library APIs.
 
 ## Standard Headers Inside Project Modules
 
@@ -58,6 +52,24 @@ void printMessage(const std::string& message);
 
 Standard headers must appear in the global module fragment. They must not be
 included after the named module declaration.
+
+## CMake 4.5 Opt-In: `import std;`
+
+The old `CMAKE_EXPERIMENTAL_CXX_IMPORT_STD` UUID and
+`CMAKE_CXX_COMPILER_IMPORT_STD` / `CMAKE_CXX_MODULE_STD` /
+target `CXX_MODULE_STD` mechanisms are not used on CMake 4.5.
+The compiler/stdlib must have discoverable module metadata and the target
+must enable `CXX_SCAN_FOR_MODULES` with Ninja. Scanning alone does not
+turn ordinary header includes into imports.
+
+`CMAKE_CXX_STDLIB_MODULES_JSON` is a **new**, optional CMake 4.5 metadata-path
+override; it is not an experimental gate. Use it only with a verified installed
+file if compiler discovery fails, never by guessing or repairing vendor files.
+
+Consult [`IMPORT_STD_CMAKE45.md`](IMPORT_STD_CMAKE45.md) for the official
+toolchain matrix, Ubuntu caveat, a working-shaped standalone probe, and
+required clean build and tests. Do not alter the portable baseline without
+explicit approval.
 
 ## Target-Based CMake
 
@@ -192,18 +204,19 @@ If configure fails, stop. Do not run build and tests and then report missing
 
 ## Legacy Import-Std Projects
 
-When migrating a generated project that still contains experimental import-std
-configuration:
+When migrating legacy experimental import-std configurations:
 
-1. Remove experimental UUID gates and standard-library metadata handling.
-2. Remove `CMAKE_CXX_MODULE_STD` and target `CXX_MODULE_STD` properties.
-3. Remove standard-library mode options and compile definitions.
-4. Replace `import std;` with minimal standard headers.
-5. In module units, put those headers in the global module fragment.
-6. Preserve `.cppm`, project module declarations, project imports, and
-   `FILE_SET CXX_MODULES`.
-7. Recreate the build directory because compiler-detection cache may still
-   contain the obsolete experimental configuration.
+1. Remove the UUID gate and the obsolete pre-4.5 import-std capability and
+   `CXX_MODULE_STD` toggles.
+2. For the default portable baseline, restore minimal standard headers in
+   global module fragments and keep application-owned `.cppm` modules.
+3. Only for a separately approved CMake 4.5+ import-std project, keep
+   `import std;` after verifying the compiler, stdlib, Ninja, clean build,
+   and tests. Treat the new metadata-path override as optional.
+4. Recreate the build directory to eliminate stale experimental cache state.
+
+Do not incorrectly remove a valid CMake 4.5 metadata override from a
+verified import-std project.
 
 ## Linux
 
