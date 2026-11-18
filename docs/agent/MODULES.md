@@ -15,19 +15,20 @@ or module-related review. Canonical rules: `MOD-*` and `BLD-*`.
 
 ## Standard Library Policy
 
-Project-owned C++ modules are required. Experimental standard-library modules
-are not part of the supported architecture.
+Project-owned C++ modules are required. The portable repository proof and
+generated baseline use minimal standard headers.
 
-- Use minimal standard headers for every standard-library dependency.
-- In `.cppm` and named-module implementation units, place those headers in the
-  global module fragment between `module;` and the named module declaration.
-- Never write `import std;`.
-- Never introduce a compile definition that switches between `import std` and
-  headers.
-- Do not replace `.cppm` files with project headers.
+- In header-based `.cppm` and implementation units, place only necessary
+  standard headers in the global module fragment before the named declaration.
+- Never write `import std;` in this repository's default header-based proof.
+- An explicitly approved CMake 4.5+ project MAY use non-experimental
+  `import std;` after full toolchain and test verification. Consult
+  [`IMPORT_STD_CMAKE45.md`](IMPORT_STD_CMAKE45.md).
+- Do not introduce automatic header/import switching or duplicate source trees.
+- Never replace project-owned `.cppm` modules with project headers.
 
-This keeps module ownership and dependency scanning while avoiding experimental
-standard-library metadata, compiler gates, and toolchain-specific BMIs.
+The default headers path stays portable across the existing CMake 3.30+
+matrix; CMake 4.5 availability does not guarantee compiler/stdlib support.
 
 ## Interface Test
 
@@ -134,7 +135,7 @@ entry point. Do not create a facade merely to hide unclear dependency design.
 2. Can an importer understand the public contract without the implementation?
 3. Are heavyweight operations outside the interface?
 4. Are standard headers in the global module fragment?
-5. Is `import std;` absent?
+5. Is the default header path intact, or has a CMake 4.5+ import-std exception been explicitly approved and verified?
 6. Does the namespace mirror the dotted module identity?
 7. Is the interface registered in the CMake module file set?
 8. Do tests consume the public module instead of implementation files?
