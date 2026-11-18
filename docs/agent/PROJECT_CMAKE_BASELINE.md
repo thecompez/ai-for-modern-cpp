@@ -2,8 +2,10 @@
 
 Use this baseline when creating a new module-based C++ project, especially a
 Qt Quick application. It intentionally supports project-owned C++ modules while
-using standard-library headers. Experimental standard-library modules, metadata,
-gates, and mode switches are not part of the generated project.
+using standard-library headers. The copy-ready default uses no experimental
+UUID gates or mode switches. For an explicitly approved and verified CMake
+4.5+ import-std project, see [`IMPORT_STD_CMAKE45.md`](IMPORT_STD_CMAKE45.md);
+do not silently rewrite this default baseline.
 
 ## Complete Baseline
 
