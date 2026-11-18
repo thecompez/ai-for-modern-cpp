@@ -46,8 +46,9 @@ Cite stable rule identifiers from `AGENTS.md` for actionable findings.
 - [ ] `MOD-004`: No I/O, platform branch, or large algorithm leaked into an exported interface.
 - [ ] `MOD-006`: No unjustified `.h` file was introduced.
 - [ ] `MOD-009`: Project-owned boundaries remain `.cppm` modules.
-- [ ] `MOD-010`: Standard-library dependencies use minimal standard headers;
-  experimental `import std;` is absent.
+- [ ] `MOD-010`: Default projects use minimal standard headers; any CMake
+  4.5+ `import std;` project has explicit approval and clean toolchain
+  configure/build/test evidence.
 - [ ] `MOD-011`: Standard headers in module units are in the global module
   fragment.
 - [ ] `MOD-012`: Standard headers did not become an excuse for project-owned
