@@ -241,10 +241,11 @@ derived repositories.
 - **MOD-009** — Project-owned production boundaries MUST use C++ modules.
   Standard-library integration MUST NOT cause a fallback to project headers or
   classic header/source architecture.
-- **MOD-010** — Project code MUST NOT use the experimental `import std;` path.
-  Standard-library declarations MUST come from the minimal owning standard
-  headers while project-owned `.cppm` modules, module imports, and CMake module
-  file sets remain intact.
+- **MOD-010** — The repository proof and default generated projects MUST use
+  minimal owning standard headers. An explicitly approved CMake 4.5+ project
+  MAY use non-experimental `import std;` after full compiler, standard-library,
+  generator, clean-build, and test verification per
+  `docs/agent/IMPORT_STD_CMAKE45.md`. Project-owned `.cppm` modules remain mandatory.
 - **MOD-011** — In a module unit, standard-library headers MUST appear
   in the global module fragment after `module;` and before the named module
   declaration. They MUST NOT be textually included inside the named module
@@ -850,10 +851,11 @@ standard-library headers in global module fragments
 - **BLD-004** — `CXX_SCAN_FOR_MODULES` MUST be enabled for targets that produce
   or consume project-owned modules. `CMAKE_CXX_MODULE_STD` is not part of the
   supported build path.
-- **BLD-005** — CMake MUST NOT probe, enable, or configure experimental
-  standard-library modules. `CMAKE_CXX_COMPILER_IMPORT_STD`,
-  `CMAKE_CXX_STDLIB_MODULES_JSON`, and experimental import-std gates MUST NOT
-  influence project configuration.
+- **BLD-005** — Default projects MUST NOT configure standard-library modules
+  or legacy experimental UUID gates. For approved CMake 4.5+ projects, module
+  scanning can support `import std;`, and a verified
+  `CMAKE_CXX_STDLIB_MODULES_JSON` override MAY aid compiler discovery.
+  Legacy `CMAKE_CXX_COMPILER_IMPORT_STD` is not a 4.5 capability probe.
 - **BLD-006** — Compiler, CMake, generator, selected language standard, and
   project-module dependency scanning form one compatibility unit and MUST be
   diagnosed together.
@@ -863,22 +865,25 @@ standard-library headers in global module fragments
   project-owned module architecture to obtain a green build. Standard-library
   headers in a global module fragment are the primary architecture, not a
   downgrade or fallback.
-- **BLD-009** — Import-std UUID gates, standard-library module metadata repair,
-  and conditional standard-library modes are forbidden. Generated projects
-  MUST use one deterministic standard-header path.
-- **BLD-010** — CMake 3.30+ with Ninja and a compiler that supports the selected
-  language standard MAY build project-owned modules without standard-library
-  module metadata. Diagnostics MUST discuss project-module scanning rather than
-  recommend a newer CMake solely for `import std`.
-- **BLD-011** — Builds MUST NOT locate, validate, rewrite, or cache
-  `libc++.modules.json` or `libstdc++.modules.json`. Those files are outside the
-  supported standard-header architecture.
+- **BLD-009** — Import-std UUID gates, vendor metadata repair, and automatic
+  header/import mode switches are forbidden. The default generated project
+  MUST retain one deterministic header path; a separately approved CMake 4.5+
+  project MAY choose one fully verified import-std path.
+- **BLD-010** — CMake 3.30+ with Ninja can build project-owned modules using
+  standard headers without stdlib metadata. The optional `import std;` path
+  requires CMake 4.5+, a supported Ninja/stdlib/compiler combination, and
+  separate configure/build/test evidence.
+- **BLD-011** — Default header-based builds MUST NOT inspect standard-library
+  module metadata. A verified CMake 4.5+ import-std project MAY provide the
+  compiler's valid metadata path if discovery fails; it MUST NOT rewrite
+  vendor-supplied metadata.
 - **BLD-012** — A newer compiler major version is not automatically supported.
   Each compiler/CMake/generator combination MUST pass configure, build, and
   tests before becoming a supported project-module toolchain.
-- **BLD-013** — Standard-library integration MUST have one mode: minimal
-  standard headers. Build options and compile definitions that switch between
-  standard-library delivery mechanisms are forbidden.
+- **BLD-013** — Each project MUST choose one standard-library strategy:
+  minimal standard headers by default, or an explicitly approved and tested
+  CMake 4.5+ import-std path. Silent mode-switching build options and compile
+  definitions remain forbidden.
 - **BLD-014** — Generated Qt Quick/C++ projects MUST begin from
   `docs/agent/PROJECT_CMAKE_BASELINE.md`. The baseline MUST register `.cppm`
   files through `FILE_SET CXX_MODULES`, enable target-local module scanning,
@@ -1142,8 +1147,8 @@ Agents MUST NOT:
 - Replace modules with classic include architecture.
 - Treat standard-library headers as permission to replace `.cppm`
   modules or create project-owned headers.
-- Use `import std;`, experimental import-std CMake gates, or standard-library
-  module metadata in project code or generated build files.
+- Use `import std;` without explicit CMake 4.5+ toolchain verification,
+  reintroduce experimental UUID gates, or rewrite vendor module metadata.
 - Place standard-library headers inside a named module purview rather
   than its global module fragment.
 - Add legacy project headers without a justified boundary.
